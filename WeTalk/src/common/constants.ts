@@ -14,3 +14,5 @@ export const MAX_CHANNEL_TITLE_LENGTH = 40;
 export const MIN_TEAM_NAME_LENGTH = 3;
 
 export const MAX_TEAM_NAME_LENGTH = 40;
+
+export const MIN_PASSWORD_LENGTH = 6;
