@@ -8,6 +8,7 @@ import { Route, Routes } from 'react-router-dom';
 import LandingPageView from './views/LandingPage/LandingPageView';
 import Home from './views/Home/Home';
 import AuthenticatedRoute from './hoc/AuthenticatedRoute';
+import ThemeButton from './components/ThemeButton/ThemeButton';
 // import Register from './components/Auth/Register/Register';
 
 const App = () => {
@@ -66,7 +67,9 @@ const App = () => {
               }
             />
           )}
+          
         </Routes>
+        
       </AppContext.Provider>
     </>
   );

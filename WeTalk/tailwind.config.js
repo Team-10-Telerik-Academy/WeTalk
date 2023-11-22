@@ -21,9 +21,9 @@ export default {
           error: '#f87272', // red
         },
         dark: {
-          primary: '#0A2A4C', // blue
+          primary: '#FFFFFF', // blue
 
-          secondary: '#FFFFFF', // white
+          secondary: '#0A2A4C', // white
 
           accent: '#FFC436', // yellow
 
