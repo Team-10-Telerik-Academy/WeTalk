@@ -1,8 +1,8 @@
-// import joinImg from '../../../assets/images/undraw_world_re_768g.svg';
 import visible from '../../../assets/images/eye-svgrepo-com.svg';
 import hidden from '../../../assets/images/eye-off-svgrepo-com.svg';
+import { Link } from 'react-router-dom';
 
-interface IRegisterViewProps {
+type IRegisterViewProps = {
   onRegister: (event: React.FormEvent) => void;
   updateForm: (
     field: string
@@ -16,8 +16,7 @@ interface IRegisterViewProps {
   password: string;
   handleClickShowPassword: () => void;
   isLoading: boolean;
-  switchToSignInView: () => void;
-}
+};
 
 const RegisterView: React.FC<IRegisterViewProps> = ({
   onRegister,
@@ -31,10 +30,15 @@ const RegisterView: React.FC<IRegisterViewProps> = ({
   password,
   handleClickShowPassword,
   isLoading,
-  switchToSignInView,
 }) => {
   return (
     <>
+      <div className="mb-4 w-2/3 flex flex-col items-center">
+        <h1 className="font-bold text-primary text-2xl text-center tracking-tight">
+          Sign up to connect, chat and collaborate effortlessly with WeTalk!
+        </h1>
+        <hr className="w-20 border-t-4 border-accent mb-4 mt-4" />
+      </div>
       <div className="flex flex-col">
         <div className="flex flex-col items-center justify-center">
           {/*<img
@@ -51,7 +55,7 @@ const RegisterView: React.FC<IRegisterViewProps> = ({
           <hr className="w-32 border-t-4 border-yellow-500 mb-10" />*/}
           <div className="signin-wrapper w-full max-w-xl">
             <form
-              className="form bg-white shadow-xl border-solid border-2 rounded-lg px-8 pt-6 pb-8"
+              className="form bg-white shadow-xl border-solid border-2 rounded-lg p-10"
               onSubmit={onRegister}
             >
               <div className="mb-6 flex">
@@ -178,22 +182,25 @@ const RegisterView: React.FC<IRegisterViewProps> = ({
                   )}
                 </button>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-center">
                 <button
-                  className="bg-accent hover:bg-primary text-primary hover:text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  className="bg-accent hover:bg-primary text-primary hover:text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Registering...' : 'Register'}{' '}
                 </button>
-                <button
-                  className="bg-accent hover:bg-primary text-primary hover:text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  disabled={isLoading}
-                  onClick={switchToSignInView}
-                >
-                  Log In
-                </button>
               </div>
             </form>
+          </div>
+          <div className="flex flex-col items-center justify-center mt-4">
+            <p className="text-primary">
+              Already have an account?{' '}
+              <Link to="/signin">
+                <span className="font-bold text-primary cursor-pointer hover:underline">
+                  Sign In
+                </span>
+              </Link>
+            </p>
           </div>
         </div>
       </div>
