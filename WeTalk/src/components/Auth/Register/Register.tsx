@@ -17,7 +17,7 @@ import {
 } from '../../../common/constants';
 import { IAppContext } from '../../../common/types';
 import RegisterView from '../../../views/Auth/Register/RegisterView';
-import SignIn from '../SignIn/SignIn';
+import { UserCredential } from 'firebase/auth';
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -29,16 +29,10 @@ const Register = () => {
     password: '',
   });
 
-  const [isSignInView, setIsSignInView] = useState(false);
-
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
-
-  const switchToSignInView = () => {
-    setIsSignInView(true);
-  };
 
   const { setContext } = useContext(AppContext) as IAppContext;
   const navigate = useNavigate();
@@ -165,21 +159,15 @@ const Register = () => {
 
           return registerUser(form.email, form.password);
         })
-        .then((credential) => {
-          if (!credential.user) {
-            throw new Error('User is null or undefined!!');
-          }
+        .then((credential: UserCredential) => {
           navigate('/home');
           toast.success(`Welcome to the forum!`, {
             autoClose: 3000,
             className: 'font-bold',
           });
 
-          const userEmail = credential.user.email;
+          const userEmail = credential.user.email!;
 
-          if (!userEmail) {
-            throw new Error('Email is null or undefined!');
-          }
           return createUserHandle(
             form.handle,
             form.firstName,
@@ -221,10 +209,8 @@ const Register = () => {
 
   return (
     <>
-      {isSignInView ? (
-        <SignIn />
-      ) : (
-        <>
+      <div className="flex flex-col">
+        <div className="flex flex-col items-center justify-center">
           <RegisterView
             onRegister={onRegister}
             updateForm={updateForm}
@@ -237,11 +223,10 @@ const Register = () => {
             password={form.password}
             handleClickShowPassword={handleClickShowPassword}
             isLoading={isLoading}
-            switchToSignInView={switchToSignInView}
           />
-          <ToastContainer />
-        </>
-      )}
+        </div>
+      </div>
+      <ToastContainer />
     </>
   );
 };
