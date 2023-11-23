@@ -8,6 +8,7 @@ import { Route, Routes } from 'react-router-dom';
 import LandingPageView from './views/LandingPage/LandingPageView';
 import Home from './views/Home/Home';
 import AuthenticatedRoute from './hoc/AuthenticatedRoute';
+// import ThemeButton from './components/ThemeButton/ThemeButton';
 import { Navigate } from 'react-router-dom';
 import SignIn from './components/Auth/SignIn/SignIn';
 import Register from './components/Auth/Register/Register';
