@@ -6,7 +6,7 @@ export interface IAppState {
   userData: IUserData | null | undefined;
 }
 
-export interface IUserData {
+export type IUserData = {
   handle: string;
   email: string;
   firstName: string;
@@ -18,7 +18,7 @@ export interface IAppContext extends IAppState {
   setContext: Dispatch<SetStateAction<IAppState>>;
 }
 
-export interface ICreateUserHandleParams {
+export type ICreateUserHandleParams = {
   handle: string;
   firstName: string;
   lastName: string;
@@ -29,6 +29,6 @@ export interface ICreateUserHandleParams {
   createdOn: number;
 }
 
-export interface IChildrenProps {
+export type IChildrenProps = {
   children: ReactElement;
 }
