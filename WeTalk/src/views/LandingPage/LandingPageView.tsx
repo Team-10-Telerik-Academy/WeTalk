@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import SignIn from '../../components/Auth/SignIn/SignIn';
+import { Outlet } from 'react-router-dom';
 
 const LandingPageView = () => {
   const [showMoreText, setShowMoreText] = useState(false);
@@ -13,10 +13,10 @@ const LandingPageView = () => {
       <div className="relative overflow-hidden md:flex w-1/2 bg-gradient-to-tr from-blue-800 to-purple-800 i justify-around items-center hidden">
         <div className="w-1/2 mx-auto">
           <div className="mb-6">
-            <h1 className="text-white font-extrabold text-4xl tracking-tight font-sans">
+            <h1 className="text-white font-extrabold text-5xl tracking-tight font-sans">
               WeTalk
             </h1>
-            <p className="text-white mt-1 tracking-wide font-bold">
+            <p className="text-white text-lg mt-1 font-bold">
               Elevate Your Communication Experience
             </p>
           </div>
@@ -48,7 +48,7 @@ const LandingPageView = () => {
         <div className="absolute -top-20 -right-20 w-80 h-80 border-4 rounded-full border-opacity-30 border-t-8"></div>
       </div>
       <div className="flex md:w-1/2 justify-center py-10 items-center bg-white">
-        <SignIn />
+        <Outlet />
       </div>
     </div>
   );
