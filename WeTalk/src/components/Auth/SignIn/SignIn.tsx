@@ -6,9 +6,8 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../../../config/firebase-config';
 import { MIN_PASSWORD_LENGTH } from '../../../common/constants';
 import { IAppContext, IAppState } from '../../../common/types';
-import Register from '../Register/Register';
 import SignInView from '../../../views/Auth/SignIn/SignInView';
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 
 const SignIn = () => {
   const [user] = useAuthState(auth);
@@ -16,8 +15,6 @@ const SignIn = () => {
     user: null,
     userData: null,
   });
-
-  const [isRegisterView, setIsRegisterView] = useState(false);
 
   const [form, setForm] = useState({
     email: '',
@@ -43,10 +40,6 @@ const SignIn = () => {
     };
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
-
-  const switchToRegisterView = () => {
-    setIsRegisterView(true);
-  };
 
   const onLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,22 +99,18 @@ const SignIn = () => {
     <>
       <div className="flex flex-col">
         <div className="flex flex-col items-center justify-center">
-          {isRegisterView ? (
-            <Register />
-          ) : (
-            <SignInView
-              isLoading={isLoading}
-              updateForm={updateForm}
-              handleClickShowPassword={handleClickShowPassword}
-              showPassword={showPassword}
-              switchToRegisterView={switchToRegisterView}
-              onLogin={onLogin}
-              email={form.email}
-              password={form.password}
-            />
-          )}
+          <SignInView
+            isLoading={isLoading}
+            updateForm={updateForm}
+            handleClickShowPassword={handleClickShowPassword}
+            showPassword={showPassword}
+            onLogin={onLogin}
+            email={form.email}
+            password={form.password}
+          />
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 };
