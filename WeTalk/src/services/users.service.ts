@@ -32,3 +32,36 @@ export const createUserHandle = (
 export const getUserData = (uid: string) => {
   return get(query(ref(db, 'users'), orderByChild('uid'), equalTo(uid)));
 };
+export const getAllUsers = async () => {
+  try {
+    const userRef = ref(db, `users`);
+    const userSnapshot = await get(userRef);
+
+    if (userSnapshot.exists()) {
+      const usersData = userSnapshot.val();
+      const usersArray = Object.keys(usersData).map((userId) => ({
+        id: userId,
+        ...usersData[userId],
+      }));
+      return usersArray;
+    } else {
+      throw new Error(`Users not found`);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const filteredUsers = async (query: string) => {
+  const users = await getAllUsers() || [];
+  const queryToLowerCase = query.toLowerCase();
+  const filteredUsers = users.filter((user) =>
+  user.phoneNumber.includes(queryToLowerCase) ||
+  user.email.includes(queryToLowerCase) ||
+  user.handle.includes(queryToLowerCase) ||
+  user.firstName.includes(queryToLowerCase) ||
+  user.lastName.includes(queryToLowerCase)
+  
+  );
+  return filteredUsers;
+};
