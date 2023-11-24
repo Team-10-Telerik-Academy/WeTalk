@@ -23,6 +23,8 @@ export const createUserHandle = (
     phoneNumber,
     status: 'active',
     createdOn: Date.now(),
+    teams: [],
+    channels: [],
   };
 
   const userRef = ref(db, `users/${handle}`);
@@ -31,4 +33,23 @@ export const createUserHandle = (
 
 export const getUserData = (uid: string) => {
   return get(query(ref(db, 'users'), orderByChild('uid'), equalTo(uid)));
+};
+
+export const getAllUsers = async () => {
+  try {
+    const userRef = ref(db, `users`);
+    const userSnapshot = await get(userRef);
+
+    if (userSnapshot.exists()) {
+      const usersData = userSnapshot.val();
+      const usersArray = Object.keys(usersData).map((handle) => ({
+        ...usersData[handle],
+      }));
+      return usersArray;
+    } else {
+      throw new Error(`Users not found`);
+    }
+  } catch (error) {
+    console.error(error);
+  }
 };
