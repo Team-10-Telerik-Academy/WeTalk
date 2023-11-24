@@ -57,10 +57,10 @@ export const filteredUsers = async (query: string) => {
   const queryToLowerCase = query.toLowerCase();
   const filteredUsers = users.filter((user) =>
   user.phoneNumber.includes(queryToLowerCase) ||
-  user.email.includes(queryToLowerCase) ||
-  user.handle.includes(queryToLowerCase) ||
-  user.firstName.includes(queryToLowerCase) ||
-  user.lastName.includes(queryToLowerCase)
+  user.email.toLowerCase().includes(queryToLowerCase) ||
+  user.handle.toLowerCase().includes(queryToLowerCase) ||
+  user.firstName.toLowerCase().includes(queryToLowerCase) ||
+  user.lastName.toLowerCase().includes(queryToLowerCase)
   
   );
   return filteredUsers;
