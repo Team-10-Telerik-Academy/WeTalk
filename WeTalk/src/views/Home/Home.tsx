@@ -210,7 +210,7 @@ export default function Home() {
           </nav>
 
           <div className="flex flex-col items-center mt-4 space-y-4">
-            <Profile url={url} />
+            <Profile handle={userData!.handle} />
 
             <a
               className="text-secondary transition-colors duration-200 rotate-180 cursor-pointer dark:text-gray-400 rtl:rotate-0 hover:scale-125 dark:hover:text-blue-400"

@@ -48,7 +48,7 @@ const PictureChange: React.FC<PictureChangeProps> = ({
       const imgRef = ref(imageDb, `Profile pictures/${userData?.handle}`);
 
       uploadBytes(imgRef, selectedFile)
-        .then(async (snapshot) => {
+        .then(async () => {
           const downloadURL = await getDownloadURL(imgRef);
 
           setProfilePictureURL(downloadURL);

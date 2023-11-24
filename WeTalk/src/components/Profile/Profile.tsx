@@ -1,28 +1,46 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import AppContext from "../../context/AuthContext";
 import { IAppContext } from "../../common/types";
+import { getUserByHandle } from "../../services/users.service";
 
 interface ProfileProps {
-  url: string;
+  handle: string;
 }
 
-const Profile: React.FC<ProfileProps> = ({ url }) => {
-  const imgUrl = url;
-  const { userData } = useContext(AppContext) as IAppContext;
+const Profile: React.FC<ProfileProps> = ({ handle }) => {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const snapshot = await getUserByHandle(handle);
+        const data = snapshot.val();
+        console.log("Data received:", data);
+        setUser(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchData();
+  }, [handle]);
 
   return (
     <div className="w-12 h-12 rounded-full">
-      {userData?.imgUrl ? (
+      {user ? (
         <a href="#" className="hover:scale-110">
-          <img src={userData?.imgUrl} alt="profile" className="rounded-full" />
+          {user.imgUrl ? (
+            <img src={user.imgUrl} alt="profile" className="rounded-full" />
+          ) : (
+            <span className="text-primary bg-secondary h-14 w-14 rounded-full font-bold text-xl p-2">
+              {user.firstName[0]}
+              {user.lastName[0]}
+            </span>
+          )}
         </a>
       ) : (
-        <a href="#" className="hover:scale-110">
-          <span className="text-primary bg-secondary h-14 w-14 rounded-full font-bold text-xl p-2">
-            {userData?.firstName[0]}
-            {userData?.lastName[0]}
-          </span>
-        </a>
+        // Handle loading state or show a placeholder
+        <div>Loading...</div>
       )}
     </div>
   );
