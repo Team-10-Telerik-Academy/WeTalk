@@ -30,7 +30,11 @@ const Profile: React.FC<ProfileProps> = ({ handle }) => {
       {user ? (
         <a href="#" className="hover:scale-110">
           {user.imgUrl ? (
-            <img src={user.imgUrl} alt="profile" className="rounded-full" />
+            <img
+              src={user.imgUrl}
+              alt="profile"
+              className="rounded-full h-12 w-12"
+            />
           ) : (
             <span className="text-primary bg-secondary h-14 w-14 rounded-full font-bold text-xl p-2">
               {user.firstName[0]}
