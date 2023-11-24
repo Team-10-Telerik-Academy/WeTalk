@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 
 function ThemeButton() {
-
-    
   const [theme, setTheme] = useState(localStorage.getItem("theme") ?? "light");
 
   const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,7 +20,7 @@ function ThemeButton() {
   }, [theme]);
 
   return (
-    <div>
+    <div className="mt-8">
       <label className="swap swap-rotate">
         <input
           type="checkbox"
@@ -45,7 +43,7 @@ function ThemeButton() {
         {/* moon icon */}
         <svg
           className={`swap-off fill-current w-8 h-8 ${
-            theme === "dark" ? "text-white" : "text-secondary"
+            theme === "dark" ? "text-white" : "text-white"
           }`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"

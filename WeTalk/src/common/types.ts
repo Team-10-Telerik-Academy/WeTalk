@@ -12,6 +12,7 @@ export type IUserData = {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  imgUrl: string;
 };
 
 export interface IAppContext extends IAppState {
