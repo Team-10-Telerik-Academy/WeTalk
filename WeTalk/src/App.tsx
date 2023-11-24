@@ -12,6 +12,8 @@ import AuthenticatedRoute from './hoc/AuthenticatedRoute';
 import { Navigate } from 'react-router-dom';
 import SignIn from './components/Auth/SignIn/SignIn';
 import Register from './components/Auth/Register/Register';
+import Teams from './components/MainSidebar/Teams/Teams';
+import Chats from './components/MainSidebar/Chats/Chats';
 // import AuthenticatedRoute from './hoc/AuthenticatedRoute';
 // import Register from './components/Auth/Register/Register';
 
@@ -54,7 +56,10 @@ const App = () => {
             <Route path="/" element={<Navigate to="/home" />} />
 
             <Route element={<AuthenticatedRoute />}>
-              <Route path="/home" element={<Home />} />
+              <Route path="/home" element={<Home />}>
+                <Route path="/home/teams" element={<Teams />} />
+                <Route path="/home/chats" element={<Chats />} />
+              </Route>
               <Route element={<LandingPageView />}>
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<Register />} />
