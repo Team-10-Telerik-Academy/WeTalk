@@ -12,7 +12,7 @@ export type IUserData = {
   firstName: string;
   lastName: string;
   phoneNumber: string;
-}
+};
 
 export interface IAppContext extends IAppState {
   setContext: Dispatch<SetStateAction<IAppState>>;
@@ -27,8 +27,10 @@ export type ICreateUserHandleParams = {
   email: string;
   status: string;
   createdOn: number;
-}
+  teams: string[];
+  channels: string[];
+};
 
 export type IChildrenProps = {
   children: ReactElement;
-}
+};
