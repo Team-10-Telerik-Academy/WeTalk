@@ -8,11 +8,13 @@ import "react-toastify/dist/ReactToastify.css";
 import AppContext from "../../context/AuthContext";
 import { IAppContext, IAppState } from "../../common/types";
 // import NavigationSidebar from "../../components/NavigationSidebar/NavigationSidebar';
-import MainSidebar from '../../components/MainSidebar/MainSidebar';
-import MainContent from '../../components/MainContent/MainContent";
+import MainSidebar from "../../components/MainSidebar/MainSidebar";
+// import MainContent from '../../components/MainContent/MainContent";
 import Settings from "../../components/Profile/Settings";
 import Profile from "../../components/Profile/Profile";
-import SearchUsers from '../../components/SearchUsers/SearchUsers';
+import SearchUsers from "../../components/SearchUsers/SearchUsers";
+import NavigationSidebarView from "../NavigationSidebar/NavigationSidebarView";
+import MainContent from "../../components/MainContent/MainContent";
 // import ThemeButton from '../../components/ThemeButton/ThemeButton';
 
 export const Home = () => {
@@ -56,12 +58,15 @@ export const Home = () => {
     setIsSidebarOpen((prevIsSidebarOpen) => !prevIsSidebarOpen);
   };
 
-  const isHomePage = location.pathname === '/home';
+  const isHomePage = location.pathname === "/home";
 
   return (
     <>
       <aside className="flex">
-        <NavigationSidebar onLogout={onLogout} toggleSidebar={toggleSidebar} />
+        <NavigationSidebarView
+          onLogout={onLogout}
+          toggleSidebar={toggleSidebar}
+        />
         {!isHomePage && <MainSidebar isSidebarOpen={isSidebarOpen} />}
         <MainContent />
       </aside>
