@@ -1,7 +1,7 @@
-import { ChangeEvent, useRef, useState } from "react";
-import { ref, uploadBytes, getDownloadURL } from "@firebase/storage";
-import { imageDb } from "../../config/firebase-config";
-import { IUserData } from "../../common/types";
+import { ChangeEvent, useRef, useState } from 'react';
+import { ref, uploadBytes, getDownloadURL } from '@firebase/storage';
+import { imageDb } from '../../config/firebase-config';
+import { IUserData } from '../../common/types';
 
 interface PictureChangeProps {
   userData: IUserData;
@@ -35,7 +35,7 @@ const PictureChange: React.FC<PictureChangeProps> = ({
 
   const handleCancel = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
 
     setPreviewImg(null);
@@ -57,7 +57,7 @@ const PictureChange: React.FC<PictureChangeProps> = ({
           setSelectedFile(null);
           setSelectedFileName(null);
         })
-        .catch((error) => console.error("Upload error:", error));
+        .catch((error) => console.error('Upload error:', error));
     }
   };
 
@@ -70,18 +70,18 @@ const PictureChange: React.FC<PictureChangeProps> = ({
             src={previewImg}
             alt="Preview"
             style={{
-              width: "32px",
-              height: "32px",
-              objectFit: "cover",
-              marginRight: "8px",
-              display: "none",
+              width: '32px',
+              height: '32px',
+              objectFit: 'cover',
+              marginRight: '8px',
+              display: 'none',
             }}
           />
         )}
         <input
           type="file"
           accept="image/*"
-          style={{ display: "none" }}
+          style={{ display: 'none' }}
           ref={fileInputRef}
           onChange={handleFileChange}
         />
