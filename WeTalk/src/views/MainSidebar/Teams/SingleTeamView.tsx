@@ -18,6 +18,9 @@ import { IAppContext, ITeam } from '../../../common/types';
 import MembersModal from '../../../components/MainSidebar/Teams/MembersModal';
 import AddMembersModal from '../../../components/MainSidebar/Teams/AddMembersModal';
 
+// import nhAvatar from "../../../assets/images/avatar-NH.jpg";
+// import Profile from "../../../components/Profile/Profile";
+
 type IUser = {
   handle: string;
   firstName: string;

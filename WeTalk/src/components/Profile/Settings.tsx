@@ -1,33 +1,49 @@
-import { useContext, useEffect, useState } from "react";
-import { get, set, ref } from "@firebase/database";
-import { db } from "../../config/firebase-config";
-import AppContext from "../../context/AuthContext";
-import { IAppContext } from "../../common/types";
-import ThemeButton from "../ThemeButton/ThemeButton";
-import PictureChange from "./PictureChange";
+import { useContext, useEffect, useState } from 'react';
+import { get, set, ref } from '@firebase/database';
+import { db } from '../../config/firebase-config';
+import AppContext from '../../context/AuthContext';
+import { IAppContext } from '../../common/types';
+import ThemeButton from '../ThemeButton/ThemeButton';
+import PictureChange from './PictureChange';
+import { Dropdown } from 'flowbite-react';
+import { setUserStatus } from '../../services/users.service';
+import { UserStatus } from '../../common/status-enum';
 
 const Settings = () => {
   const { userData } = useContext(AppContext) as IAppContext;
   const [isEditing, setIsEditing] = useState(false);
   const [editedFirstName, setEditedFirstName] = useState(
-    userData?.firstName || ""
+    userData?.firstName || ''
   );
   const [editedLastName, setEditedLastName] = useState(
-    userData?.lastName || ""
+    userData?.lastName || ''
   );
   const [profilePictureURL, setProfilePictureURL] = useState<string | null>(
     null
   );
 
+  const displayStatus = (status: string, bg: string) => {
+    return (
+      <div className="inline-flex gap-2 items-center text-xs lg:text-sm">
+        <div className={`rounded-full bg-${bg} h-2 w-2`}></div>
+        {status}
+      </div>
+    );
+  };
+
+  const [currentUserStatus, setCurrentUserStatus] = useState(
+    displayStatus('Online', 'success')
+  );
+
   const handleChange = () => {
     setIsEditing(true);
-    setEditedFirstName(userData?.firstName || "");
-    setEditedLastName(userData?.lastName || "");
+    setEditedFirstName(userData?.firstName || '');
+    setEditedLastName(userData?.lastName || '');
   };
 
   const handleSave = () => {
     const userHandle = userData?.handle;
-    const dbRef = ref(db, "users");
+    const dbRef = ref(db, 'users');
 
     get(dbRef).then((snapshot) => {
       if (snapshot.exists()) {
@@ -47,8 +63,8 @@ const Settings = () => {
   const handleCancel = () => {
     setIsEditing(false);
     // Reset the edited names to the current user data
-    setEditedFirstName(userData?.firstName || "");
-    setEditedLastName(userData?.lastName || "");
+    setEditedFirstName(userData?.firstName || '');
+    setEditedLastName(userData?.lastName || '');
   };
 
   useEffect(() => {
@@ -69,13 +85,22 @@ const Settings = () => {
     }
   }, [profilePictureURL, userData]);
 
+  const handleStatusClick = (
+    handle: string,
+    newStatus: string,
+    status: string
+  ) => {
+    setUserStatus(handle, newStatus);
+    setCurrentUserStatus((prevStatus) => (prevStatus = status));
+  };
+
   return (
     <div>
       <button
         className="btn border-none text-secondary"
         onClick={() =>
           (
-            document.getElementById("my_modal_1") as HTMLDialogElement
+            document.getElementById('my_modal_1') as HTMLDialogElement
           )?.showModal()
         }
       >
@@ -165,7 +190,59 @@ const Settings = () => {
           />
 
           {/* Status*/}
-          <div className="m-2">Status</div>
+          <div className="m-2 flex items-center justify-between">
+            Status
+            <button className="w-20 border-2 border-primary text-primary font-bold rounded-md p-2 hover:bg-primary hover:text-secondary">
+              <Dropdown
+                label=""
+                dismissOnClick={false}
+                renderTrigger={() => <span>{currentUserStatus}</span>}
+              >
+                <Dropdown.Item
+                  onClick={() =>
+                    handleStatusClick(
+                      userData?.handle,
+                      UserStatus.ONLINE.toLowerCase(),
+                      displayStatus('Online', 'success')
+                    )
+                  }
+                >
+                  <div className="inline-flex gap-2 justify-between items-center hover:bg-gray-100 text-xs lg:text-sm">
+                    <div className="rounded-full bg-success h-2 w-2"></div>
+                    Online
+                  </div>
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() =>
+                    handleStatusClick(
+                      userData?.handle,
+                      UserStatus.OFFLINE.toLowerCase(),
+                      displayStatus('Offline', 'gray-400')
+                    )
+                  }
+                >
+                  <div className="inline-flex gap-2 justify-between items-center hover:bg-gray-100 text-xs lg:text-sm">
+                    <div className="rounded-full bg-gray-400 h-2 w-2"></div>
+                    Offline
+                  </div>
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() =>
+                    handleStatusClick(
+                      userData?.handle,
+                      UserStatus.BUSY.toLowerCase(),
+                      displayStatus('Busy', 'error')
+                    )
+                  }
+                >
+                  <div className="inline-flex gap-2 justify-between items-center hover:bg-gray-100 text-xs lg:text-sm">
+                    <div className="rounded-full bg-error h-2 w-2"></div>
+                    Busy
+                  </div>
+                </Dropdown.Item>
+              </Dropdown>
+            </button>
+          </div>
           <div className="flex justify-between items-center">
             <ThemeButton />
             <div className="modal-action">

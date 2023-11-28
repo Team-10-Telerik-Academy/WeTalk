@@ -35,3 +35,11 @@ export type ICreateUserHandleParams = {
 export type IChildrenProps = {
   children: ReactElement;
 };
+
+export type ITeam = {
+  teamName: string;
+  members: string[];
+  owner: string;
+  teamId: string;
+  createdOn: number | undefined;
+};
