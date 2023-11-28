@@ -1,46 +1,41 @@
 /* eslint-disable no-undef */
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {},
   },
-  plugins: [require("daisyui")],
+  plugins: [require('daisyui')],
   daisyui: {
     themes: [
       {
         dark: {
+          primary: '#0A2A4C', // blue
 
-          "primary": "#0A2A4C", // blue
+          text: '#FFFFFF',
 
-          "text": "#FFFFFF",
+          secondary: '#FFFFFF', // white
 
-          "secondary": "#FFFFFF", // white
+          accent: '#FFC436', // yellow
 
-          "accent": "#FFC436", // yellow
+          success: '#36d399', // green
 
-          "success": "#36d399", // green
-
-          "error": "#f87272", // red
+          error: '#de3e3e', // red
         },
         light: {
+          primary: '#FFFFFF', // white
 
-          "primary": "#FFFFFF", // white
+          text: '#0A2A4C',
 
-          "text": "#0A2A4C",
+          secondary: '#0A2A4C', // blue
 
-          "secondary": "#0A2A4C", // blue
+          accent: '#FFC436', // yellow
 
-          "accent": "#FFC436", // yellow
+          success: '#36d399', // green
 
-          "success": "#36d399", // green
-
-          "error": "#f87272", // red
+          error: '#de3e3e', // red
         },
       },
     ],
   },
-}
+};
