@@ -1,14 +1,22 @@
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
 import {
+  faChevronRight,
   faChevronDown,
   faPeopleGroup,
   faPenToSquare,
   faEllipsis,
+  faPlus,
+  faUserPlus,
+  faCheck,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown } from 'flowbite-react';
-import { useState } from 'react';
-import nhAvatar from '../../../assets/images/avatar-NH.jpg';
+import { useContext, useState } from 'react';
+import AppContext from '../../../context/AuthContext';
+import { IAppContext, ITeam } from '../../../common/types';
+import MembersModal from '../../../components/MainSidebar/Teams/MembersModal';
+import AddMembersModal from '../../../components/MainSidebar/Teams/AddMembersModal';
 
 type IUser = {
   handle: string;
@@ -17,21 +25,36 @@ type IUser = {
 };
 
 type ISingleTeamViewProps = {
-  teamData: {
-    owner: string;
-    teamName: string;
-    members: string[];
-  };
+  teamData: ITeam;
   onDeleteTeam: (teamName: string, owner: string) => void;
+  onRemoveMember: (
+    teamName: string,
+    owner: string,
+    memberToRemove: string
+  ) => void;
   users: IUser[];
+  onAddMembersToTeam: (teamName: string, members: string[]) => void;
+  onSaveTeamName: (teamData: ITeam, newName: string) => void;
 };
 
 const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   teamData,
   onDeleteTeam,
+  onRemoveMember,
   users,
+  onAddMembersToTeam,
+  onSaveTeamName,
 }) => {
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [isAddMembersModalOpen, setIsAddMembersModalOpen] = useState(false);
+  const [isChannelsVisible, setIsChannelsVisible] = useState(false);
+  const [availableMembersToAdd, setAvailableMembersToAdd] = useState<IUser[]>(
+    []
+  );
+  const [isEditingTeamName, setIsEditingTeamName] = useState(false);
+  const [newTeamName, setNewTeamName] = useState(teamData.teamName);
+
+  const { userData } = useContext(AppContext) as IAppContext;
 
   const openMembersModal = () => {
     setIsMembersModalOpen(true);
@@ -41,112 +64,185 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
     setIsMembersModalOpen(false);
   };
 
+  const openAddMembersModal = () => {
+    setIsAddMembersModalOpen(true);
+
+    const nonMembers = users.filter(
+      (user) => !teamData.members.includes(user.handle)
+    );
+    setAvailableMembersToAdd(nonMembers);
+  };
+
+  const closeAddMembersModal = () => {
+    setIsAddMembersModalOpen(false);
+    setAvailableMembersToAdd([]);
+  };
+
   const handleDeleteTeam = async () => {
     onDeleteTeam(teamData.teamName, teamData.owner);
   };
 
+  const handleToggleChannels = () => {
+    setIsChannelsVisible(!isChannelsVisible);
+  };
+
+  const handleRemoveMember = (selectedMember: string) => {
+    onRemoveMember(teamData.teamName, teamData.owner, selectedMember);
+  };
+
+  const handleAddMembersToTeam = (selectedMember: string[]) => {
+    onAddMembersToTeam(teamData.teamName, selectedMember);
+    closeAddMembersModal();
+  };
+
+  const handleOnSaveTeamName = (newName: string) => {
+    onSaveTeamName(teamData, newName);
+    setIsEditingTeamName(false);
+  };
+
+  const handleEditTeamName = () => {
+    setIsEditingTeamName(!isEditingTeamName);
+  };
+
   return (
     <>
-      <div className="flex items-center justify-center bg-gray-100 p-4 hover:bg-gray-200">
+      <div className="flex items-center justify-center bg-gray-100 py-2 px-4 lg:p-4 mb-2 mt-4 rounded hover:bg-gray-200">
         <div className="flex items-center justify-between w-full">
           <div className="inline-flex w-full items-center gap-2">
             <FontAwesomeIcon
-              icon={faChevronDown}
-              className="text-primary cursor-pointer"
+              icon={isChannelsVisible ? faChevronDown : faChevronRight}
+              className="text-primary cursor-pointer text-xs lg:text-sm"
+              onClick={handleToggleChannels}
             />
-            <p className="inline-flex text-gray-500 tracking-wide">
-              {teamData.teamName}
-            </p>
+            {isEditingTeamName ? (
+              <input
+                type="text"
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                className="inline-flex text-primary tracking-wide w-full focus:outline-none focus:ring focus:border-blue-300 p-2 mr-2 ml-2 rounded text-xs lg:text-sm"
+              />
+            ) : (
+              <p className="inline-flex text-primary tracking-wide font-bold text-xs lg:text-[16px]">
+                {teamData.teamName}
+              </p>
+            )}
           </div>
 
-          <Dropdown
-            label=""
-            placement="right"
-            dismissOnClick={false}
-            renderTrigger={() => (
-              <span>
-                <FontAwesomeIcon
-                  icon={faEllipsis}
-                  className="text-primary cursor-pointer"
-                />
-              </span>
-            )}
-          >
-            <Dropdown.Item onClick={openMembersModal}>
-              <div className="flex gap-1 items-center">
-                <FontAwesomeIcon
-                  icon={faPeopleGroup}
-                  className="text-primary cursor-pointer"
-                />
-                Members ({teamData.members.length})
-              </div>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <div className="flex gap-2 items-center">
-                <FontAwesomeIcon
-                  icon={faPenToSquare}
-                  className="text-primary cursor-pointer"
-                />
-                Edit
-              </div>
-            </Dropdown.Item>
-            <Dropdown.Item onClick={handleDeleteTeam}>
-              <div className="flex gap-2 items-center">
-                <FontAwesomeIcon
-                  icon={faTrashCan}
-                  className="text-primary cursor-pointer"
-                />
-                Delete
-              </div>
-            </Dropdown.Item>
-          </Dropdown>
+          {isEditingTeamName ? (
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={() => handleOnSaveTeamName(newTeamName)}
+                className="inline-flex items-center gap-1 text-primary uppercase hover:underline text-xs"
+              >
+                <FontAwesomeIcon icon={faCheck} />
+                <span className="tracking-tight">Save</span>
+              </button>
+              <button
+                onClick={() => setIsEditingTeamName(false)}
+                className="inline-flex items-center gap-1 text-primary uppercase hover:underline text-xs"
+              >
+                <FontAwesomeIcon icon={faXmark} />
+                <span className="tracking-tight">Cancel</span>
+              </button>
+            </div>
+          ) : (
+            <Dropdown
+              label=""
+              dismissOnClick={false}
+              renderTrigger={() => (
+                <span>
+                  <FontAwesomeIcon
+                    icon={faEllipsis}
+                    className="text-primary cursor-pointer text-xs lg:text-lg"
+                  />
+                </span>
+              )}
+            >
+              <Dropdown.Item onClick={openAddMembersModal}>
+                <div className="flex gap-1 items-center hover:bg-gray-100 text-xs lg:text-sm">
+                  <FontAwesomeIcon
+                    icon={faUserPlus}
+                    className="text-primary cursor-pointer text-xs lg:text-sm"
+                  />
+                  Add members
+                </div>
+              </Dropdown.Item>
+              <Dropdown.Item onClick={openMembersModal}>
+                <div className="flex gap-1 items-center hover:bg-gray-100 text-xs lg:text-sm">
+                  <FontAwesomeIcon
+                    icon={faPeopleGroup}
+                    className="text-primary cursor-pointer text-xs lg:text-sm"
+                  />
+                  Members ({teamData.members.length})
+                </div>
+              </Dropdown.Item>
+              {teamData.owner === userData?.handle && (
+                <>
+                  <Dropdown.Item>
+                    <div className="flex gap-2 items-center hover:bg-gray-100 text-xs lg:text-sm">
+                      <FontAwesomeIcon
+                        icon={faPlus}
+                        className="text-primary cursor-pointer text-xs lg:text-sm"
+                      />
+                      Add channel
+                    </div>
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={handleEditTeamName}>
+                    <div className="flex gap-2 items-center hover:bg-gray-100 text-xs lg:text-sm">
+                      <FontAwesomeIcon
+                        icon={faPenToSquare}
+                        className="text-primary cursor-pointer text-xs lg:text-sm"
+                      />
+                      Edit
+                    </div>
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={handleDeleteTeam}>
+                    <div className="flex gap-2 items-center hover:bg-gray-100 text-xs lg:text-sm">
+                      <FontAwesomeIcon
+                        icon={faTrashCan}
+                        className="text-primary cursor-pointer text-xs lg:text-sm"
+                      />
+                      Delete
+                    </div>
+                  </Dropdown.Item>
+                </>
+              )}
+            </Dropdown>
+          )}
         </div>
       </div>
 
-      {isMembersModalOpen && (
-        <div className="fixed inset-0 z-10 overflow-y-auto bg-black bg-opacity-50">
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="bg-white w-96 p-6 rounded shadow-lg">
-              <div className="flex flex-col items-center justify-center mb-10">
-                <h2 className="text-2xl text-primary font-bold">
-                  {teamData.teamName} Members
-                </h2>
-                <hr className="w-16 border-t-4 border-accent mt-2" />
-              </div>
-              <div className="space-y-2 border-2 p-2 rounded mb-10">
-                {teamData.members.map((member) => (
-                  <div
-                    key={member}
-                    className="flex items-center justify-between bg-gray-100 p-2 hover:bg-gray-200"
-                  >
-                    <div className="flex items-center gap-2">
-                      <img src={nhAvatar} className="rounded-full w-10 h-10" />
-                      {users
-                        .filter((user) => user.handle === member)
-                        .map(
-                          (user) =>
-                            `${user.firstName} ${user.lastName} (${user.handle})`
-                        )}
-                    </div>
-                    <FontAwesomeIcon
-                      icon={faEllipsis}
-                      className="text-primary cursor-pointer pr-2"
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center justify-center">
-                <button
-                  className="bg-accent text-primary font-bold px-4 py-2 rounded hover:bg-primary hover:text-secondary w-full"
-                  onClick={closeMembersModal}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
+      {isChannelsVisible && (
+        <div className="">
+          <div className="px-10 pb-2 text-xs lg:text-[16px]">
+            <p className="text-gray-500  cursor-pointer hover:text-primary hover:underline">
+              #general
+            </p>
+          </div>
+          <div className="px-10 text-xs lg:text-[16px]">
+            <p className="text-gray-500  cursor-pointer hover:text-primary hover:underline">
+              #Announcements
+            </p>
           </div>
         </div>
       )}
+
+      <MembersModal
+        teamData={teamData}
+        users={users}
+        isOpen={isMembersModalOpen}
+        onClose={closeMembersModal}
+        onRemoveMember={handleRemoveMember}
+      />
+
+      <AddMembersModal
+        teamData={teamData}
+        users={users}
+        availableMembersToAdd={availableMembersToAdd}
+        isOpen={isAddMembersModalOpen}
+        onClose={closeAddMembersModal}
+        onAddMembersToTeam={handleAddMembersToTeam}
+      />
     </>
   );
 };
