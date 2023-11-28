@@ -1,50 +1,54 @@
-import { useContext, useEffect, useState } from "react";
-import AppContext from "../../context/AuthContext";
-import { IAppContext } from "../../common/types";
-import { getUserByHandle } from "../../services/users.service";
+import { useEffect, useState } from 'react';
+import { getUserByHandleLive } from '../../services/users.service';
+import Status from './Status';
+import { IUserData } from '../../common/types';
 
 interface ProfileProps {
   handle: string;
 }
 
 const Profile: React.FC<ProfileProps> = ({ handle }) => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<IUserData>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const snapshot = await getUserByHandle(handle);
-        const data = snapshot.val();
-        console.log("Data received:", data);
-        setUser(data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
+    const userCallback = (userData: IUserData) => {
+      setUser(userData);
     };
 
-    fetchData();
+    const unsubscribe = getUserByHandleLive(handle, userCallback);
+
+    return () => {
+      unsubscribe();
+    };
   }, [handle]);
 
   return (
-    <div className="w-12 h-12 rounded-full">
+    <div className="relative w-12 h-12 rounded-full flex items-center justify-center">
       {user ? (
-        <a href="#" className="hover:scale-110">
+        <div className="rounded-full h-12 w-12 flex items-center justify-center">
           {user.imgUrl ? (
-            <img
-              src={user.imgUrl}
-              alt="profile"
-              className="rounded-full h-12 w-12"
-            />
+            <div className="relative">
+              <img
+                src={user.imgUrl}
+                alt="profile"
+                className="rounded-full w-12 h-12 object-cover border border-primary "
+              />
+              <Status status={user.status} />
+            </div>
           ) : (
-            <span className="text-primary bg-secondary h-14 w-14 rounded-full font-bold text-xl p-2">
+            <div className="relative text-primary text-center bg-secondary h-full w-full rounded-full flex items-center justify-center font-bold text-xl border border-primary">
               {user.firstName[0]}
               {user.lastName[0]}
-            </span>
+              <Status status={user.status} />
+            </div>
           )}
-        </a>
+        </div>
       ) : (
-        // Handle loading state or show a placeholder
-        <div>Loading...</div>
+        <div className="w-full h-full flex items-center justify-center bg-secondary rounded-full">
+          <span className="text-primary text-center font-bold text-xl">
+            Loading...
+          </span>
+        </div>
       )}
     </div>
   );
