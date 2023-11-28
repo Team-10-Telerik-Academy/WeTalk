@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom';
-import nhAvatar from '../../assets/images/avatar-NH.jpg';
+// import nhAvatar from '../../assets/images/avatar-NH.jpg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCommentDots,
   faArrowsLeftRightToLine,
 } from '@fortawesome/free-solid-svg-icons';
+import Profile from '../../components/Profile/Profile';
+import AppContext from '../../context/AuthContext';
+import { useContext } from 'react';
+import Settings from '../../components/Profile/Settings';
 
 type NavigationSidebarViewProps = {
   onLogout: () => void;
@@ -15,10 +19,20 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
   onLogout,
   toggleSidebar,
 }) => {
+  const isHomePage = location.pathname === '/home';
+
+  const { userData } = useContext(AppContext);
+
   return (
     <>
-      <div className="flex flex-col items-center w-16 h-screen py-8 bg-primary z-10 dark:bg-gray-900 dark:border-gray-700">
-        <nav className="flex flex-col items-center flex-1 space-y-7 ">
+      <div
+        className={`flex flex-col items-center w-20 ${
+          isHomePage
+            ? 'xl:w-[300px] 2xl:w-[250px]'
+            : 'xl:w-[250px] 2xl:w-[350px]'
+        } px-2 min-h-screen sm:h-full md:min-h-screen lg:min-h-screen py-8 bg-primary`}
+      >
+        <nav className="flex flex-col items-center flex-1 space-y-6">
           <h1 className="font-extrabold text-3xl text-secondary">W</h1>
 
           <div className="flex flex-col text-center items-center justify-center">
@@ -107,37 +121,13 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
           </div>
 
           <div className="flex flex-col text-center items-center justify-center">
-            <a
-              href="#"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
-              title="SETTINGS"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            </a>
+            <Settings />
             <span className="text-gray-300 text-xs tracking-tight">
               Settings
             </span>
           </div>
 
-          <div
+          {/*<div
             className="flex flex-col text-center items-center justify-center"
             onClick={toggleSidebar}
           >
@@ -151,16 +141,17 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
             <span className="text-gray-300 text-xs tracking-tight">
               Toggle Sidebar
             </span>
-          </div>
+          </div>*/}
         </nav>
 
-        <div className="flex flex-col items-center mt-4 space-y-4">
+        <div className="flex flex-col items-center mt-12 space-y-4">
           <a href="#" className="hover:scale-110">
-            <img
+            {/*<img
               className="object-cover w-10 h-10 rounded-full"
               src={nhAvatar}
               alt="avatar"
-            />
+            />*/}
+            <Profile handle={userData?.handle} />
           </a>
 
           <a
