@@ -12,7 +12,8 @@ export type IUserData = {
   firstName: string;
   lastName: string;
   phoneNumber: string;
-}
+  imgUrl: string;
+};
 
 export interface IAppContext extends IAppState {
   setContext: Dispatch<SetStateAction<IAppState>>;
@@ -27,8 +28,18 @@ export type ICreateUserHandleParams = {
   email: string;
   status: string;
   createdOn: number;
-}
+  teams: string[];
+  channels: string[];
+};
 
 export type IChildrenProps = {
   children: ReactElement;
-}
+};
+
+export type ITeam = {
+  teamName: string;
+  members: string[];
+  owner: string;
+  teamId: string;
+  createdOn: number | undefined;
+};

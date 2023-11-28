@@ -9,8 +9,10 @@ export default {
   daisyui: {
     themes: [
       {
-        light: {
+        dark: {
           primary: '#0A2A4C', // blue
+
+          text: '#FFFFFF',
 
           secondary: '#FFFFFF', // white
 
@@ -18,18 +20,20 @@ export default {
 
           success: '#36d399', // green
 
-          error: '#f87272', // red
+          error: '#de3e3e', // red
         },
-        dark: {
-          primary: '#FFFFFF', // blue
+        light: {
+          primary: '#FFFFFF', // white
 
-          secondary: '#0A2A4C', // white
+          text: '#0A2A4C',
+
+          secondary: '#0A2A4C', // blue
 
           accent: '#FFC436', // yellow
 
           success: '#36d399', // green
 
-          error: '#f87272', // red
+          error: '#de3e3e', // red
         },
       },
     ],
