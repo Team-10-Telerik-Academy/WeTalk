@@ -1,18 +1,18 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { logoutUser } from "../../services/auth.service";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../config/firebase-config";
-import { useContext, useState } from "react";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import AppContext from "../../context/AuthContext";
-import { IAppContext, IAppState } from "../../common/types";
-// import NavigationSidebar from "../../components/NavigationSidebar/NavigationSidebar';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { logoutUser } from '../../services/auth.service';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '../../config/firebase-config';
+import { useContext, useState } from 'react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import AppContext from '../../context/AuthContext';
+import { IAppContext, IAppState } from '../../common/types';
+import NavigationSidebar from '../../components/NavigationSidebar/NavigationSidebar';
 import MainSidebar from '../../components/MainSidebar/MainSidebar';
-import MainContent from '../../components/MainContent/MainContent";
-import Settings from "../../components/Profile/Settings";
-import Profile from "../../components/Profile/Profile";
-import SearchUsers from '../../components/SearchUsers/SearchUsers';
+import MainContent from '../../components/MainContent/MainContent';
+// import Settings from "../../components/Profile/Settings";
+// import Profile from "../../components/Profile/Profile";
+// import SearchUsers from '../../components/SearchUsers/SearchUsers';
 // import ThemeButton from '../../components/ThemeButton/ThemeButton';
 
 export const Home = () => {
@@ -24,7 +24,7 @@ export const Home = () => {
 
   const { userData } = useContext(AppContext) as IAppContext;
 
-  const url = userData?.imgUrl;
+  // const url = userData?.imgUrl;
 
   if (appState.user !== user) {
     setAppState({ user, userData });
@@ -34,17 +34,17 @@ export const Home = () => {
   const location = useLocation();
 
   const onLogout = () => {
-    logoutUser().then(() => {
+    logoutUser(userData?.handle).then(() => {
       setAppState({
         user: null,
         userData: null,
       });
-      navigate("/");
+      navigate('/');
       toast.success(
         `See you soon, ${userData?.firstName} ${userData?.lastName}`,
         {
           autoClose: 3000,
-          className: "font-bold",
+          className: 'font-bold',
         }
       );
     });
@@ -63,7 +63,9 @@ export const Home = () => {
       <aside className="flex">
         <NavigationSidebar onLogout={onLogout} toggleSidebar={toggleSidebar} />
         {!isHomePage && <MainSidebar isSidebarOpen={isSidebarOpen} />}
-        <MainContent />
+        <div className="hidden xl:block">
+          <MainContent isSidebarOpen={isSidebarOpen} />
+        </div>
       </aside>
     </>
   );
