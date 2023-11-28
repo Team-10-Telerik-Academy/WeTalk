@@ -6,6 +6,11 @@ import {
   faArrowsLeftRightToLine,
 } from '@fortawesome/free-solid-svg-icons';
 import Profile from '../../components/Profile/Profile';
+import { IAppContext } from '../../common/types';
+import AppContext from '../../context/AuthContext';
+import { useContext } from 'react';
+import Settings from '../../components/Profile/Settings';
+import Profile from '../../components/Profile/Profile';
 import AppContext from '../../context/AuthContext';
 import { useContext } from 'react';
 import Settings from '../../components/Profile/Settings';
@@ -23,6 +28,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
 
   const { userData } = useContext(AppContext);
 
+  const { userData } = useContext(AppContext) as IAppContext;
   return (
     <>
       <div
@@ -121,6 +127,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
           </div>
 
           <div className="flex flex-col text-center items-center justify-center">
+            <Settings />
             <Settings />
             <span className="text-gray-300 text-xs tracking-tight">
               Settings

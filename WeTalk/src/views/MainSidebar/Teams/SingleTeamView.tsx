@@ -1,14 +1,15 @@
-import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
+import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import {
   faChevronDown,
   faPeopleGroup,
   faPenToSquare,
   faEllipsis,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Dropdown } from 'flowbite-react';
-import { useState } from 'react';
-import nhAvatar from '../../../assets/images/avatar-NH.jpg';
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Dropdown } from "flowbite-react";
+import { useState } from "react";
+import nhAvatar from "../../../assets/images/avatar-NH.jpg";
+import Profile from "../../../components/Profile/Profile";
 
 type IUser = {
   handle: string;
@@ -119,8 +120,8 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
                     key={member}
                     className="flex items-center justify-between bg-gray-100 p-2 hover:bg-gray-200"
                   >
-                    <div className="flex items-center gap-2">
-                      <img src={nhAvatar} className="rounded-full w-10 h-10" />
+                    <div className="flex items-center gap-2 justify-center">
+                      <Profile handle={member} />
                       {users
                         .filter((user) => user.handle === member)
                         .map(
