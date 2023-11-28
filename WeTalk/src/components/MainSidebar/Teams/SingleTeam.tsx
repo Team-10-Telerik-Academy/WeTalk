@@ -2,38 +2,39 @@ import { useState, useEffect } from 'react';
 import { getTeamByTeamName } from '../../../services/teams.service';
 import SingleTeamView from '../../../views/MainSidebar/Teams/SingleTeamView';
 import { getAllUsers } from '../../../services/users.service';
+import { ITeam, IUserData } from '../../../common/types';
 
 type ISingleTeamProps = {
   teamName: string;
   onDeleteTeam: (teamName: string, owner: string) => void;
+  onRemoveMember: (
+    teamName: string,
+    owner: string,
+    memberToRemove: string
+  ) => void;
+  onAddMembersToTeam: (teamName: string, members: string[]) => void;
+  onSaveTeamName: (teamData: ITeam, newName: string) => void;
 };
 
-type ITeamData = {
-  owner: string;
-  teamName: string;
-  members: string[];
-};
-
-type IUser = {
-  handle: string;
-  firstName: string;
-  lastName: string;
-};
-
-const SingleTeam: React.FC<ISingleTeamProps> = ({ teamName, onDeleteTeam }) => {
-  const [teamData, setTeamData] = useState<ITeamData | null>(null);
-  const [users, setUsers] = useState<IUser[]>([]);
+const SingleTeam: React.FC<ISingleTeamProps> = ({
+  teamName,
+  onDeleteTeam,
+  onRemoveMember,
+  onAddMembersToTeam,
+  onSaveTeamName,
+}) => {
+  const [teamData, setTeamData] = useState<ITeam | null>(null);
+  const [users, setUsers] = useState<IUserData[]>([]);
 
   useEffect(() => {
-    const fetchTeamData = async () => {
+    const fetchTeamData = () => {
       try {
-        const teamSnapshot = await getTeamByTeamName(teamName);
-        if (teamSnapshot.exists()) {
-          const teamData = teamSnapshot.val();
-          setTeamData(teamData);
-        } else {
-          console.error(`Team ${teamName} does not exist!`);
-        }
+        getTeamByTeamName(teamName, (teamSnapshot) => {
+          if (teamSnapshot && teamSnapshot.exists()) {
+            const teamData = teamSnapshot.val();
+            setTeamData(teamData);
+          }
+        });
       } catch (error) {
         console.error('Error fetching team data:', error);
       }
@@ -43,17 +44,20 @@ const SingleTeam: React.FC<ISingleTeamProps> = ({ teamName, onDeleteTeam }) => {
   }, [teamName]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersData = await getAllUsers();
-        setUsers(usersData as IUser[]);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
+    try {
+      const usersCallback = (usersData: IUserData[]) => {
+        setUsers(usersData);
+      };
 
-    fetchUsers();
-  }, []);
+      const unsubscribe = getAllUsers(usersCallback);
+
+      return () => {
+        unsubscribe();
+      };
+    } catch (error) {
+      console.log('Error fetching users', error);
+    }
+  }, [users]);
 
   if (!teamData) {
     return <div>Loading...</div>;
@@ -64,7 +68,10 @@ const SingleTeam: React.FC<ISingleTeamProps> = ({ teamName, onDeleteTeam }) => {
       <SingleTeamView
         teamData={teamData}
         onDeleteTeam={onDeleteTeam}
+        onRemoveMember={onRemoveMember}
         users={users}
+        onAddMembersToTeam={onAddMembersToTeam}
+        onSaveTeamName={onSaveTeamName}
       />
     </>
   );
