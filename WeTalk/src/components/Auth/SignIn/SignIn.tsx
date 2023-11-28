@@ -69,7 +69,7 @@ const SignIn = () => {
     setIsLoading(true);
 
     setTimeout(() => {
-      loginUser(form.email, form.password)
+      loginUser(form.email, form.password, userData?.handle)
         .then((credential) => {
           setContext({
             user: credential.user,
