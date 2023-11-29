@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import CreateNewChat from "../../../components/CreateChat/CreateChat";
-import { getAllChats, onChatUpdate } from "../../../services/chat.service";
-import { IAppContext } from "../../../common/types";
-import AppContext from "../../../context/AuthContext";
-import { useContext } from "react";
-import { Link } from "react-router-dom";
-import Profile from "../../../components/Profile/Profile";
+import { useEffect, useState } from 'react';
+import CreateNewChat from '../../../components/CreateChat/CreateChat';
+import { getAllChats, onChatUpdate } from '../../../services/chat.service';
+import { IAppContext } from '../../../common/types';
+import AppContext from '../../../context/AuthContext';
+import { useContext } from 'react';
+import { Link } from 'react-router-dom';
+import Profile from '../../../components/Profile/Profile';
 
 type IChatData = {
   chatId: string;
@@ -23,6 +23,7 @@ const ChatsView = () => {
       try {
         const chatData = await getAllChats();
         setChats(chatData);
+        console.log(chatData);
       } catch (error) {
         console.error(error);
       }
@@ -40,7 +41,7 @@ const ChatsView = () => {
   }, [userData]);
 
   const userChats = chats.filter((chat) =>
-    chat.members.includes(userData?.handle || "")
+    chat.members.includes(userData?.handle || '')
   );
 
   return (

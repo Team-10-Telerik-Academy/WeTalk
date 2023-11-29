@@ -1,9 +1,9 @@
-import { useContext, useEffect, useState, useRef } from "react";
-import AppContext from "../../context/AuthContext";
-import InputField from "./InputField";
-import { IAppContext } from "../../common/types";
-import Profile from "../Profile/Profile";
-import { onChatUpdate } from "../../services/chat.service";
+import { useContext, useEffect, useState, useRef } from 'react';
+import AppContext from '../../context/AuthContext';
+import InputField from './InputField';
+import { IAppContext } from '../../common/types';
+import Profile from '../Profile/Profile';
+import { onChatUpdate } from '../../services/chat.service';
 
 type MessageType = {
   sender: string;
@@ -24,7 +24,7 @@ type SingleChatProps = {
 const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
   const { userData } = useContext(AppContext) as IAppContext;
   const [chat, setChat] = useState<ChatType | null>({
-    chatName: "",
+    chatName: '',
     members: [],
     messages: {},
   });
@@ -38,13 +38,14 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
         setChat(chatData);
       },
       (messagesData: Record<string, MessageType>) => {
-        console.log("Messages updated:", messagesData);
+        console.log('Messages updated:', messagesData);
         setChat((prevChat) => ({
           ...prevChat!,
           messages: messagesData,
         }));
       }
     );
+    console.log(onChatUpdate);
 
     return () => {
       unsubscribe();
@@ -56,6 +57,7 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
+    console.log(chatContainerRef.current);
   }, [chat?.messages]);
 
   return (
@@ -80,8 +82,8 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
         ref={chatContainerRef}
         className="flex-grow overflow-y-auto"
         style={{
-          marginBottom: "2rem",
-          overflowY: "scroll",
+          marginBottom: '2rem',
+          overflowY: 'scroll',
         }}
       >
         <style>
@@ -127,7 +129,7 @@ const renderMessages = (
     <div
       key={message.timestamp}
       className={`pl-2 chat w-full ${
-        message.sender === userHandle ? "chat-end pr-2" : "chat-start"
+        message.sender === userHandle ? 'chat-end pr-2' : 'chat-start'
       }`}
     >
       <div className="chat-image avatar">

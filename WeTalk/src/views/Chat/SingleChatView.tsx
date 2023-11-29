@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getChatMessages } from "../../services/chat.service";
-import SingleChat from "../../components/SingleChat/SingleChat";
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getChatMessages } from '../../services/chat.service';
+import SingleChat from '../../components/SingleChat/SingleChat';
 
 const SingleChatView = () => {
   const { chatId } = useParams();
@@ -13,8 +13,9 @@ const SingleChatView = () => {
         if (chatId) {
           const chatMessages = await getChatMessages(chatId);
           setMessages(chatMessages);
+          console.log(chatMessages);
         } else {
-          console.error("Chat ID is not available.");
+          console.error('Chat ID is not available.');
         }
       } catch (error) {
         console.error(error);

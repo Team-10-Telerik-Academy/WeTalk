@@ -1,10 +1,7 @@
-import { useEffect, useState } from "react";
-import {
-  getUserByHandle,
-  getUserByHandleLive,
-} from "../../services/users.service";
-import Status from "./Status";
-import { IUserData } from "../../common/types";
+import { useEffect, useState } from 'react';
+import { getUserByHandleLive } from '../../services/users.service';
+import Status from './Status';
+import { IUserData } from '../../common/types';
 
 interface ProfileProps {
   handle: string;
@@ -20,23 +17,12 @@ const Profile: React.FC<ProfileProps> = ({ handle }) => {
   const [user, setUser] = useState<IUserData | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const snapshot = await getUserByHandle(handle);
-        const data = snapshot.val();
-        setUser(data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
     const userCallback = (userData: IUserData) => {
       setUser(userData);
+      console.log('user data live:', userData);
     };
 
     const unsubscribe = getUserByHandleLive(handle, userCallback);
-
-    fetchData();
 
     return () => {
       unsubscribe();

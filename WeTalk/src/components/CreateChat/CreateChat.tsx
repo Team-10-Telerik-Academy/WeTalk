@@ -1,24 +1,25 @@
-import { useContext, useEffect, useState } from "react";
-import { getAllUsers } from "../../services/users.service";
-import { IAppContext, IUserData } from "../../common/types";
-import AppContext from "../../context/AuthContext";
-import { CreateChat } from "../../services/chat.service";
-import { v4 } from "uuid";
+import { useContext, useEffect, useState } from 'react';
+import { getAllUsers } from '../../services/users.service';
+import { IAppContext, IUserData } from '../../common/types';
+import AppContext from '../../context/AuthContext';
+import { CreateChat } from '../../services/chat.service';
+import { v4 } from 'uuid';
 
 const CreateNewChat = () => {
   const [users, setUsers] = useState<IUserData[]>([]);
   const { userData } = useContext(AppContext) as IAppContext;
   const [members, setMembers] = useState<string[]>([]);
-  const [chatName, setChatName] = useState<string>("");
+  const [chatName, setChatName] = useState<string>('');
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         getAllUsers((usersData) => {
           setUsers(usersData);
+          console.log(usersData);
         });
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error('Error fetching users:', error);
       }
     };
 
@@ -44,13 +45,13 @@ const CreateNewChat = () => {
         if (updatedMembers.length > 0) {
           CreateChat(chatName, updatedMembers, v4());
         } else {
-          console.error("At least two members are required.");
+          console.error('At least two members are required.');
         }
       } else {
-        console.error("User handle is not available.");
+        console.error('User handle is not available.');
       }
     } else {
-      console.error("Chat name is required.");
+      console.error('Chat name is required.');
     }
   };
 
@@ -60,7 +61,7 @@ const CreateNewChat = () => {
 
   const handleCancel = () => {
     setMembers([]);
-    setChatName("");
+    setChatName('');
   };
 
   return (
@@ -69,7 +70,7 @@ const CreateNewChat = () => {
         className="btn"
         onClick={() =>
           (
-            document.getElementById("Create_Chat_Modal") as HTMLDialogElement
+            document.getElementById('Create_Chat_Modal') as HTMLDialogElement
           )?.showModal()
         }
       >

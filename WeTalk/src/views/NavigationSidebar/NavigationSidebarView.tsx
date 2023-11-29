@@ -1,16 +1,14 @@
-import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCommentDots,
   faArrowsLeftRightToLine,
-} from "@fortawesome/free-solid-svg-icons";
-import { IAppContext } from "../../common/types";
+} from '@fortawesome/free-solid-svg-icons';
 import { IAppContext } from '../../common/types';
 import Profile from '../../components/Profile/Profile';
 import AppContext from '../../context/AuthContext';
 import { useContext } from 'react';
 import Settings from '../../components/Profile/Settings';
-
 
 type NavigationSidebarViewProps = {
   onLogout: () => void;
@@ -21,9 +19,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
   onLogout,
   toggleSidebar,
 }) => {
-  const isHomePage = location.pathname === "/home";
-
-
+  const isHomePage = location.pathname === '/home';
 
   const { userData } = useContext(AppContext) as IAppContext;
   return (

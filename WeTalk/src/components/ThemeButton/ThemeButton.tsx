@@ -1,22 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 function ThemeButton() {
-  const [theme, setTheme] = useState(localStorage.getItem("theme") ?? "light");
+  const [theme, setTheme] = useState(localStorage.getItem('theme') ?? 'light');
 
   const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setTheme("dark");
+      setTheme('dark');
     } else {
-      setTheme("light");
+      setTheme('light');
     }
   };
 
   useEffect(() => {
-    localStorage.setItem("theme", theme);
-    const localTheme = localStorage.getItem("theme");
+    localStorage.setItem('theme', theme);
+    const localTheme = localStorage.getItem('theme');
+    console.log(localTheme);
     document
-      .querySelector("html")
-      ?.setAttribute("data-theme", localTheme || "");
+      .querySelector('html')
+      ?.setAttribute('data-theme', localTheme || '');
   }, [theme]);
 
   return (
@@ -26,13 +27,13 @@ function ThemeButton() {
           type="checkbox"
           className="theme-controller"
           onChange={handleToggle}
-          checked={theme === "dark"}
+          checked={theme === 'dark'}
         />
 
         {/* sun icon */}
         <svg
           className={`swap-on fill-current w-8 h-8 ${
-            theme === "dark" ? "text-black" : "text-black"
+            theme === 'dark' ? 'text-black' : 'text-black'
           }`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -43,7 +44,7 @@ function ThemeButton() {
         {/* moon icon */}
         <svg
           className={`swap-off fill-current w-8 h-8 ${
-            theme === "dark" ? "text-white" : "text-white"
+            theme === 'dark' ? 'text-white' : 'text-white'
           }`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
