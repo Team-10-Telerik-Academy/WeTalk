@@ -69,6 +69,8 @@ const Settings = () => {
 
   useEffect(() => {
     const userHandle = userData?.handle;
+    console.log(userHandle);
+    console.log(profilePictureURL);
 
     if (userHandle && profilePictureURL !== null) {
       const dbRef = ref(db, `users/${userHandle}`);

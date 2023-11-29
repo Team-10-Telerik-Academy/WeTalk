@@ -29,6 +29,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
     try {
       const usersCallback = (usersData: IUserData[]) => {
         setUsers(usersData);
+        console.log(usersData);
       };
 
       const unsubscribe = getAllUsers(usersCallback);

@@ -47,6 +47,7 @@ const SingleTeam: React.FC<ISingleTeamProps> = ({
     try {
       const usersCallback = (usersData: IUserData[]) => {
         setUsers(usersData);
+        console.log(usersData);
       };
 
       const unsubscribe = getAllUsers(usersCallback);

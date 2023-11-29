@@ -4,11 +4,13 @@ import {
   faCommentDots,
   faArrowsLeftRightToLine,
 } from "@fortawesome/free-solid-svg-icons";
-import Profile from "../../components/Profile/Profile";
 import { IAppContext } from "../../common/types";
-import AppContext from "../../context/AuthContext";
-import { useContext } from "react";
-import Settings from "../../components/Profile/Settings";
+import { IAppContext } from '../../common/types';
+import Profile from '../../components/Profile/Profile';
+import AppContext from '../../context/AuthContext';
+import { useContext } from 'react';
+import Settings from '../../components/Profile/Settings';
+
 
 type NavigationSidebarViewProps = {
   onLogout: () => void;
@@ -21,7 +23,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
 }) => {
   const isHomePage = location.pathname === "/home";
 
-  // const { userData } = useContext(AppContext);
+
 
   const { userData } = useContext(AppContext) as IAppContext;
   return (

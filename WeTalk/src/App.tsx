@@ -20,7 +20,7 @@ import MainContent from "./components/MainContent/MainContent";
 // import AuthenticatedRoute from './hoc/AuthenticatedRoute';
 // import Register from './components/Auth/Register/Register';
 
-const App = () => {
+const App: React.FC = () => {
   const [user, loading] = useAuthState(auth);
   const [appState, setAppState] = useState<IAppState>({
     user,
