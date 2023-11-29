@@ -19,11 +19,26 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
   onLogout,
   toggleSidebar,
 }) => {
+  const isHomePage = location.pathname === "/home";
+
+  // const { userData } = useContext(AppContext);
+
   const { userData } = useContext(AppContext) as IAppContext;
   return (
     <>
-      <div className="flex flex-col items-center w-16 h-screen py-8 bg-primary z-10">
-        <nav className="flex flex-col items-center flex-1 space-y-7 ">
+      {/* Review this 
+      ${
+          isHomePage
+            ? "xl:w-[300px] 2xl:w-[250px]"
+            : "xl:w-[250px] 2xl:w-[350px]"
+        }  */}
+      <div
+        className={`flex flex-col items-center w-20 
+        
+        
+        px-2 min-h-screen sm:h-full md:min-h-screen lg:min-h-screen py-8 bg-primary`}
+      >
+        <nav className="flex flex-col items-center flex-1 space-y-6">
           <h1 className="font-extrabold text-3xl text-secondary">W</h1>
 
           <div className="flex flex-col text-center items-center justify-center">
@@ -118,7 +133,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
             </span>
           </div>
 
-          <div
+          {/*<div
             className="flex flex-col text-center items-center justify-center"
             onClick={toggleSidebar}
           >
@@ -132,11 +147,18 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
             <span className="text-gray-300 text-xs tracking-tight">
               Toggle Sidebar
             </span>
-          </div>
+          </div>*/}
         </nav>
 
-        <div className="flex flex-col items-center mt-4 space-y-4">
-          <Profile handle={userData?.handle!} />
+        <div className="flex flex-col items-center mt-12 space-y-4">
+          <a href="#" className="hover:scale-110">
+            {/*<img
+              className="object-cover w-10 h-10 rounded-full"
+              src={nhAvatar}
+              alt="avatar"
+            />*/}
+            <Profile handle={userData?.handle!} />
+          </a>
 
           <a
             className="text-secondary transition-colors duration-200 rotate-180 cursor-pointer rtl:rotate-0 hover:scale-125"

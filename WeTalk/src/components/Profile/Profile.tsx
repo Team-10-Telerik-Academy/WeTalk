@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
-import { getUserByHandle } from "../../services/users.service";
+import {
+  getUserByHandle,
+  getUserByHandleLive,
+} from "../../services/users.service";
 import Status from "./Status";
+import { IUserData } from "../../common/types";
 
 interface ProfileProps {
   handle: string;
+  status: string;
+}
+
+interface ProfileProps {
+  handle: string;
+  status: string;
 }
 
 const Profile: React.FC<ProfileProps> = ({ handle }) => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<IUserData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,27 +30,37 @@ const Profile: React.FC<ProfileProps> = ({ handle }) => {
       }
     };
 
+    const userCallback = (userData: IUserData) => {
+      setUser(userData);
+    };
+
+    const unsubscribe = getUserByHandleLive(handle, userCallback);
+
     fetchData();
+
+    return () => {
+      unsubscribe();
+    };
   }, [handle]);
 
   return (
-    <div className="relative w-14 h-14 rounded-full overflow-hidden ml-2 mb-2">
+    <div className="relative w-12 h-12 rounded-full flex items-center justify-center">
       {user ? (
-        <div className="rounded-full border h-12 w-12">
+        <div className="rounded-full h-12 w-12 flex items-center justify-center">
           {user.imgUrl ? (
             <div className="relative">
               <img
                 src={user.imgUrl}
                 alt="profile"
-                className="rounded-full w-full h-full object-cover"
+                className="rounded-full w-12 h-12 object-cover border border-primary "
               />
-              <Status status={user.status.value} />
+              <Status status={user.status!} />
             </div>
           ) : (
-            <div className="relative text-primary text-center bg-secondary h-full w-full rounded-full flex items-center justify-center font-bold text-xl">
+            <div className="relative text-primary text-center bg-secondary h-full w-full rounded-full flex items-center justify-center font-bold text-xl border border-primary">
               {user.firstName[0]}
               {user.lastName[0]}
-              <Status status={user.status.value} />
+              <Status status={user.status!} />
             </div>
           )}
         </div>

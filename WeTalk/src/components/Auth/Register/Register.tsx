@@ -133,10 +133,13 @@ const Register = () => {
     }
 
     if (form.password.length < MIN_PASSWORD_LENGTH) {
-      toast.warning('Password must be at least 6 characters long!', {
-        autoClose: 3000,
-        className: 'font-bold',
-      });
+      toast.warning(
+        `Password must be at least ${MIN_PASSWORD_LENGTH} characters long!`,
+        {
+          autoClose: 3000,
+          className: 'font-bold',
+        }
+      );
       return;
     }
 
@@ -184,6 +187,7 @@ const Register = () => {
                 handle: form.handle,
                 email: form.email,
                 phoneNumber: form.phoneNumber,
+                imgUrl: '',
               },
             });
           });

@@ -28,7 +28,7 @@ export const Home = () => {
 
   const { userData } = useContext(AppContext) as IAppContext;
 
-  const url = userData?.imgUrl;
+  // const url = userData?.imgUrl;
 
   if (appState.user !== user) {
     setAppState({ user, userData });
@@ -38,17 +38,17 @@ export const Home = () => {
   const location = useLocation();
 
   const onLogout = () => {
-    logoutUser().then(() => {
+    logoutUser(userData?.handle).then(() => {
       setAppState({
         user: null,
         userData: null,
       });
-      navigate("/");
+      navigate('/');
       toast.success(
         `See you soon, ${userData?.firstName} ${userData?.lastName}`,
         {
           autoClose: 3000,
-          className: "font-bold",
+          className: 'font-bold',
         }
       );
     });
@@ -60,7 +60,7 @@ export const Home = () => {
     setIsSidebarOpen((prevIsSidebarOpen) => !prevIsSidebarOpen);
   };
 
-  const isHomePage = location.pathname === "/home";
+  const isHomePage = location.pathname === '/home';
 
   // const isChatsPage = location.pathname === "/home/chats/chat";
 
