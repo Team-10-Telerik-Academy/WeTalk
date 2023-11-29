@@ -44,8 +44,8 @@ const Profile: React.FC<ProfileProps> = ({ handle }) => {
             </div>
           ) : (
             <div className="relative text-primary text-center bg-secondary h-full w-full rounded-full flex items-center justify-center font-bold text-xl border border-primary">
-              {user.firstName[0]}
-              {user.lastName[0]}
+              {user?.firstName[0]}
+              {user?.lastName[0]}
               <Status status={user.status!} />
             </div>
           )}

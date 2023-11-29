@@ -18,6 +18,7 @@ export const SendMessage = async (
 ) => {
   const messageIdRef = push(ref(db, `chats/${chatId}/messages`));
 
+<<<<<<< HEAD
   const messageId = messageIdRef.key;
 
   await set(ref(db, `chats/${chatId}/messages/${messageId}`), {
@@ -44,6 +45,25 @@ export const getChatMessages = async (
     } else {
       console.warn('No messages found for chat:', chatId);
       return [];
+=======
+  export const getChatMessages = async (chatId: string): Promise<MessageType[]> => {
+    try {
+      const dbRef = ref(db, `chat/${chatId}/messages`);
+      const snapshot = await get(dbRef);
+  
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const messagesArray = Object.keys(data || {}).map((key) => data[key]);
+  
+        return messagesArray;
+      } else {
+        console.warn("No messages found for chat:", chatId);
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      throw error;
+>>>>>>> 1aee6fa5b18e113957666448c3f991d44e70baff
     }
   } catch (error) {
     console.error('Error fetching chat messages:', error);
@@ -51,6 +71,7 @@ export const getChatMessages = async (
   }
 };
 
+<<<<<<< HEAD
 export const CreateChat = async (
   chatName: string,
   members: string[],
@@ -63,6 +84,31 @@ export const CreateChat = async (
       members: [...members],
       createdOn: Date.now(),
       messages: [],
+=======
+  export const CreateChat = async (
+    chatName: string,
+    members: string[],
+    chatId: string
+  ) => {
+    try {
+        await set(ref(db, `chats/${chatId}`), {
+          chatName,
+          chatId,
+          members: [...members],
+          createdOn: Date.now(),
+          messages: [],
+        });
+      } catch (error) {
+        console.error('Error creating chat:', error);
+      }
+  
+    members.forEach(async (userHandle) => {
+      await set(ref(db, `users/${userHandle}/chats`), {
+        chats: {
+          [chatId]: true,
+        },
+      });
+>>>>>>> 1aee6fa5b18e113957666448c3f991d44e70baff
     });
   } catch (error) {
     console.error('Error creating chat:', error);

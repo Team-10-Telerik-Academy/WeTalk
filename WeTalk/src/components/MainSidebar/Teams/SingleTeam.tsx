@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { getTeamByTeamName } from '../../../services/teams.service';
-import SingleTeamView from '../../../views/MainSidebar/Teams/SingleTeamView';
-import { getAllUsers } from '../../../services/users.service';
-import { ITeam, IUserData } from '../../../common/types';
+import { useState, useEffect } from "react";
+import { getTeamByTeamName } from "../../../services/teams.service";
+import SingleTeamView from "../../../views/MainSidebar/Teams/SingleTeamView";
+import { getAllUsers } from "../../../services/users.service";
+import { ITeam, IUserData } from "../../../common/types";
 
 type ISingleTeamProps = {
   teamName: string;
@@ -36,7 +36,7 @@ const SingleTeam: React.FC<ISingleTeamProps> = ({
           }
         });
       } catch (error) {
-        console.error('Error fetching team data:', error);
+        console.error("Error fetching team data:", error);
       }
     };
 
@@ -56,7 +56,7 @@ const SingleTeam: React.FC<ISingleTeamProps> = ({
         unsubscribe();
       };
     } catch (error) {
-      console.log('Error fetching users', error);
+      console.log("Error fetching users", error);
     }
   }, []);
 
