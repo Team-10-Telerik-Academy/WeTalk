@@ -38,7 +38,7 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
         setChat(chatData);
       },
       (messagesData: Record<string, MessageType>) => {
-        console.log("Messages updated:", messagesData);
+        // console.log("Messages updated:", messagesData);
         setChat((prevChat) => ({
           ...prevChat!,
           messages: messagesData,

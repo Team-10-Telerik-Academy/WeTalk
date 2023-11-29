@@ -1,15 +1,15 @@
-import { useState, useEffect, useContext } from 'react';
-import { getAllUsers } from '../../../services/users.service';
-import AppContext from '../../../context/AuthContext';
-import { faPlus, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IAppContext, ITeam, IUserData } from '../../../common/types';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect, useContext } from "react";
+import { getAllUsers } from "../../../services/users.service";
+import AppContext from "../../../context/AuthContext";
+import { faPlus, faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IAppContext, ITeam, IUserData } from "../../../common/types";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   MAX_TEAM_NAME_LENGTH,
   MIN_TEAM_NAME_LENGTH,
-} from '../../../common/constants';
+} from "../../../common/constants";
 
 type ICreateTeamProps = {
   onCreateTeam: (teamName: string, members: string[]) => void;
@@ -17,7 +17,7 @@ type ICreateTeamProps = {
 };
 
 const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
-  const [teamName, setTeamName] = useState('');
+  const [teamName, setTeamName] = useState("");
   const [members, setMembers] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [users, setUsers] = useState<IUserData[]>([]);
@@ -37,9 +37,9 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
         unsubscribe();
       };
     } catch (error) {
-      console.error('Error fetching users', error);
+      console.error("Error fetching users", error);
     }
-  }, [users]);
+  }, []);
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -47,16 +47,16 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setTeamName('');
+    setTeamName("");
     setMembers([]);
     setSelectAll(false);
   };
 
   const handleCreateTeam = async () => {
     if (!teamName) {
-      toast.warning('Team Name is required!', {
+      toast.warning("Team Name is required!", {
         autoClose: 3000,
-        className: 'font-bold',
+        className: "font-bold",
       });
       return;
     }
@@ -69,7 +69,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
         `Team Name must contain between ${MIN_TEAM_NAME_LENGTH} and ${MAX_TEAM_NAME_LENGTH} characters!`,
         {
           autoClose: 3000,
-          className: 'font-bold',
+          className: "font-bold",
         }
       );
       return;
@@ -78,9 +78,9 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
     if (teams.some((team) => team.teamName === teamName)) {
       toast.warning(`Team with name ${teamName} already exists!`, {
         autoClose: 3000,
-        className: 'font-bold',
+        className: "font-bold",
       });
-      setTeamName('');
+      setTeamName("");
       setMembers([]);
       setSelectAll(false);
       return;
@@ -88,7 +88,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
 
     onCreateTeam(teamName, members);
 
-    setTeamName('');
+    setTeamName("");
     setMembers([]);
     setSelectAll(false);
     closeModal();

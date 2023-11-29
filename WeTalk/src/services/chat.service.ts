@@ -22,11 +22,14 @@ export const SendMessage = async (
 
   export const getChatMessages = async (chatId: string): Promise<MessageType[]> => {
     try {
-      const response = await fetch(`/api/chat/${chatId}/messages`);
-      const data = await response.json();
+      const dbRef = ref(db, `chat/${chatId}/messages`);
+      const snapshot = await get(dbRef);
   
-      if (data && data.messages) {
-        return data.messages;
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const messagesArray = Object.keys(data || {}).map((key) => data[key]);
+  
+        return messagesArray;
       } else {
         console.warn("No messages found for chat:", chatId);
         return [];
@@ -55,7 +58,7 @@ export const SendMessage = async (
       }
   
     members.forEach(async (userHandle) => {
-      await set(ref(db, `users/${userHandle}`), {
+      await set(ref(db, `users/${userHandle}/chats`), {
         chats: {
           [chatId]: true,
         },
