@@ -47,6 +47,7 @@ const SingleTeam: React.FC<ISingleTeamProps> = ({
     try {
       const usersCallback = (usersData: IUserData[]) => {
         setUsers(usersData);
+        console.log(usersData);
       };
 
       const unsubscribe = getAllUsers(usersCallback);
@@ -57,7 +58,7 @@ const SingleTeam: React.FC<ISingleTeamProps> = ({
     } catch (error) {
       console.log('Error fetching users', error);
     }
-  }, [users]);
+  }, []);
 
   if (!teamData) {
     return <div>Loading...</div>;
