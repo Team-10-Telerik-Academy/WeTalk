@@ -17,7 +17,7 @@ import Chats from './components/MainSidebar/Chats/Chats';
 // import AuthenticatedRoute from './hoc/AuthenticatedRoute';
 // import Register from './components/Auth/Register/Register';
 
-const App = () => {
+const App: React.FC = () => {
   const [user, loading] = useAuthState(auth);
   const [appState, setAppState] = useState<IAppState>({
     user,
@@ -33,6 +33,7 @@ const App = () => {
 
     getUserData(user.uid)
       .then((snapshot) => {
+        console.log(snapshot.val());
         if (!snapshot.exists()) {
           throw new Error('Invalid user!');
         }
@@ -46,7 +47,7 @@ const App = () => {
         });
       })
       .catch((e) => console.error(e.message));
-  }, [appState, user]);
+  }, [user]);
 
   if ((!user && !loading) || (!loading && user && appState.userData)) {
     return (
