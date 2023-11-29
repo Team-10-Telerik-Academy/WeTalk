@@ -14,8 +14,9 @@ const CreateNewChat = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const usersData = await getAllUsers();
-        setUsers(usersData!);
+        getAllUsers((usersData) => {
+          setUsers(usersData);
+        });
       } catch (error) {
         console.error("Error fetching users:", error);
       }
