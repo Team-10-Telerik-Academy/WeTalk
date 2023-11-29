@@ -1,21 +1,42 @@
-import { useEffect, useState } from 'react';
-import { getUserByHandleLive } from '../../services/users.service';
-import Status from './Status';
-import { IUserData } from '../../common/types';
+import { useEffect, useState } from "react";
+import {
+  getUserByHandle,
+  getUserByHandleLive,
+} from "../../services/users.service";
+import Status from "./Status";
+import { IUserData } from "../../common/types";
 
 interface ProfileProps {
   handle: string;
+  status: string;
+}
+
+interface ProfileProps {
+  handle: string;
+  status: string;
 }
 
 const Profile: React.FC<ProfileProps> = ({ handle }) => {
-  const [user, setUser] = useState<IUserData>(null);
+  const [user, setUser] = useState<IUserData | null>(null);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const snapshot = await getUserByHandle(handle);
+        const data = snapshot.val();
+        setUser(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
     const userCallback = (userData: IUserData) => {
       setUser(userData);
     };
 
     const unsubscribe = getUserByHandleLive(handle, userCallback);
+
+    fetchData();
 
     return () => {
       unsubscribe();
@@ -33,13 +54,13 @@ const Profile: React.FC<ProfileProps> = ({ handle }) => {
                 alt="profile"
                 className="rounded-full w-12 h-12 object-cover border border-primary "
               />
-              <Status status={user.status} />
+              <Status status={user.status!} />
             </div>
           ) : (
             <div className="relative text-primary text-center bg-secondary h-full w-full rounded-full flex items-center justify-center font-bold text-xl border border-primary">
               {user.firstName[0]}
               {user.lastName[0]}
-              <Status status={user.status} />
+              <Status status={user.status!} />
             </div>
           )}
         </div>

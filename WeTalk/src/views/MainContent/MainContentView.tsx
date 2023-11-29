@@ -1,3 +1,8 @@
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import videoCalls from "../../assets/images/Video-Calls.png";
+import chats from "../../assets/images/Chats.png";
 import slide1 from '../../assets/images/slide-1.png';
 import slide2 from '../../assets/images/slide-2.png';
 import slide3 from '../../assets/images/slide-3.png';

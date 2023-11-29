@@ -1,15 +1,16 @@
-import { Link } from 'react-router-dom';
-// import nhAvatar from '../../assets/images/avatar-NH.jpg';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCommentDots,
   faArrowsLeftRightToLine,
-} from '@fortawesome/free-solid-svg-icons';
+} from "@fortawesome/free-solid-svg-icons";
+import { IAppContext } from "../../common/types";
 import { IAppContext } from '../../common/types';
 import Profile from '../../components/Profile/Profile';
 import AppContext from '../../context/AuthContext';
 import { useContext } from 'react';
 import Settings from '../../components/Profile/Settings';
+
 
 type NavigationSidebarViewProps = {
   onLogout: () => void;
@@ -20,17 +21,24 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
   onLogout,
   toggleSidebar,
 }) => {
-  const isHomePage = location.pathname === '/home';
+  const isHomePage = location.pathname === "/home";
+
+
 
   const { userData } = useContext(AppContext) as IAppContext;
   return (
     <>
-      <div
-        className={`flex flex-col items-center w-20 ${
+      {/* Review this 
+      ${
           isHomePage
-            ? 'xl:w-[300px] 2xl:w-[250px]'
-            : 'xl:w-[250px] 2xl:w-[350px]'
-        } px-2 min-h-screen sm:h-full md:min-h-screen lg:min-h-screen py-8 bg-primary`}
+            ? "xl:w-[300px] 2xl:w-[250px]"
+            : "xl:w-[250px] 2xl:w-[350px]"
+        }  */}
+      <div
+        className={`flex flex-col items-center w-20 
+        
+        
+        px-2 min-h-screen sm:h-full md:min-h-screen lg:min-h-screen py-8 bg-primary`}
       >
         <nav className="flex flex-col items-center flex-1 space-y-6">
           <h1 className="font-extrabold text-3xl text-secondary">W</h1>
@@ -38,7 +46,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
           <div className="flex flex-col text-center items-center justify-center">
             <Link
               to="/"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 hover:text-secondary hover:scale-125"
               title="HOME"
             >
               <svg
@@ -62,7 +70,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
           <div className="flex flex-col text-center items-center justify-center">
             <Link
               to="/home/teams"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 hover:text-secondary hover:scale-125"
               title="TEAMS"
             >
               <svg
@@ -88,7 +96,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
               <FontAwesomeIcon
                 icon={faCommentDots}
                 size="lg"
-                className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+                className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg hover:text-secondary hover:scale-125"
               />
             </Link>
             <span className="text-gray-300 text-xs tracking-tight">Chats</span>
@@ -97,7 +105,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
           <div className="flex flex-col text-center items-center justify-center">
             <a
               href="#"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg hover:text-secondary hover:scale-125"
               title="ACTIVITY"
             >
               <svg
@@ -133,7 +141,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
           >
             <a
               href="#"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg hover:text-secondary hover:scale-125"
               title="TOGGLE SIDEBAR"
             >
               <FontAwesomeIcon icon={faArrowsLeftRightToLine} size="lg" />
@@ -151,11 +159,11 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
               src={nhAvatar}
               alt="avatar"
             />*/}
-            <Profile handle={userData?.handle} />
+            <Profile handle={userData?.handle!} />
           </a>
 
           <a
-            className="text-secondary transition-colors duration-200 rotate-180 cursor-pointer dark:text-gray-400 rtl:rotate-0 hover:scale-125 dark:hover:text-blue-400"
+            className="text-secondary transition-colors duration-200 rotate-180 cursor-pointer rtl:rotate-0 hover:scale-125"
             onClick={onLogout}
             title="LOGOUT"
           >
