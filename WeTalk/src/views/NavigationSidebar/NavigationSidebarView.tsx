@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import nhAvatar from "../../assets/images/avatar-NH.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCommentDots,
@@ -23,14 +22,14 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
   const { userData } = useContext(AppContext) as IAppContext;
   return (
     <>
-      <div className="flex flex-col items-center w-16 h-screen py-8 bg-primary z-10 dark:bg-gray-900 dark:border-gray-700">
+      <div className="flex flex-col items-center w-16 h-screen py-8 bg-primary z-10">
         <nav className="flex flex-col items-center flex-1 space-y-7 ">
           <h1 className="font-extrabold text-3xl text-secondary">W</h1>
 
           <div className="flex flex-col text-center items-center justify-center">
             <Link
               to="/"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 hover:text-secondary hover:scale-125"
               title="HOME"
             >
               <svg
@@ -54,7 +53,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
           <div className="flex flex-col text-center items-center justify-center">
             <Link
               to="/home/teams"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 hover:text-secondary hover:scale-125"
               title="TEAMS"
             >
               <svg
@@ -80,7 +79,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
               <FontAwesomeIcon
                 icon={faCommentDots}
                 size="lg"
-                className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+                className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg hover:text-secondary hover:scale-125"
               />
             </Link>
             <span className="text-gray-300 text-xs tracking-tight">Chats</span>
@@ -89,7 +88,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
           <div className="flex flex-col text-center items-center justify-center">
             <a
               href="#"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg hover:text-secondary hover:scale-125"
               title="ACTIVITY"
             >
               <svg
@@ -125,7 +124,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
           >
             <a
               href="#"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg hover:text-secondary hover:scale-125"
               title="TOGGLE SIDEBAR"
             >
               <FontAwesomeIcon icon={faArrowsLeftRightToLine} size="lg" />
@@ -137,12 +136,10 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
         </nav>
 
         <div className="flex flex-col items-center mt-4 space-y-4">
-          <a href="#" className="hover:scale-110">
-            <Profile handle={userData?.handle} />
-          </a>
+          <Profile handle={userData?.handle!} />
 
           <a
-            className="text-secondary transition-colors duration-200 rotate-180 cursor-pointer dark:text-gray-400 rtl:rotate-0 hover:scale-125 dark:hover:text-blue-400"
+            className="text-secondary transition-colors duration-200 rotate-180 cursor-pointer rtl:rotate-0 hover:scale-125"
             onClick={onLogout}
             title="LOGOUT"
           >

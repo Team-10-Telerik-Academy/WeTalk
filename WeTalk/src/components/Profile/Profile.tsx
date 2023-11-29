@@ -1,7 +1,6 @@
-import { useContext, useEffect, useState } from "react";
-import AppContext from "../../context/AuthContext";
-import { IAppContext } from "../../common/types";
+import { useEffect, useState } from "react";
 import { getUserByHandle } from "../../services/users.service";
+import Status from "./Status";
 
 interface ProfileProps {
   handle: string;
@@ -15,7 +14,6 @@ const Profile: React.FC<ProfileProps> = ({ handle }) => {
       try {
         const snapshot = await getUserByHandle(handle);
         const data = snapshot.val();
-        console.log("Data received:", data);
         setUser(data);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -26,25 +24,32 @@ const Profile: React.FC<ProfileProps> = ({ handle }) => {
   }, [handle]);
 
   return (
-    <div className="w-12 h-12 rounded-full items-center justify-center flex">
+    <div className="relative w-14 h-14 rounded-full overflow-hidden ml-2 mb-2">
       {user ? (
-        <a href="#" className="hover:scale-110">
+        <div className="rounded-full border h-12 w-12">
           {user.imgUrl ? (
-            <img
-              src={user.imgUrl}
-              alt="profile"
-              className="rounded-full h-12 w-12"
-            />
+            <div className="relative">
+              <img
+                src={user.imgUrl}
+                alt="profile"
+                className="rounded-full w-full h-full object-cover"
+              />
+              <Status status={user.status.value} />
+            </div>
           ) : (
-            <span className="text-primary text-center bg-secondary h-14 w-14 rounded-full font-bold text-xl p-2">
+            <div className="relative text-primary text-center bg-secondary h-full w-full rounded-full flex items-center justify-center font-bold text-xl">
               {user.firstName[0]}
               {user.lastName[0]}
-            </span>
+              <Status status={user.status.value} />
+            </div>
           )}
-        </a>
+        </div>
       ) : (
-        // Handle loading state or show a placeholder
-        <div>Loading...</div>
+        <div className="w-full h-full flex items-center justify-center bg-secondary rounded-full">
+          <span className="text-primary text-center font-bold text-xl">
+            Loading...
+          </span>
+        </div>
       )}
     </div>
   );

@@ -1,8 +1,8 @@
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-import videoCalls from '../../assets/images/Video-Calls.png';
-import chats from '../../assets/images/Chats.png';
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import videoCalls from "../../assets/images/Video-Calls.png";
+import chats from "../../assets/images/Chats.png";
 
 const MainContentView = () => {
   const settings = {

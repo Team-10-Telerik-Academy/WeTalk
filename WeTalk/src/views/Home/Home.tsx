@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../../services/auth.service";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../config/firebase-config";
@@ -15,6 +15,8 @@ import Profile from "../../components/Profile/Profile";
 import SearchUsers from "../../components/SearchUsers/SearchUsers";
 import NavigationSidebarView from "../NavigationSidebar/NavigationSidebarView";
 import MainContent from "../../components/MainContent/MainContent";
+import SingleChat from "../Chat/SingleChatView";
+import SingleChatView from "../Chat/SingleChatView";
 // import ThemeButton from '../../components/ThemeButton/ThemeButton';
 
 export const Home = () => {
@@ -60,17 +62,20 @@ export const Home = () => {
 
   const isHomePage = location.pathname === "/home";
 
+  // const isChatsPage = location.pathname === "/home/chats/chat";
+
   return (
-    <>
+    <div className="flex w-full">
       <aside className="flex">
         <NavigationSidebarView
           onLogout={onLogout}
           toggleSidebar={toggleSidebar}
         />
-        {!isHomePage && <MainSidebar isSidebarOpen={isSidebarOpen} />}
-        <MainContent />
+        {/* {!isHomePage && <MainSidebar isSidebarOpen={isSidebarOpen} />} */}
+        {/* <MainContent /> */}
       </aside>
-    </>
+      <Outlet />
+    </div>
   );
 };
 
