@@ -10,11 +10,31 @@ import {
 } from '../../../services/teams.service';
 import TeamsView from '../../../views/MainSidebar/Teams/TeamsView';
 import { v4 } from 'uuid';
-import { IAppState } from '../../../common/types';
+import { IAppState, ITeam, IUserData } from '../../../common/types';
+import { getAllUsers } from '../../../services/users.service';
+import MainContent from '../../MainContent/MainContent';
 
 const Teams = () => {
   const { userData } = useContext(AppContext) as IAppState;
   const [teams, setTeams] = useState<ITeam[]>([]);
+  const [users, setUsers] = useState<IUserData[]>([]);
+
+  useEffect(() => {
+    try {
+      const usersCallback = (usersData: IUserData[]) => {
+        setUsers(usersData);
+        console.log(usersData);
+      };
+
+      const unsubscribe = getAllUsers(usersCallback);
+
+      return () => {
+        unsubscribe();
+      };
+    } catch (error) {
+      console.error('Error fetching users', error);
+    }
+  }, []);
 
   useEffect(() => {
     const teamsCallback = (teamsData: ITeam[]) => {
@@ -98,7 +118,9 @@ const Teams = () => {
         onRemoveMember={handleDeleteTeamMember}
         onAddMembersToTeam={handleAddMembersToTeam}
         onSaveTeamName={handleSaveTeamName}
+        users={users}
       />
+      <MainContent />
     </>
   );
 };
