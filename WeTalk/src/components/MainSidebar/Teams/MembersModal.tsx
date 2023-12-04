@@ -36,7 +36,7 @@ const MembersModal: React.FC<MembersModalProps> = ({
       {isOpen && (
         <div className="fixed inset-0 z-10 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex items-center justify-center min-h-screen xl:py-10">
-            <div className="bg-white w-full md:w-1/2 lg:w-1/3 2xl:w-1/4 pt-6 rounded shadow-lg">
+            <div className="bg-white w-full md:w-1/2 lg:w-1/3 2xl:w-1/4 pt-6 rounded shadow-lg animate-jump-in">
               <div className="flex flex-col items-center justify-center mb-8">
                 <h2 className="text-xl text-primary font-bold text-center">
                   {teamData.teamName} Members
