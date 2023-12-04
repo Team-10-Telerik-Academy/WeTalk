@@ -1,7 +1,6 @@
 import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPlus } from '@fortawesome/free-solid-svg-icons';
-import nhAvatar from '../../../assets/images/avatar-NH.jpg';
 import { IAppContext, ITeam } from '../../../common/types';
 import AppContext from '../../../context/AuthContext';
 import Profile from '../../Profile/Profile';
@@ -29,7 +28,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
   onClose,
   onAddMembersToTeam,
 }) => {
-  const { userData } = useContext(AppContext) as IAppContext;
+  // const { userData } = useContext(AppContext) as IAppContext;
 
   return (
     <>
