@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getChatMessages } from '../../services/chat.service';
 import SingleChat from '../../components/SingleChat/SingleChat';
+import CurrentRoom from '../../components/Meeting/CurrentRoom';
 
 const SingleChatView = () => {
   const { chatId } = useParams();
@@ -26,13 +27,12 @@ const SingleChatView = () => {
   }, [chatId]);
 
   return (
-    <div className="flex w-full">
-      <div className="flex-none">{/* <NavigationSidebarView /> */}</div>
-
-      <div className="flex-1 overflow-y">
-        <SingleChat chatId={chatId!} messages={messages} />
-      </div>
+    <div className="overflow-y w-full">
+      <SingleChat chatId={chatId!} messages={messages} />
     </div>
+    // <div className="flex w-full">
+    // <div className="flex-none"><NavigationSidebarView /></div>
+    // </div>
   );
 };
 
