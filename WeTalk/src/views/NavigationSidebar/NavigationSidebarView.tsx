@@ -1,9 +1,6 @@
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faCommentDots,
-  faArrowsLeftRightToLine,
-} from '@fortawesome/free-solid-svg-icons';
+import { faCommentDots } from '@fortawesome/free-solid-svg-icons';
 import { IAppContext } from '../../common/types';
 import Profile from '../../components/Profile/Profile';
 import AppContext from '../../context/AuthContext';
@@ -12,14 +9,12 @@ import Settings from '../../components/Profile/Settings';
 
 type NavigationSidebarViewProps = {
   onLogout: () => void;
-  toggleSidebar: () => void;
 };
 
 const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
   onLogout,
-  toggleSidebar,
 }) => {
-  const isHomePage = location.pathname === '/home';
+  // const isHomePage = location.pathname === '/home';
 
   const { userData } = useContext(AppContext) as IAppContext;
   return (
@@ -130,22 +125,6 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
               Settings
             </span>
           </div>
-
-          {/*<div
-            className="flex flex-col text-center items-center justify-center"
-            onClick={toggleSidebar}
-          >
-            <a
-              href="#"
-              className="p-1 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg hover:text-secondary hover:scale-125"
-              title="TOGGLE SIDEBAR"
-            >
-              <FontAwesomeIcon icon={faArrowsLeftRightToLine} size="lg" />
-            </a>
-            <span className="text-gray-300 text-xs tracking-tight">
-              Toggle Sidebar
-            </span>
-          </div>*/}
         </nav>
 
         <div className="flex flex-col items-center mt-12 space-y-4">
