@@ -2,15 +2,19 @@ import { ChangeEvent, useRef, useState } from 'react';
 import { ref, uploadBytes, getDownloadURL } from '@firebase/storage';
 import { imageDb } from '../../config/firebase-config';
 import { IUserData } from '../../common/types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUpFromBracket } from '@fortawesome/free-solid-svg-icons';
 
 interface PictureChangeProps {
   userData: IUserData;
   setProfilePictureURL: (url: string | null) => void;
+  profilePictureURL: string;
 }
 
 const PictureChange: React.FC<PictureChangeProps> = ({
   userData,
   setProfilePictureURL,
+  profilePictureURL,
 }) => {
   const [previewImg, setPreviewImg] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -46,6 +50,7 @@ const PictureChange: React.FC<PictureChangeProps> = ({
   const handlePictureSave = () => {
     if (selectedFile) {
       const imgRef = ref(imageDb, `Profile pictures/${userData?.handle}`);
+      console.log(selectedFile);
 
       uploadBytes(imgRef, selectedFile)
         .then(async () => {
@@ -62,9 +67,18 @@ const PictureChange: React.FC<PictureChangeProps> = ({
   };
 
   return (
-    <div className="flex justify-between m-2">
-      <span>Profile picture</span>
-      <div className="flex justify-between">
+    <div className="flex justify-center gap-4 items-center my-2">
+      {profilePictureURL ? (
+        <img
+          src={profilePictureURL}
+          className="rounded-full w-36 h-36 object-cover"
+        />
+      ) : (
+        <div className="rounded-full border-dashed border-2 border-primary w-36 h-36 object-cover flex items-center justify-center font-bold italic text-primary">
+          Upload image...
+        </div>
+      )}
+      <div className="flex justify-center items-center">
         {previewImg && (
           <img
             src={previewImg}
@@ -86,17 +100,29 @@ const PictureChange: React.FC<PictureChangeProps> = ({
           onChange={handleFileChange}
         />
         {!previewImg ? (
-          <button className="text-sm" onClick={handlePictureChange}>
-            Change
+          <button
+            className="inline-flex gap-2 items-center text-sm text-secondary bg-primary p-2 rounded font-bold hover:underline border-2 border-primary"
+            onClick={handlePictureChange}
+          >
+            <FontAwesomeIcon icon={faArrowUpFromBracket} />
+            <span className="tracking-tight text-xs lg:text-xs">
+              Change avatar
+            </span>
           </button>
         ) : (
-          <div className="flex justify-between">
-            <span className="pr-4">{selectedFileName}</span>
+          <div className="flex justify-between items-center">
+            <span className="pr-4 text-xs">{selectedFileName}</span>
             <div className="flex flex-col">
-              <button className="text-sm mb-1" onClick={handlePictureSave}>
+              <button
+                className="text-xs mb-1 gap-2 items-center text-sm text-secondary bg-primary p-2 rounded font-bold hover:underline border-2 border-primary"
+                onClick={handlePictureSave}
+              >
                 Save
               </button>
-              <button className="text-sm" onClick={handleCancel}>
+              <button
+                className="text-xs gap-2 items-center text-sm text-secondary bg-primary p-2 rounded font-bold hover:underline border-2 border-primary"
+                onClick={handleCancel}
+              >
                 Cancel
               </button>
             </div>
