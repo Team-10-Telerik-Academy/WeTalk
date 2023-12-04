@@ -2,8 +2,12 @@ import { useContext, useEffect, useState } from 'react';
 import { getAllUsers } from '../../services/users.service';
 import { IAppContext, IUserData } from '../../common/types';
 import AppContext from '../../context/AuthContext';
-import { CreateChat } from '../../services/chat.service';
+import { CreateChat, addRoomID } from '../../services/chat.service';
 import { v4 } from 'uuid';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { ORGANIZATION_ID, API_KEY, BASE_URL } from '../../common/dyte-api';
+import axios from 'axios';
 
 const CreateNewChat = () => {
   const [users, setUsers] = useState<IUserData[]>([]);
@@ -12,38 +16,76 @@ const CreateNewChat = () => {
   const [chatName, setChatName] = useState<string>('');
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        getAllUsers((usersData) => {
-          setUsers(usersData);
-          console.log(usersData);
-        });
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
+    try {
+      const usersCallback = (usersData: IUserData[]) => {
+        setUsers(usersData);
+        console.log(usersData);
+      };
 
-    if (users.length === 0) {
-      fetchUsers();
+      const unsubscribe = getAllUsers(usersCallback);
+
+      return () => {
+        unsubscribe();
+      };
+    } catch (error) {
+      console.error('Error fetching users', error);
     }
-  }, [userData, users]);
+  }, []);
 
-  const handleCheckboxChange = (handle: string) => {
+  const handleCheckboxChange = (handle, firstName, lastName) => {
     setMembers((prevMembers) =>
-      prevMembers.includes(handle)
-        ? prevMembers.filter((member) => member !== handle)
-        : [...prevMembers, handle]
+      prevMembers.some((member) => member.handle === handle)
+        ? prevMembers.filter((member) => member.handle !== handle)
+        : [
+            ...prevMembers,
+            { handle: handle, firstName: firstName, lastName: lastName },
+          ]
     );
   };
 
   const handleCreateChat = () => {
     if (chatName) {
-      const userHandle = userData?.handle;
-      if (userHandle) {
-        const updatedMembers = [...members, userHandle];
+      const user = {
+        handle: userData?.handle,
+        firstName: userData?.firstName,
+        lastName: userData?.lastName,
+      };
+      if (user) {
+        const updatedMembers = [...members, user];
 
         if (updatedMembers.length > 0) {
-          CreateChat(chatName, updatedMembers, v4());
+          CreateChat(chatName, updatedMembers, v4()).then((chat) => {
+            const { chatName, chatId } = chat;
+
+            const encodedString = btoa(`${ORGANIZATION_ID}:${API_KEY}`);
+
+            const dyteRoomCreate = {
+              method: 'POST',
+              url: `${BASE_URL}/meetings`,
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Basic ${encodedString}`,
+                'Access-Control-Allow-Origin': '*',
+              },
+              data: { title: chatName },
+            };
+
+            axios
+              .request(dyteRoomCreate)
+              .then((response) => {
+                console.log(response);
+                const dyteID = response.data.data.id;
+
+                addRoomID(chatId, dyteID);
+              })
+              .catch((error) => {
+                console.error('Error creating room', error);
+                console.error('Response data:', error.response.data);
+              })
+              .catch((error) => {
+                console.error('Error creating chat', error);
+              });
+          });
         } else {
           console.error('At least two members are required.');
         }
@@ -67,14 +109,15 @@ const CreateNewChat = () => {
   return (
     <div>
       <button
-        className="btn"
         onClick={() =>
           (
             document.getElementById('Create_Chat_Modal') as HTMLDialogElement
           )?.showModal()
         }
+        className="inline-flex items-center gap-2 bg-accent text-primary text-xs uppercase p-2 lg:px-3 lg:py-2 rounded hover:bg-primary hover:text-secondary"
       >
-        +
+        <FontAwesomeIcon icon={faPlus} />
+        <span className="tracking-tight text-xs lg:text-sm">Create</span>
       </button>
       <dialog id="Create_Chat_Modal" className="modal">
         <div className="modal-box">
@@ -103,8 +146,16 @@ const CreateNewChat = () => {
                     <label className="flex items-center w-full text-primary">
                       <input
                         type="checkbox"
-                        checked={members.includes(user.handle)}
-                        onChange={() => handleCheckboxChange(user.handle)}
+                        checked={members.some(
+                          (member) => member.handle === user.handle
+                        )}
+                        onChange={() =>
+                          handleCheckboxChange(
+                            user.handle,
+                            user.firstName,
+                            user.lastName
+                          )
+                        }
                         className="mr-2"
                       />
                       {user.firstName} {user.lastName} ({user.handle})
