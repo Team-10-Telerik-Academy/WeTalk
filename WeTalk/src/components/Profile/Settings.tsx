@@ -11,6 +11,7 @@ import { UserStatus } from '../../common/status-enum';
 
 const Settings = () => {
   const { userData } = useContext(AppContext) as IAppContext;
+
   const [isEditing, setIsEditing] = useState(false);
   const [editedFirstName, setEditedFirstName] = useState(
     userData?.firstName || ''
@@ -24,7 +25,7 @@ const Settings = () => {
 
   const displayStatus = (status: string, bg: string) => {
     return (
-      <div className="inline-flex gap-2 items-center text-xs lg:text-sm">
+      <div className="inline-flex gap-2 items-center justify-center text-xs lg:text-sm">
         <div className={`rounded-full bg-${bg} h-2 w-2`}></div>
         {status}
       </div>
@@ -85,7 +86,7 @@ const Settings = () => {
         }
       });
     }
-  }, [profilePictureURL, userData]);
+  }, [profilePictureURL, userData?.handle]);
 
   const handleStatusClick = (
     handle: string,
@@ -127,128 +128,157 @@ const Settings = () => {
           />
         </svg>
       </a>
-
       <dialog id="my_modal_1" className="modal">
-        <div className="modal-box flex flex-col bg-secondary text-primary">
-          {/* First Name Input */}
-          <div className="flex flex-row justify-between">
-            <div className="flex flex-col m-2">
-              <span>First Name</span>
-              {isEditing ? (
-                <input
-                  className="text-black border border-primary rounded-xl pl-2 w-24 mb-2"
-                  type="text"
-                  value={editedFirstName}
-                  onChange={(e) => setEditedFirstName(e.target.value)}
-                />
-              ) : (
-                <span className="font-bold mb-2">{userData?.firstName}</span>
-              )}
-            </div>
+        <div className="modal-box flex flex-col bg-secondary justify-center gap-4">
+          {/* Profile picture */}
+          <PictureChange
+            userData={userData}
+            setProfilePictureURL={setProfilePictureURL}
+            profilePictureURL={profilePictureURL}
+          />
 
-            {/* Last Name Input */}
-            <div className="flex flex-col m-2">
-              <span>Last Name</span>
-              {isEditing ? (
-                <input
-                  className="text-black border border-primary rounded-xl pl-2 w-24 mb-2"
-                  type="text"
-                  value={editedLastName}
-                  onChange={(e) => setEditedLastName(e.target.value)}
-                />
-              ) : (
-                <span className="font-bold mb-2">{userData?.lastName}</span>
-              )}
+          {/* First Name Input */}
+          <div className="flex flex-row justify-between items-center gap-2">
+            <div className="flex justify-center items-center w-full gap-4">
+              <div className="flex flex-col items-center justify-center">
+                {isEditing ? (
+                  <>
+                    <label className="text-primary text-xs mb-1">
+                      First Name:
+                    </label>
+                    <input
+                      className="text-xl text-primary text-opacity-80 font-bold border-2 border-primary rounded py-1 px-2 w-32 text-center bg-secondary"
+                      type="text"
+                      value={editedFirstName}
+                      onChange={(e) => setEditedFirstName(e.target.value)}
+                    />
+                  </>
+                ) : (
+                  <span className="font-bold text-primary text-3xl">
+                    {userData?.firstName}
+                  </span>
+                )}
+              </div>
+
+              {/* Last Name Input */}
+              <div className="flex flex-col items-center justify-center">
+                {isEditing ? (
+                  <>
+                    <label className="text-primary text-xs mb-1">
+                      Last Name:
+                    </label>
+                    <input
+                      className="text-xl text-primary text-opacity-80 font-bold border-2 border-primary rounded py-1 px-2 w-32 text-center bg-secondary"
+                      type="text"
+                      value={editedLastName}
+                      onChange={(e) => setEditedLastName(e.target.value)}
+                    />
+                  </>
+                ) : (
+                  <span className="font-bold text-primary text-3xl">
+                    {userData?.lastName}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Buttons for Save, Cancel, and Change */}
-            <div className="flex flex-col">
+            <div className="flex flex-col w-1/3 items-end">
               <div className="m-2">
                 {isEditing ? (
                   <div className="flex flex-col">
-                    <button className="text-sm mb-1" onClick={handleCancel}>
+                    <button
+                      className="text-xs mb-2 text-sm text-secondary bg-primary p-2 rounded font-bold hover:underline border-2 border-primary"
+                      onClick={handleCancel}
+                    >
                       Cancel
                     </button>
-                    <button className="text-sm" onClick={handleSave}>
+                    <button
+                      className="text-xs text-sm text-secondary bg-primary p-2 rounded font-bold hover:underline border-2 border-primary"
+                      onClick={handleSave}
+                    >
                       Save
                     </button>
                   </div>
                 ) : (
-                  <button className="text-sm" onClick={handleChange}>
-                    Change
+                  <button
+                    className="text-xs text-primary underline"
+                    onClick={handleChange}
+                  >
+                    Change name
                   </button>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Profile picture */}
-          <PictureChange
-            userData={userData!}
-            setProfilePictureURL={setProfilePictureURL}
-          />
+          {/* Border */}
+          <hr className="border mt-4" />
 
-          {/* Status*/}
-          <div className="m-2 flex items-center justify-between">
-            Status
-            <button className="w-20 border-2 border-primary text-primary font-bold rounded-md p-2 hover:bg-primary hover:text-secondary">
-              <Dropdown
-                label=""
-                dismissOnClick={false}
-                renderTrigger={() => <span>{currentUserStatus}</span>}
-              >
-                <Dropdown.Item
-                  onClick={() =>
-                    handleStatusClick(
-                      userData?.handle,
-                      UserStatus.ONLINE.toLowerCase(),
-                      displayStatus('Online', 'success')
-                    )
-                  }
-                >
-                  <div className="inline-flex gap-2 justify-between items-center hover:bg-gray-100 text-xs lg:text-sm">
-                    <div className="rounded-full bg-success h-2 w-2"></div>
-                    Online
-                  </div>
-                </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() =>
-                    handleStatusClick(
-                      userData?.handle,
-                      UserStatus.OFFLINE.toLowerCase(),
-                      displayStatus('Offline', 'gray-400')
-                    )
-                  }
-                >
-                  <div className="inline-flex gap-2 justify-between items-center hover:bg-gray-100 text-xs lg:text-sm">
-                    <div className="rounded-full bg-gray-400 h-2 w-2"></div>
-                    Offline
-                  </div>
-                </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() =>
-                    handleStatusClick(
-                      userData?.handle,
-                      UserStatus.BUSY.toLowerCase(),
-                      displayStatus('Busy', 'error')
-                    )
-                  }
-                >
-                  <div className="inline-flex gap-2 justify-between items-center hover:bg-gray-100 text-xs lg:text-sm">
-                    <div className="rounded-full bg-error h-2 w-2"></div>
-                    Busy
-                  </div>
-                </Dropdown.Item>
-              </Dropdown>
-            </button>
-          </div>
           <div className="flex justify-between items-center">
-            <ThemeButton />
-            <div className="modal-action">
-              <form method="dialog">
-                <button className="btn">Close</button>
-              </form>
+            <span className="flex gap-1 items-center justify-center">
+              <span className="text-sm text-primary">Theme:</span>{' '}
+              <ThemeButton />
+            </span>
+            {/* Status*/}
+            <div className="flex items-center justify-center">
+              <span className="text-sm text-primary">Status:</span>
+              <button className="w-20 text-left bg-secondary text-primary font-bold p-2 rounded hover:text-primary">
+                <Dropdown
+                  label=""
+                  dismissOnClick={false}
+                  renderTrigger={() => <span>{currentUserStatus}</span>}
+                >
+                  <Dropdown.Item
+                    onClick={() =>
+                      handleStatusClick(
+                        userData?.handle,
+                        UserStatus.ONLINE.toLowerCase(),
+                        displayStatus('Online', 'success')
+                      )
+                    }
+                  >
+                    <div className="inline-flex gap-2 justify-between items-center hover:bg-gray-100 text-xs lg:text-sm">
+                      <div className="rounded-full bg-success h-2 w-2"></div>
+                      Online
+                    </div>
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      handleStatusClick(
+                        userData?.handle,
+                        UserStatus.OFFLINE.toLowerCase(),
+                        displayStatus('Offline', 'gray-400')
+                      )
+                    }
+                  >
+                    <div className="inline-flex gap-2 justify-between items-center hover:bg-gray-100 text-xs lg:text-sm">
+                      <div className="rounded-full bg-gray-400 h-2 w-2"></div>
+                      Offline
+                    </div>
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      handleStatusClick(
+                        userData?.handle,
+                        UserStatus.BUSY.toLowerCase(),
+                        displayStatus('Busy', 'error')
+                      )
+                    }
+                  >
+                    <div className="inline-flex gap-2 justify-between items-center hover:bg-gray-100 text-xs lg:text-sm">
+                      <div className="rounded-full bg-error h-2 w-2"></div>
+                      Busy
+                    </div>
+                  </Dropdown.Item>
+                </Dropdown>
+              </button>
             </div>
+            <form method="dialog">
+              <button className="bg-accent text-primary font-bold px-4 py-2 rounded hover:bg-primary hover:text-secondary w-full">
+                Close
+              </button>
+            </form>
           </div>
         </div>
       </dialog>
