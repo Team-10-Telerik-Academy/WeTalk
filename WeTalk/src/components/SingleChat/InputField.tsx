@@ -1,49 +1,44 @@
-import { useState } from "react";
-import { SendMessage } from "../../services/chat.service";
+import { ref, update } from 'firebase/database';
+import { SendMessage } from '../../services/chat.service';
+import EmojiInput from './EmojiInput';
+import { db } from '../../config/firebase-config';
 
 interface InputFieldProps {
   handle: string;
   chatId: string;
+  setInputValue: React.Dispatch<React.SetStateAction<string>>;
+  handleInputChange: (value: string) => void;
 }
 
-const InputField: React.FC<InputFieldProps> = ({ handle, chatId }) => {
-  const [message, setMessage] = useState("");
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setMessage(event.target.value);
-  };
-
-  const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+const InputField: React.FC<InputFieldProps> = ({
+  handle,
+  chatId,
+  setInputValue,
+  handleInputChange,
+}) => {
+  const handleSendMessage = async (message: string) => {
     try {
+      // Set typing status to false before sending the message
+      update(ref(db, `chats/${chatId}/typingStatus`), {
+        [handle]: false,
+      });
+
+      // Send the message
       await SendMessage(chatId, message, handle);
-      setMessage("");
     } catch (error) {
       console.log(error);
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setInputValue(value);
+    handleInputChange(value);
+  };
+
   return (
-    <div className="flex justify-center">
-      <form
-        className="flex w-full max-w-screen-md"
-        onSubmit={handleSendMessage}
-      >
-        <input
-          type="text"
-          placeholder="Send Message"
-          className="w-full border rounded-xl text-start p-2 h-14 my-4"
-          value={message}
-          onChange={handleInputChange}
-        />
-        <button
-          type="submit"
-          className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-xl my-4"
-        >
-          Send
-        </button>
-      </form>
+    <div className="flex">
+      <EmojiInput onSubmit={handleSendMessage} handleChange={handleChange} />
     </div>
   );
 };
