@@ -109,7 +109,7 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
 
   return (
     <>
-      <div className="flex items-center justify-center bg-gray-100 py-2 px-4 lg:p-4 mb-2 mt-4 rounded hover:bg-gray-200">
+      <div className="flex items-center justify-center bg-primary bg-opacity-5 py-2 px-4 lg:p-4 mb-2 mt-4 rounded hover:bg-gray-200">
         <div className="flex items-center justify-between w-full">
           <div className="inline-flex w-full items-center gap-2">
             <FontAwesomeIcon
