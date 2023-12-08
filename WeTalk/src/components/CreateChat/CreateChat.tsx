@@ -1,19 +1,24 @@
-import { useContext, useEffect, useState } from 'react';
-import { getAllUsers } from '../../services/users.service';
-import { IAppContext, IUserData } from '../../common/types';
-import AppContext from '../../context/AuthContext';
-import { CreateChat, addRoomID } from '../../services/chat.service';
-import { v4 } from 'uuid';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { ORGANIZATION_ID, API_KEY, BASE_URL } from '../../common/dyte-api';
-import axios from 'axios';
+import { useContext, useEffect, useState } from "react";
+import { getAllUsers } from "../../services/users.service";
+import { IAppContext, IUserData } from "../../common/types";
+import AppContext from "../../context/AuthContext";
+import {
+  CreateChat,
+  addRoomID,
+  findChatByMembers,
+} from "../../services/chat.service";
+import { v4 } from "uuid";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { ORGANIZATION_ID, API_KEY, BASE_URL } from "../../common/dyte-api";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const CreateNewChat = () => {
   const [users, setUsers] = useState<IUserData[]>([]);
   const { userData } = useContext(AppContext) as IAppContext;
   const [members, setMembers] = useState<string[]>([]);
-  const [chatName, setChatName] = useState<string>('');
+  const [chatName, setChatName] = useState<string>("");
 
   useEffect(() => {
     try {
@@ -28,72 +33,103 @@ const CreateNewChat = () => {
         unsubscribe();
       };
     } catch (error) {
-      console.error('Error fetching users', error);
+      console.error("Error fetching users", error);
     }
   }, []);
 
   const handleCheckboxChange = (handle, firstName, lastName) => {
-    setMembers((prevMembers) =>
-      prevMembers.some((member) => member.handle === handle)
-        ? prevMembers.filter((member) => member.handle !== handle)
-        : [
-            ...prevMembers,
-            { handle: handle, firstName: firstName, lastName: lastName },
-          ]
-    );
+    setMembers((prevMembers) => {
+      const existingMemberIndex = prevMembers.findIndex(
+        (member) => member.handle === handle
+      );
+
+      if (existingMemberIndex !== -1) {
+        // Member already exists, remove it
+        const updatedMembers = [...prevMembers];
+        updatedMembers.splice(existingMemberIndex, 1);
+        return updatedMembers;
+      } else {
+        // Member doesn't exist, add it
+        return [
+          ...prevMembers,
+          { handle: handle, firstName: firstName, lastName: lastName },
+        ];
+      }
+    });
   };
 
-  const handleCreateChat = () => {
-    if (chatName) {
+  const navigate = useNavigate();
+
+  const handleCreateChat = async () => {
+    try {
       const user = {
         handle: userData?.handle,
         firstName: userData?.firstName,
         lastName: userData?.lastName,
       };
-      if (user) {
-        const updatedMembers = [...members, user];
 
-        if (updatedMembers.length > 0) {
-          CreateChat(chatName, updatedMembers, v4()).then((chat) => {
-            const { chatName, chatId } = chat;
-
-            const encodedString = btoa(`${ORGANIZATION_ID}:${API_KEY}`);
-
-            const dyteRoomCreate = {
-              method: 'POST',
-              url: `${BASE_URL}/meetings`,
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Basic ${encodedString}`,
-                'Access-Control-Allow-Origin': '*',
-              },
-              data: { title: chatName },
-            };
-
-            axios
-              .request(dyteRoomCreate)
-              .then((response) => {
-                console.log(response);
-                const dyteID = response.data.data.id;
-
-                addRoomID(chatId, dyteID);
-              })
-              .catch((error) => {
-                console.error('Error creating room', error);
-                console.error('Response data:', error.response.data);
-              })
-              .catch((error) => {
-                console.error('Error creating chat', error);
-              });
-          });
-        } else {
-          console.error('At least two members are required.');
-        }
-      } else {
-        console.error('User handle is not available.');
+      if (!user) {
+        console.error("User data is not available.");
+        return;
       }
-    } else {
-      console.error('Chat name is required.');
+
+      const updatedMembers = [...members, user];
+      console.log("updated members:", updatedMembers);
+
+      if (updatedMembers.length < 2) {
+        console.error("At least two members are required.");
+        return;
+      }
+
+      if (updatedMembers.length > 2 && !chatName) {
+        console.error("Chat name is required.");
+        return;
+      }
+
+      try {
+        const existingChat = await findChatByMembers(updatedMembers);
+
+        if (existingChat) {
+          navigate(`${existingChat.chatId}`);
+        } else {
+          // No existing chat found, create a new chat
+          const newChat = await CreateChat(chatName, updatedMembers, v4());
+
+          const { chatId } = newChat;
+
+          const encodedString = btoa(`${ORGANIZATION_ID}:${API_KEY}`);
+
+          const dyteRoomCreate = {
+            method: "POST",
+            url: `${BASE_URL}/meetings`,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Basic ${encodedString}`,
+              "Access-Control-Allow-Origin": "*",
+            },
+            data: { title: chatName },
+          };
+          navigate(`${chatId}`);
+
+          try {
+            const response = await axios.request(dyteRoomCreate);
+            console.log("Dyte Room Created:", response);
+            const dyteID = response.data.data.id;
+
+            addRoomID(chatId, dyteID);
+            navigate(`${chatId}`);
+          } catch (error) {
+            console.error("Error creating Dyte room:", error);
+            console.error("Response data:", error.response?.data);
+            // Additional logging for debugging
+            console.error("Dyte Room Creation failed:", error.message);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking existing chat:", error);
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
     }
   };
 
@@ -103,7 +139,7 @@ const CreateNewChat = () => {
 
   const handleCancel = () => {
     setMembers([]);
-    setChatName('');
+    setChatName("");
   };
 
   return (
@@ -111,7 +147,7 @@ const CreateNewChat = () => {
       <button
         onClick={() =>
           (
-            document.getElementById('Create_Chat_Modal') as HTMLDialogElement
+            document.getElementById("Create_Chat_Modal") as HTMLDialogElement
           )?.showModal()
         }
         className="inline-flex items-center gap-2 bg-accent text-primary text-xs uppercase p-2 lg:px-3 lg:py-2 rounded hover:bg-primary hover:text-secondary"
@@ -125,13 +161,17 @@ const CreateNewChat = () => {
             Create Chat
           </h3>
           <div>
-            <span>chat name:</span>
-            <input
-              type="text"
-              className="border text-sm p-2 w-full"
-              onChange={handleNameChange}
-              value={chatName}
-            />
+            {members.length > 1 && (
+              <div>
+                <span>chat name:</span>
+                <input
+                  type="text"
+                  className="border text-sm p-2 w-full"
+                  onChange={handleNameChange}
+                  value={chatName}
+                />
+              </div>
+            )}
           </div>
           <div>
             <div>Users:</div>
