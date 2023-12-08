@@ -16,6 +16,7 @@ import Chats from './components/MainSidebar/Chats/Chats';
 import SingleChatView from './views/Chat/SingleChatView';
 import MainContent from './components/MainContent/MainContent';
 import CurrentRoom from './components/Meeting/CurrentRoom';
+import LandingPageView from './views/LandingPage/LandingPageView';
 // import AuthenticatedRoute from './hoc/AuthenticatedRoute';
 // import Register from './components/Auth/Register/Register';
 
