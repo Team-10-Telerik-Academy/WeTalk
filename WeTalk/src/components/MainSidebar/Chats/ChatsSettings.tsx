@@ -39,6 +39,8 @@ const ChatSettings = ({ chat, chatId }) => {
   useEffect(() => {
     const members = [...chat.members];
     setChatMembers(members);
+    console.log("chat members:", chatMembers);
+    console.log("users:", users);
   }, [chat.members]);
 
   useEffect(() => {
@@ -258,7 +260,9 @@ const ChatSettings = ({ chat, chatId }) => {
                 <div className="mb-3">
                   <p className="font-bold underline">Members:</p>
                   {chatMembers.map((member) => (
-                    <p className="border-b font-bold text-lg">{member}</p>
+                    <p className="border-b font-bold text-lg">
+                      {member.firstName} {member.lastName} ({member.handle})
+                    </p>
                   ))}
                 </div>
                 <div className="overflow-y-auto h-64">
@@ -273,7 +277,9 @@ const ChatSettings = ({ chat, chatId }) => {
                     .filter(
                       (user) =>
                         user.handle !== userData?.handle &&
-                        !chatMembers.includes(user.handle)
+                        !chatMembers.some(
+                          (member) => member.handle === user.handle
+                        )
                     )
                     .map((user) => (
                       <div
