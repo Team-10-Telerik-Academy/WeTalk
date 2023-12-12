@@ -34,13 +34,13 @@ export const createTeam = async (
     teamName,
     teamId,
     owner,
-    members: [owner, ...members],
+    members: [owner,...members],
     createdOn: Date.now(),
     channels: {},
   });
   await addTeamToUser(owner, teamName);
   members.forEach(async (member) => await addTeamToUser(member, teamName));
-  await createGeneralChanel(teamName, members, v4());
+  await createGeneralChanel(teamName, members, v4(),owner);
 
   await update(ref(db, `teams/${teamName}/channels`), {
     general: true,
