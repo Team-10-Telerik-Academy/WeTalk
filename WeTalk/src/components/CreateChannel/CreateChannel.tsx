@@ -3,7 +3,6 @@ import { getAllUsers, getUserByHandle } from "../../services/users.service";
 import { IAppContext } from "../../common/types";
 import AppContext from "../../context/AuthContext";
 import { v4 } from "uuid";
-import { createChannel, deleteChannel } from "../../services/channels.service";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -13,6 +12,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { getAllTeamMembers } from "../../services/teams.service";
+import { createChannel } from "../../services/channel.service";
 
 interface IUserData {
   firstName: string;
