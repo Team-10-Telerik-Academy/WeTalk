@@ -9,23 +9,35 @@ import {
     set,
     update,
   } from "firebase/database";
-  import { db } from "../config/firebase-config";
+  import { db, imageDb } from "../config/firebase-config";
   import { Unsubscribe } from "@firebase/util";
+  import { getDownloadURL, ref as storageRef, uploadBytes } from "@firebase/storage";
+
   
   export const createChannel = async (
     channelName: string,
     members: string[],
     channelId: string,
-    teamName: string
+    teamName: string,
+    userHandle: string,
   ) => {
+    const initialTypingStatus = members.reduce((acc, member) => {
+      acc[member?.handle] = false;
+      return acc;
+    }, {});
+
     try {
       await set(ref(db, `channels/${channelId}`), {
         channelName,
         channelId,
+        userHandle,
         members: [...members],
+        typingStatus: initialTypingStatus,
         teamName,
         createdOn: Date.now(),
         messages: [],
+        roomId: '',
+        roomStatus: '',
       });
     } catch (error) {
       console.error("Error creating channel:", error);
@@ -35,14 +47,16 @@ import {
   export const createGeneralChanel = async (
     teamName: string,
     members: string[],
-    channelId: string
+    channelId: string,
+    userHandle: string,
   ) => {
     try {
       await set(ref(db, `channels/${channelId}`), {
         teamName,
         channelName: "general",
         channelId,
-        members: [...members],
+        userHandle,
+        members: [userHandle,...members],
         createdOn: Date.now(),
         messages: [],
       });
@@ -88,10 +102,14 @@ import {
   export const onChannelUpdate = (
     channelId: string,
     onChannelDataUpdate: (channelData: any) => void,
-    onMessagesUpdate: (messagesData: any) => void
+    onMessagesUpdate: (messagesData: any) => void,
+    onTypingStatusUpdate: (typingStatus: Record<string, boolean>) => void
+
   ): Unsubscribe => {
     const channelRef = ref(db, `channels/${channelId}`);
     const messagesRef = ref(db, `channels/${channelId}/messages`);
+    const typingStatusRef = ref(db, `channels/${channelId}/typingStatus`);
+
   
     const handleChannelUpdate = (snapshot: DataSnapshot) => {
       const channelData = snapshot.val();
@@ -102,13 +120,23 @@ import {
       const messagesData = snapshot.val();
       onMessagesUpdate(messagesData);
     };
+    const handleTypingStatusUpdate = (snapshot: DataSnapshot) => {
+      const typingStatus = snapshot.val();
+      onTypingStatusUpdate(typingStatus);
+    };
   
     const channelUnsubscribe = onValue(channelRef, handleChannelUpdate);
     const messagesUnsubscribe = onValue(messagesRef, handleMessagesUpdate);
-  
+    const typingStatusUnsubscribe = onValue(
+      typingStatusRef,
+      handleTypingStatusUpdate
+    );
+
+
     return () => {
       channelUnsubscribe();
       messagesUnsubscribe();
+      typingStatusUnsubscribe();
     };
   };
   
@@ -134,28 +162,12 @@ import {
     return () => {};
   };
   
-  //   export const registerChatsUpdate = (callback: (chats: any) => void) => {
-  //     const chatsRef = ref(db, "chats");
   
-  //     const handleUpdate = (snapshot: DataSnapshot) => {
-  //       const chatsData = snapshot.val();
-  //       const updatedChats = Object.keys(chatsData).map((chatId) => ({
-  //         ...chatsData[chatId],
-  //       }));
-  
-  //       callback(updatedChats);
-  //     };
-  
-  //     const unsubscribe = onValue(chatsRef, handleUpdate);
-  
-  //     return unsubscribe;
-  //   };
-  //----------------------------------------------------------------
-  
-  export const SendMessage = async (
+  export const sendMessage = async (
     channelId: string,
     message: string,
-    sender: string
+    sender: string,
+    otherMembers: []
   ) => {
     const messageIdRef = push(ref(db, `channels/${channelId}/messages`));
   
@@ -166,9 +178,12 @@ import {
       message,
       sender,
       timestamp: Date.now(),
-      status: "delivered",
+      type: 'message',
     });
-  
+    // Send the message to other members as well
+    otherMembers.forEach(async (member) => {
+        await set(ref(db, `chats/${channelId}/messages/${messageId}/seenBy/${member}`), false);
+      });
     return messageId;
   };
   
@@ -332,4 +347,129 @@ import {
       console.error("Error finding channel by team name:", error);
     }
   };
+
+  // export const getAllChannelsInTeam = (callback: (chatsArray) => void) => {
+  //   const channelsRef = ref(db, 'chats');
   
+  //   const unsubscribe = onValue(channelsRef, (snapshot) => {
+  //     const chatsData = snapshot.val();
+  //     const chatsArray = Object.values(chatsData || {}).map(
+  //       (chatData) => chatData
+  //     );
+  //     callback(chatsArray);
+  //   });
+  
+  //   return unsubscribe;
+  // };
+  
+  
+
+  export const sendGiphyUrl = async (
+    channelId: string,
+    giphyUrl: string,
+    sender: string, 
+    otherMembers: []
+  ) => {
+    try {
+      const messageIdRef = push(ref(db, `channels/${channelId}/messages`));
+      const messageId = messageIdRef.key;
+  
+      await set(ref(db, `channels/${channelId}/messages/${messageId}`), {
+        messageId,
+        message: giphyUrl,
+        sender,
+        timestamp: Date.now(),
+        status: 'delivered',
+        type: 'file',
+      });
+  
+      otherMembers.forEach(async (member) => {
+        await set(ref(db, `channels/${channelId}/messages/${messageId}/seenBy/${member}`), false);
+      });
+  
+      return messageId;
+    } catch (error) {
+      console.error("Error sending Giphy URL:", error);
+      throw error;
+    }
+  };
+
+
+  export const sendFile = async (channelId: string, file: File, sender: string, otherMembers: []) => {
+    try {
+      const storageReference = storageRef(imageDb, `channels/${channelId}/files/${file.name}`);
+      await uploadBytes(storageReference, file);
+  
+      const downloadURL = await getDownloadURL(storageReference);
+  
+      const messageIdRef = push(ref(db, `channels/${channelId}/messages`));
+      const messageId = messageIdRef.key;
+  
+      await set(ref(db, `channels/${channelId}/messages/${messageId}`), {
+        messageId,
+        message: downloadURL,
+        sender,
+        timestamp: Date.now(),
+        status: 'delivered',
+        type: 'file',
+      });
+  
+      otherMembers.forEach(async (member) => {
+        await set(ref(db, `channels/${channelId}/messages/${messageId}/seenBy/${member}`), false);
+      });
+  
+      return messageId;
+    } catch (error) {
+      console.error("Error sending file:", error);
+      throw error;
+    }
+  };
+
+
+export const addRoomIDChannel = async (channelId: string, roomId: string) => {
+  if (channelId && roomId) {
+    const updateData = {
+      [`channels/${channelId}/roomId`]: roomId,
+    };
+
+    await update(ref(db), updateData);
+
+    console.log('Room created successfully!');
+  }
+};
+
+
+export const setAllMessagesToSeenChannel = async (channelId, handle) => {
+  try {
+    const channelRef = ref(db, `channels/${channelId}/messages`);
+    const messageSnapshot = await get(channelRef);
+
+    if (messageSnapshot.exists()) {
+      const messages = messageSnapshot.val();
+      const updatedMessages = { ...messages };
+
+      Object.keys(updatedMessages).forEach((messageId) => {
+        const message = updatedMessages[messageId];
+        const { [handle]: currentHandleSeen, ...restSeenBy } = message.seenBy || {};
+
+        if (message.sender !== handle && message.seenBy[handle] === false) {
+          message.seenBy = {
+            ...restSeenBy,
+            [handle]: true,
+          };
+
+          console.log(`Message ${messageId} marked as seen for ${handle}`);
+          console.log("Updated message:", message);
+        }
+      });
+
+      await set(channelRef, updatedMessages);
+
+    } else {
+      console.log(`No messages found in chat ${channelId}`);
+    }
+  } catch (error) {
+    console.error("Error updating messages:", error);
+  }
+};
+
