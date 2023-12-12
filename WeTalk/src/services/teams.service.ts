@@ -9,6 +9,8 @@ import {
 } from 'firebase/database';
 import { db } from '../config/firebase-config';
 import { ITeam } from '../common/types';
+import { createGeneralChanel } from './channel.service';
+import { v4 } from 'uuid';
 
 export const fromTeamsDocument = (snapshot: DataSnapshot) => {
   const teamsDocument = snapshot.val();
@@ -38,6 +40,11 @@ export const createTeam = async (
   });
   await addTeamToUser(owner, teamName);
   members.forEach(async (member) => await addTeamToUser(member, teamName));
+  await createGeneralChanel(teamName, members, v4());
+
+  await update(ref(db, `teams/${teamName}/channels`), {
+    general: true,
+  });
 };
 
 export const addTeamToUser = async (handle: string, teamName: string) => {
@@ -204,5 +211,17 @@ export const updateTeamName = async (
     }
   } catch (error) {
     console.error('Error updating team name:', error);
+  }
+};
+
+export const getAllTeamMembers = async (teamName: string) => {
+  try {
+    const snapshot = await get(ref(db, `teams/${teamName}/members`));
+
+    if (snapshot.exists()) {
+      return snapshot.val();
+    }
+  } catch (error) {
+    console.error("Error fetching team members:", error);
   }
 };
