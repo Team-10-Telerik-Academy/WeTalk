@@ -17,6 +17,7 @@ import SingleChatView from './views/Chat/SingleChatView';
 import MainContent from './components/MainContent/MainContent';
 import CurrentRoom from './components/Meeting/CurrentRoom';
 import LandingPageView from './views/LandingPage/LandingPageView';
+import SingleChannelView from './views/MainSidebar/Teams/Channels/SingleChannelView';
 // import AuthenticatedRoute from './hoc/AuthenticatedRoute';
 // import Register from './components/Auth/Register/Register';
 
@@ -62,7 +63,9 @@ const App: React.FC = () => {
             <Route element={<AuthenticatedRoute />}>
               <Route path="home" element={<Home />}>
                 <Route path="" element={<MainContent />}></Route>
-                <Route path="teams" element={<Teams />} />
+                <Route path="teams" element={<Teams />} >
+                <Route path=":channelId" element={<SingleChannelView />} />
+                </Route>
                 <Route path="chats" element={<Chats />}>
                   <Route path=":chatId" element={<SingleChatView />}>
                     <Route path=":roomId" element={<CurrentRoom />} />
