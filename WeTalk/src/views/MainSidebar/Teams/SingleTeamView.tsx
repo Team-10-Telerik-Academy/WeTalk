@@ -12,11 +12,14 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown } from 'flowbite-react';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AppContext from '../../../context/AuthContext';
 import { IAppContext, ITeam } from '../../../common/types';
 import MembersModal from '../../../components/MainSidebar/Teams/MembersModal';
 import AddMembersModal from '../../../components/MainSidebar/Teams/AddMembersModal';
+import CreateChannel from '../../../components/CreateChannel/CreateChannel';
+import { findChannelByTeamName } from '../../../services/channel.service';
+import { Link } from 'react-router-dom';
 
 // import nhAvatar from "../../../assets/images/avatar-NH.jpg";
 // import Profile from "../../../components/Profile/Profile";
@@ -40,6 +43,14 @@ type ISingleTeamViewProps = {
   onSaveTeamName: (teamData: ITeam, newName: string) => void;
 };
 
+type IChannelType = {
+  channelId: string;
+  channelName: string;
+  createdOn: number;
+  members: string[];
+  teamName: string;
+};
+
 const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   teamData,
   onDeleteTeam,
@@ -56,6 +67,8 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   );
   const [isEditingTeamName, setIsEditingTeamName] = useState(false);
   const [newTeamName, setNewTeamName] = useState(teamData.teamName);
+  const [isAddChannelOpen, setIsAddChannelOpen] = useState(false);
+  const [channels, setChannels] = useState<IChannelType[]>([]);
 
   const { userData } = useContext(AppContext) as IAppContext;
 
@@ -106,6 +119,23 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   const handleEditTeamName = () => {
     setIsEditingTeamName(!isEditingTeamName);
   };
+
+  const handleAddChannel = () => {
+    setIsAddChannelOpen(true);
+  };
+
+  useEffect(() => {
+    const fetchChannelData = async () => {
+      try {
+        const channelData = await findChannelByTeamName(teamData.teamName);
+        setChannels(channelData);
+      } catch (error) {
+        console.error("Error fetching channel data:", error);
+      }
+    };
+
+    fetchChannelData();
+  }, [teamData.teamName]);
 
   return (
     <>
@@ -181,7 +211,7 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
               </Dropdown.Item>
               {teamData.owner === userData?.handle && (
                 <>
-                  <Dropdown.Item>
+                  <Dropdown.Item onClick={handleAddChannel}>
                     <div className="flex gap-2 items-center hover:bg-gray-100 text-xs lg:text-sm">
                       <FontAwesomeIcon
                         icon={faPlus}
@@ -215,16 +245,30 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
         </div>
       </div>
 
-      {isChannelsVisible && (
+      {isAddChannelOpen && (
+        <CreateChannel
+          teamName={teamData.teamName}
+          isModalOpen={isAddChannelOpen}
+          setIsModalOpen={setIsAddChannelOpen}
+        />
+      )}
+
+{isChannelsVisible && (
         <div className="">
           <div className="px-10 pb-2 text-xs lg:text-[16px]">
-            <p className="text-gray-500  cursor-pointer hover:text-primary hover:underline">
-              #general
-            </p>
-          </div>
-          <div className="px-10 text-xs lg:text-[16px]">
-            <p className="text-gray-500  cursor-pointer hover:text-primary hover:underline">
-              #Announcements
+            <p className="text-gray-500 cursor-pointer hover:text-primary hover:underline">
+              {channels
+                .filter((channel) => channel.teamName === teamData.teamName)
+                .map((channel) => (
+                  <div
+                    key={channel.channelName}
+                    className="flex items-center bg-gray-100 p-2 hover:bg-gray-200 text-xs md:text-sm"
+                  >
+                    <Link to={`${channel.channelId}`}>
+                      #{channel.channelName}
+                    </Link>
+                  </div>
+                ))}
             </p>
           </div>
         </div>
