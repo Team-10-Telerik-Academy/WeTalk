@@ -224,7 +224,7 @@ const ChatSettings = ({ chat, chatId }) => {
                         add member/s
                       </button>
                       <button
-                        className="btn bg-primary/10 my-0.5 shadow-inner shadow-secondary"
+                        className="btn bg-primary/10 my-0.5 shadow-inner shadow-secondary  text-black"
                         onClick={() => handleChangeView("uploadPhoto")}
                       >
                         upload photo
@@ -240,7 +240,7 @@ const ChatSettings = ({ chat, chatId }) => {
                 )}
                 <div className="flex flex-col">
                   <button
-                    className="btn bg-primary/10 my-0.5 shadow-inner shadow-secondary"
+                    className="btn bg-primary/10 my-0.5 shadow-inner shadow-secondary text-black"
                     onClick={() => handleChangeView("media")}
                   >
                     media
@@ -258,16 +258,16 @@ const ChatSettings = ({ chat, chatId }) => {
             {view === "addMember" && (
               <div className="w-64">
                 <div className="mb-3">
-                  <p className="font-bold underline">Members:</p>
+                  <p className="font-bold underline text-black">Members:</p>
                   {chatMembers.map((member) => (
-                    <p className="border-b font-bold text-lg">
+                    <p className="border-b font-bold text-lg text-black">
                       {member.firstName} {member.lastName} ({member.handle})
                     </p>
                   ))}
                 </div>
                 <div className="overflow-y-auto h-64">
                   <div>
-                    <p>add Member:</p>
+                    <p className="text-black">add Member:</p>
                     <input
                       type="text"
                       className="border w-full mb-2 rounded-lg pl-0.5"
@@ -286,7 +286,7 @@ const ChatSettings = ({ chat, chatId }) => {
                         key={user.handle}
                         className="flex items-center bg-gray-100 p-2 hover:bg-gray-200"
                       >
-                        <label className="flex items-center w-full text-primary">
+                        <label className="flex items-center w-full text-black">
                           <input
                             type="checkbox"
                             checked={members.includes(user.handle)}
@@ -299,11 +299,11 @@ const ChatSettings = ({ chat, chatId }) => {
                     ))}
                 </div>
                 <div className="flex justify-between">
-                  <button className="btn" onClick={handleAddMembers}>
+                  <button className="btn text-black" onClick={handleAddMembers}>
                     Add
                   </button>
                   <button
-                    className="btn"
+                    className="btn text-black"
                     onClick={() => handleChangeView("main")}
                   >
                     Back
@@ -314,13 +314,17 @@ const ChatSettings = ({ chat, chatId }) => {
             {view === "media" && (
               <div className="w-64">
                 <div className="mb-3">
-                  <p className="font-bold underline text-center">Media</p>
+                  <p className="font-bold underline text-center text-black">
+                    Media
+                  </p>
                 </div>
-                <Media chatId={chatId} />
-                <div className="overflow-y-auto h-64"></div>
+
+                <div className="overflow-y-auto h-64 overflow-x-hidden w-64">
+                  <Media chatId={chatId} />
+                </div>
                 <div className="flex justify-center">
                   <button
-                    className="btn"
+                    className="btn text-black"
                     onClick={() => handleChangeView("main")}
                   >
                     Back
@@ -337,7 +341,7 @@ const ChatSettings = ({ chat, chatId }) => {
                 />
                 <div className="flex justify-center">
                   <button
-                    className="btn mt-1"
+                    className="btn mt-1 text-black"
                     onClick={() => handleChangeView("main")}
                   >
                     Back

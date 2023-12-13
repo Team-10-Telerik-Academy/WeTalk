@@ -61,7 +61,7 @@ const UploadGroupChatPhoto = ({ chat, setGroupAvatarUrl }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <span className="text-lg font-bold">Group avatar</span>
+      <span className="text-lg font-bold text-black">Group avatar</span>
       <div className="flex flex-col items-center justify-between">
         {(editMode || previewImg) && (
           <img
@@ -86,16 +86,22 @@ const UploadGroupChatPhoto = ({ chat, setGroupAvatarUrl }) => {
           <div className="flex flex-col text-center mt-5">
             <span className="pr-4">{selectedFileName}</span>
             <div className="flex flex-col">
-              <button className="text-sm mb-1 btn" onClick={handlePictureSave}>
+              <button
+                className="text-sm mb-1 btn text-black"
+                onClick={handlePictureSave}
+              >
                 Save
               </button>
-              <button className="text-sm btn" onClick={handleCancel}>
+              <button className="text-sm btn text-black" onClick={handleCancel}>
                 Cancel
               </button>
             </div>
           </div>
         ) : (
-          <button className="text-sm mt-5 btn" onClick={handlePictureChange}>
+          <button
+            className="text-sm mt-5 btn text-black"
+            onClick={handlePictureChange}
+          >
             Change
           </button>
         )}

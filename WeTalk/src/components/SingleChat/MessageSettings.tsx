@@ -1,7 +1,8 @@
 import EditMessage from "./EditMessage";
 import { useEffect, useState } from "react";
 import { ref, remove } from "@firebase/database";
-import { db } from "../../config/firebase-config";
+import { db, imageDb } from "../../config/firebase-config";
+import { ref as storageRef, deleteObject } from "@firebase/storage";
 
 type MessageSettingsProps = {
   chatId: string;
@@ -17,10 +18,27 @@ const MessageSettings: React.FC<MessageSettingsProps> = ({
   message,
   onEdit,
   type,
+  fileName,
 }) => {
   const handleMessageDelete = () => {
-    const messageRef = ref(db, `chats/${chatId}/messages/${messageId}`);
-    remove(messageRef);
+    if (type === "message") {
+      const messageRef = ref(db, `chats/${chatId}/messages/${messageId}`);
+      remove(messageRef);
+    } else {
+      const messageRef = ref(db, `chats/${chatId}/messages/${messageId}`);
+      remove(messageRef);
+
+      const messageStorageRef = storageRef(
+        imageDb,
+        `chats/${chatId}/files/${fileName}`
+      );
+
+      deleteObject(messageStorageRef)
+        .then(() => {})
+        .catch((error) => {
+          console.error("Error deleting file:", error);
+        });
+    }
   };
 
   const handleEdit = (

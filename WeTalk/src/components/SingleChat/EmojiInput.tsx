@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
-import EmojiPicker, { EmojiStyle, EmojiClickData } from 'emoji-picker-react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFaceLaugh } from '@fortawesome/free-regular-svg-icons';
-import { faShareSquare } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useRef } from "react";
+import EmojiPicker, { EmojiStyle, EmojiClickData } from "emoji-picker-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFaceLaugh } from "@fortawesome/free-regular-svg-icons";
+import { faShareSquare } from "@fortawesome/free-solid-svg-icons";
 
 type EmojiMap = { [key: string]: string };
 
@@ -12,62 +12,62 @@ interface EmojiInputProps {
 
 const replaceStringWithEmoji = (str: string) => {
   const emojiMap: EmojiMap = {
-    ':)': '😊',
-    ':(': '🙁',
-    ':D': '😁',
-    ';(': '😥',
-    ':O': '😮',
-    ';)': '😉',
-    '8)': '😎',
-    '>:@': '😡',
-    ':heart_eyes': '😍',
-    ':sob': '😭',
-    ':joy': '😂',
-    ':thumbsup': '👍',
-    ':thumbsdown': '👎',
-    ':clap': '👏',
-    ':fire': '🔥',
-    ':rocket': '🚀',
-    ':tada': '🎉',
-    ':pray': '🙏',
-    ':muscle': '💪',
-    ':100': '💯',
-    ':sparkles': '✨',
-    ':sunglasses': '😎',
-    ':angry': '😡',
-    ':heart': '❤️',
-    ':star': '⭐',
-    ':exclamation': '❗',
-    ':question': '❓',
-    ':thumbs_up': '👍',
-    ':thumbs_down': '👎',
-    ':ok_hand': '👌',
-    ':point_up': '☝️',
-    ':point_down': '👇',
-    ':point_left': '👈',
-    ':point_right': '👉',
-    ':raised_hands': '🙌',
-    ':handshake': '🤝',
-    ':v': '✌️',
-    ':wave': '👋',
-    ':broken_heart': '💔',
-    ':open_mouth': '😮',
-    ':cry': '😢',
-    ':laughing': '😆',
-    ':smiley': '😃',
-    ':sweat_smile': '😅',
-    ':blush': '😊',
-    ':wink': '😉',
-    ':yum': '😋',
-    ':relieved': '😌',
-    ':neutral_face': '😐',
-    ':confused': '😕',
-    ':pouting': '😡',
-    ':ghost': '👻',
-    ':skull': '💀',
-    ':alien': '👽',
-    ':robot': '🤖',
-    ':poop': '💩',
+    ":)": "😊",
+    ":(": "🙁",
+    ":D": "😁",
+    ";(": "😥",
+    ":O": "😮",
+    ";)": "😉",
+    "8)": "😎",
+    ">:@": "😡",
+    ":heart_eyes": "😍",
+    ":sob": "😭",
+    ":joy": "😂",
+    ":thumbsup": "👍",
+    ":thumbsdown": "👎",
+    ":clap": "👏",
+    ":fire": "🔥",
+    ":rocket": "🚀",
+    ":tada": "🎉",
+    ":pray": "🙏",
+    ":muscle": "💪",
+    ":100": "💯",
+    ":sparkles": "✨",
+    ":sunglasses": "😎",
+    ":angry": "😡",
+    ":heart": "❤️",
+    ":star": "⭐",
+    ":exclamation": "❗",
+    ":question": "❓",
+    ":thumbs_up": "👍",
+    ":thumbs_down": "👎",
+    ":ok_hand": "👌",
+    ":point_up": "☝️",
+    ":point_down": "👇",
+    ":point_left": "👈",
+    ":point_right": "👉",
+    ":raised_hands": "🙌",
+    ":handshake": "🤝",
+    ":v": "✌️",
+    ":wave": "👋",
+    ":broken_heart": "💔",
+    ":open_mouth": "😮",
+    ":cry": "😢",
+    ":laughing": "😆",
+    ":smiley": "😃",
+    ":sweat_smile": "😅",
+    ":blush": "😊",
+    ":wink": "😉",
+    ":yum": "😋",
+    ":relieved": "😌",
+    ":neutral_face": "😐",
+    ":confused": "😕",
+    ":pouting": "😡",
+    ":ghost": "👻",
+    ":skull": "💀",
+    ":alien": "👽",
+    ":robot": "🤖",
+    ":poop": "💩",
   };
 
   const regex =
@@ -77,70 +77,70 @@ const replaceStringWithEmoji = (str: string) => {
 };
 
 const EmojiInput: React.FC<EmojiInputProps> = ({ onSubmit, handleChange }) => {
-  const [message, setMessage] = useState('');
-  const [transformedMessage, setTransformedMessage] = useState('');
-  const [selectedEmoji, setSelectedEmoji] = useState<string>('1f60a');
+  const [message, setMessage] = useState("");
+  const [transformedMessage, setTransformedMessage] = useState("");
+  const [selectedEmoji, setSelectedEmoji] = useState<string>("1f60a");
   const inputRef = useRef<HTMLInputElement>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [filteredEmojiList, setFilteredEmojiList] = useState<string[]>([]);
 
   const [emojiMap, setEmojiMap] = useState<EmojiMap>({
-    ':)': '😊',
-    ':(': '🙁',
-    ':D': '😁',
-    ';(': '😥',
-    ':O': '😮',
-    ';)': '😉',
-    '8)': '😎',
-    '>:@': '😡',
-    ':heart_eyes': '😍',
-    ':sob': '😭',
-    ':joy': '😂',
-    ':thumbsup': '👍',
-    ':thumbsdown': '👎',
-    ':clap': '👏',
-    ':fire': '🔥',
-    ':rocket': '🚀',
-    ':tada': '🎉',
-    ':pray': '🙏',
-    ':muscle': '💪',
-    ':100': '💯',
-    ':sparkles': '✨',
-    ':sunglasses': '😎',
-    ':angry': '😡',
-    ':heart': '❤️',
-    ':star': '⭐',
-    ':exclamation': '❗',
-    ':question': '❓',
-    ':thumbs_up': '👍',
-    ':thumbs_down': '👎',
-    ':ok_hand': '👌',
-    ':point_up': '☝️',
-    ':point_down': '👇',
-    ':point_left': '👈',
-    ':point_right': '👉',
-    ':raised_hands': '🙌',
-    ':handshake': '🤝',
-    ':v': '✌️',
-    ':wave': '👋',
-    ':broken_heart': '💔',
-    ':open_mouth': '😮',
-    ':cry': '😢',
-    ':laughing': '😆',
-    ':smiley': '😃',
-    ':sweat_smile': '😅',
-    ':blush': '😊',
-    ':wink': '😉',
-    ':yum': '😋',
-    ':relieved': '😌',
-    ':neutral_face': '😐',
-    ':confused': '😕',
-    ':pouting': '😡',
-    ':ghost': '👻',
-    ':skull': '💀',
-    ':alien': '👽',
-    ':robot': '🤖',
-    ':poop': '💩',
+    ":)": "😊",
+    ":(": "🙁",
+    ":D": "😁",
+    ";(": "😥",
+    ":O": "😮",
+    ";)": "😉",
+    "8)": "😎",
+    ">:@": "😡",
+    ":heart_eyes": "😍",
+    ":sob": "😭",
+    ":joy": "😂",
+    ":thumbsup": "👍",
+    ":thumbsdown": "👎",
+    ":clap": "👏",
+    ":fire": "🔥",
+    ":rocket": "🚀",
+    ":tada": "🎉",
+    ":pray": "🙏",
+    ":muscle": "💪",
+    ":100": "💯",
+    ":sparkles": "✨",
+    ":sunglasses": "😎",
+    ":angry": "😡",
+    ":heart": "❤️",
+    ":star": "⭐",
+    ":exclamation": "❗",
+    ":question": "❓",
+    ":thumbs_up": "👍",
+    ":thumbs_down": "👎",
+    ":ok_hand": "👌",
+    ":point_up": "☝️",
+    ":point_down": "👇",
+    ":point_left": "👈",
+    ":point_right": "👉",
+    ":raised_hands": "🙌",
+    ":handshake": "🤝",
+    ":v": "✌️",
+    ":wave": "👋",
+    ":broken_heart": "💔",
+    ":open_mouth": "😮",
+    ":cry": "😢",
+    ":laughing": "😆",
+    ":smiley": "😃",
+    ":sweat_smile": "😅",
+    ":blush": "😊",
+    ":wink": "😉",
+    ":yum": "😋",
+    ":relieved": "😌",
+    ":neutral_face": "😐",
+    ":confused": "😕",
+    ":pouting": "😡",
+    ":ghost": "👻",
+    ":skull": "💀",
+    ":alien": "👽",
+    ":robot": "🤖",
+    ":poop": "💩",
   });
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,8 +175,8 @@ const EmojiInput: React.FC<EmojiInputProps> = ({ onSubmit, handleChange }) => {
   function handleOnEnter(newText: string) {
     const messageWithEmoji = replaceStringWithEmoji(newText);
     onSubmit(messageWithEmoji);
-    setMessage('');
-    setTransformedMessage('');
+    setMessage("");
+    setTransformedMessage("");
   }
 
   const onClick = (emojiData: EmojiClickData, event: MouseEvent) => {
@@ -200,8 +200,8 @@ const EmojiInput: React.FC<EmojiInputProps> = ({ onSubmit, handleChange }) => {
     if (message.length > 0) {
       const messageWithEmoji = replaceStringWithEmoji(message);
       onSubmit(messageWithEmoji);
-      setMessage('');
-      setTransformedMessage('');
+      setMessage("");
+      setTransformedMessage("");
     }
   };
 

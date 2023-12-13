@@ -41,7 +41,7 @@ const Media = ({ chatId }) => {
         ))
       ) : (
         <div className="mt-10 text-center w-full">
-          <p className="font-bold text-sm">no files yet</p>
+          <p className="font-bold text-sm text-black">no files yet</p>
         </div>
       )}
     </div>

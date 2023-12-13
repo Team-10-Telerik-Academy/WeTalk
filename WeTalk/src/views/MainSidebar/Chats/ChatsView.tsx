@@ -162,7 +162,7 @@ const ChatsView = () => {
               </div>
             ))
           ) : (
-            <div>No chats yet!</div>
+            <div className="text-white">No chats yet!</div>
           )}
         </div>
       </div>
@@ -191,7 +191,7 @@ const ChatsView = () => {
   };
 
   return (
-    <div className="min-h-screen sm:min-h-screen md:min-h-screen lg:min-h-screen px-4 py-8 border-r overflow-y-auto bg-secondary w-full sm:w-1/2 md:w-1/2 lg:w-[300px] xl:w-[350px] 2xl:w-[400px] dark:bg-gray-900 dark:border-gray-700">
+    <div className="z-[1] min-h-screen sm:min-h-screen md:min-h-screen lg:min-h-screen px-4 py-8 border-r overflow-y-auto bg-secondary w-full sm:w-1/2 md:w-1/2 lg:w-[300px] xl:w-[350px] 2xl:w-[400px]">
       <SearchBar />
       <nav className="mt-6 space-y-4">
         <div className="space-y-2">

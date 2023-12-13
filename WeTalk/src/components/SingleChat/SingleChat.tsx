@@ -302,6 +302,7 @@ const renderChatBubble = (
           messageId={message.messageId}
           message={message.message}
           type={message.type}
+          fileName={message.fileName}
         />
       )}
     </div>
