@@ -2,6 +2,7 @@ import { DataSnapshot, get, off, onValue, push, ref as dbDatabaseRef, set, updat
 import { db, imageDb } from "../config/firebase-config";
 import { Unsubscribe } from "@firebase/util";
 import { getDownloadURL, ref as storageRef, uploadBytes } from "@firebase/storage";
+import { v4 } from "uuid";
 
 // Sends a message to a specified chat and returns the message ID
 export const SendMessage = async (
@@ -32,7 +33,8 @@ export const SendMessage = async (
 
 export const sendFile = async (chatId: string, file: File, sender: string, otherMembers: []) => {
   try {
-    const storageReference = storageRef(imageDb, `chats/${chatId}/files/${file.name}`);
+    const fileName = `${file.name}_${v4()}`
+    const storageReference = storageRef(imageDb, `chats/${chatId}/files/${fileName}`);
     await uploadBytes(storageReference, file);
 
     const downloadURL = await getDownloadURL(storageReference);
@@ -47,6 +49,7 @@ export const sendFile = async (chatId: string, file: File, sender: string, other
       timestamp: Date.now(),
       status: 'delivered',
       type: 'file',
+      fileName,
     });
 
     otherMembers.forEach(async (member) => {
@@ -134,10 +137,11 @@ export const CreateChat = async (chatName: string, members, chatId: string) => {
   });
 
   members.forEach(async (member) => {
-    await set(dbDatabaseRef(db, `users/${member.handle}/chats`), {
-      chats: {
-        [chatId]: true,
-      },
+    const userChatsRef = dbDatabaseRef(db, `users/${member.handle}/chats`);
+    
+    // Use 'update' to add the new chat without overwriting existing chats
+    await update(userChatsRef, {
+      [chatId]: true,
     });
   });
 

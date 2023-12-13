@@ -157,16 +157,16 @@ const CreateNewChat = () => {
       </button>
       <dialog id="Create_Chat_Modal" className="modal">
         <div className="modal-box">
-          <h3 className="font-bold text-lg text-primary text-center">
+          <h3 className="font-bold text-lg text-black text-center">
             Create Chat
           </h3>
           <div>
             {members.length > 1 && (
               <div>
-                <span>chat name:</span>
+                <span className="text-black">chat name:</span>
                 <input
                   type="text"
-                  className="border text-sm p-2 w-full"
+                  className="border text-sm p-2 w-full text-black"
                   onChange={handleNameChange}
                   value={chatName}
                 />
@@ -174,7 +174,7 @@ const CreateNewChat = () => {
             )}
           </div>
           <div>
-            <div>Users:</div>
+            <div className="text-black">Users:</div>
             <div className="overflow-y-auto h-32">
               {users
                 .filter((user) => user.handle !== userData?.handle)
@@ -198,23 +198,22 @@ const CreateNewChat = () => {
                         }
                         className="mr-2"
                       />
-                      {user.firstName} {user.lastName} ({user.handle})
+                      <div className="text-black">
+                        {user.firstName} {user.lastName} ({user.handle})
+                      </div>
                     </label>
                   </div>
                 ))}
             </div>
           </div>
           <div className="flex justify-between items-center">
-            <button
-              className="btn text-primary mt-6"
-              onClick={handleCreateChat}
-            >
+            <button className="btn text-black mt-6" onClick={handleCreateChat}>
               Create
             </button>
             <div className="modal-action">
               <form method="dialog">
                 <div>
-                  <button className="btn text-primary" onClick={handleCancel}>
+                  <button className="btn text-black" onClick={handleCancel}>
                     Cancel
                   </button>
                 </div>
