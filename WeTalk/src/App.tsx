@@ -1,23 +1,24 @@
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from './config/firebase-config';
-import { getUserData } from './services/users.service';
-import { useEffect, useState } from 'react';
-import { IAppState, IUserData } from './common/types';
-import AppContext from './context/AuthContext';
-import { Route, Routes } from 'react-router-dom';
-import Home from './views/Home/Home';
-import AuthenticatedRoute from './hoc/AuthenticatedRoute';
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "./config/firebase-config";
+import { getUserData } from "./services/users.service";
+import { useEffect, useState } from "react";
+import { IAppState, IUserData } from "./common/types";
+import AppContext from "./context/AuthContext";
+import { Route, Routes } from "react-router-dom";
+import Home from "./views/Home/Home";
+import AuthenticatedRoute from "./hoc/AuthenticatedRoute";
 // import ThemeButton from './components/ThemeButton/ThemeButton';
-import { Navigate } from 'react-router-dom';
-import SignIn from './components/Auth/SignIn/SignIn';
-import Register from './components/Auth/Register/Register';
-import Teams from './components/MainSidebar/Teams/Teams';
-import Chats from './components/MainSidebar/Chats/Chats';
-import SingleChatView from './views/Chat/SingleChatView';
-import MainContent from './components/MainContent/MainContent';
-import CurrentRoom from './components/Meeting/CurrentRoom';
-import LandingPageView from './views/LandingPage/LandingPageView';
-import SingleChannelView from './views/MainSidebar/Teams/Channels/SingleChannelView';
+import { Navigate } from "react-router-dom";
+import SignIn from "./components/Auth/SignIn/SignIn";
+import Register from "./components/Auth/Register/Register";
+import Teams from "./components/MainSidebar/Teams/Teams";
+import Chats from "./components/MainSidebar/Chats/Chats";
+import SingleChatView from "./views/Chat/SingleChatView";
+import MainContent from "./components/MainContent/MainContent";
+import CurrentRoom from "./components/Meeting/CurrentRoom";
+import LandingPageView from "./views/LandingPage/LandingPageView";
+import SingleChannelView from "./views/MainSidebar/Teams/Channels/SingleChannelView";
+import UserChatsRoute from "./hoc/UserChatsRoute";
 // import AuthenticatedRoute from './hoc/AuthenticatedRoute';
 // import Register from './components/Auth/Register/Register';
 
@@ -39,7 +40,7 @@ const App: React.FC = () => {
       .then((snapshot) => {
         console.log(snapshot.val());
         if (!snapshot.exists()) {
-          throw new Error('Invalid user!');
+          throw new Error("Invalid user!");
         }
 
         const userData: IUserData =
@@ -63,12 +64,15 @@ const App: React.FC = () => {
             <Route element={<AuthenticatedRoute />}>
               <Route path="home" element={<Home />}>
                 <Route path="" element={<MainContent />}></Route>
-                <Route path="teams" element={<Teams />} >
-                <Route path=":channelId" element={<SingleChannelView />} />
+                <Route path="teams" element={<Teams />}>
+                  <Route path=":channelId" element={<SingleChannelView />} />
                 </Route>
                 <Route path="chats" element={<Chats />}>
-                  <Route path=":chatId" element={<SingleChatView />}>
-                    <Route path=":roomId" element={<CurrentRoom />} />
+                  <Route path="" element={<MainContent />}></Route>
+                  <Route element={<UserChatsRoute />}>
+                    <Route path=":chatId" element={<SingleChatView />}>
+                      <Route path=":roomId" element={<CurrentRoom />} />
+                    </Route>
                   </Route>
                 </Route>
               </Route>
