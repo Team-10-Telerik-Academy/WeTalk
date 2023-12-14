@@ -39,7 +39,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
     setSelectAll(false);
   };
 
-  const handleCreateTeam = async () => {
+  const handleCreateTeam = () => {
     if (!teamName) {
       toast.warning('Team Name is required!', {
         autoClose: 3000,
@@ -81,24 +81,29 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
     closeModal();
   };
 
-  const handleCheckboxChange = (handle: string) => {
+  const handleCheckboxChange = (handle, firstName, lastName) => {
     setMembers((prevMembers) =>
-      prevMembers.includes(handle)
-        ? prevMembers.filter((member) => member !== handle)
-        : [...prevMembers, handle]
+      prevMembers.some((member) => member.handle === handle)
+        ? prevMembers.filter((member) => member.handle !== handle)
+        : [...prevMembers, { handle, firstName, lastName }]
     );
   };
 
   const handleSelectAll = () => {
+    const newUsers = users.map((user) => ({
+      handle: user.handle,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    }));
     setSelectAll(!selectAll);
     setMembers((prevMembers) =>
       selectAll
         ? prevMembers.filter(
             (member) =>
-              !users.map((user) => user.handle).includes(member) &&
-              member !== userData?.handle
+              !newUsers.map((user) => user.handle).includes(member.handle) &&
+              member.handle !== userData?.handle
           )
-        : [...prevMembers, ...users.map((user) => user.handle)]
+        : [...prevMembers, ...newUsers.map((user) => user)]
     );
   };
 
@@ -139,7 +144,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
                 </label>
                 <label className="block mb-10 mt-4">
                   <p className="font-bold text-primary mb-2 text-sm  md:text-md">
-                    Members:
+                    Users:
                   </p>
                   <div className="space-y-2 border-2 p-2 rounded">
                     <div className="flex items-center">
@@ -163,8 +168,16 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
                           <label className="flex items-center w-full text-primary">
                             <input
                               type="checkbox"
-                              checked={members.includes(user.handle)}
-                              onChange={() => handleCheckboxChange(user.handle)}
+                              checked={members.some(
+                                (member) => member.handle === user.handle
+                              )}
+                              onChange={() =>
+                                handleCheckboxChange(
+                                  user.handle,
+                                  user.firstName,
+                                  user.lastName
+                                )
+                              }
                               className="mr-2"
                             />
                             {user.firstName} {user.lastName} ({user.handle})
