@@ -44,11 +44,13 @@ export const Home = () => {
   };
 
   return (
-    <div className="flex w-full">
+    <div className="flex w-full bg-gray-100">
       <aside className="flex">
         <NavigationSidebarView onLogout={onLogout} />
       </aside>
-      <Outlet />
+      <div className="flex w-full">
+        <Outlet />
+      </div>
     </div>
   );
 };
