@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getChatMessages } from '../../services/chat.service';
 import SingleChat from '../../components/SingleChat/SingleChat';
-import CurrentRoom from '../../components/Meeting/CurrentRoom';
 
 const SingleChatView = () => {
   const { chatId } = useParams();
@@ -14,7 +13,7 @@ const SingleChatView = () => {
         if (chatId) {
           const chatMessages = await getChatMessages(chatId);
           setMessages(chatMessages);
-          console.log(chatMessages);
+          console.log('fetched chat messages');
         } else {
           console.error('Chat ID is not available.');
         }
@@ -27,12 +26,9 @@ const SingleChatView = () => {
   }, [chatId]);
 
   return (
-    <div className="overflow-y w-full">
+    <div className="overflow-y w-full ml-2 mr-4 drop-shadow-lg">
       <SingleChat chatId={chatId!} messages={messages} />
     </div>
-    // <div className="flex w-full">
-    // <div className="flex-none"><NavigationSidebarView /></div>
-    // </div>
   );
 };
 
