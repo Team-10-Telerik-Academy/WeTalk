@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 src/common/dyte-api.tsx
+src/common/open-ai-api.env
 
 # Editor directories and files
 .vscode/*
