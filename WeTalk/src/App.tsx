@@ -15,7 +15,11 @@ import Teams from './components/MainSidebar/Teams/Teams';
 import Chats from './components/MainSidebar/Chats/Chats';
 import SingleChatView from './views/Chat/SingleChatView';
 import MainContent from './components/MainContent/MainContent';
-import CurrentRoom from './components/Meeting/CurrentRoom';
+import CurrentVideoRoom from './components/Meeting/CurrentVideoRoom';
+import LandingPageView from './views/LandingPage/LandingPageView';
+import OpenAI from './components/OpenAI/OpenAI';
+import CurrentAudioRoom from './components/Meeting/CurrentAudioRoom';
+import BigCalendar from './components/Calendar/BigCalendar';
 // import AuthenticatedRoute from './hoc/AuthenticatedRoute';
 // import Register from './components/Auth/Register/Register';
 
@@ -35,10 +39,10 @@ const App: React.FC = () => {
 
     getUserData(user.uid)
       .then((snapshot) => {
-        console.log(snapshot.val());
         if (!snapshot.exists()) {
           throw new Error('Invalid user!');
         }
+        console.log('user data fetched');
 
         const userData: IUserData =
           snapshot.val()[Object.keys(snapshot.val())[0]];
@@ -60,13 +64,21 @@ const App: React.FC = () => {
 
             <Route element={<AuthenticatedRoute />}>
               <Route path="home" element={<Home />}>
-                <Route path="" element={<MainContent />}></Route>
+                <Route path="" element={<MainContent />} />
                 <Route path="teams" element={<Teams />} />
                 <Route path="chats" element={<Chats />}>
-                  <Route path=":chatId" element={<SingleChatView />}>
-                    <Route path=":roomId" element={<CurrentRoom />} />
-                  </Route>
+                  <Route path=":chatId" element={<SingleChatView />} />
                 </Route>
+                <Route
+                  path="video-room/:chatId/:videoRoomId"
+                  element={<CurrentVideoRoom />}
+                />
+                <Route
+                  path="audio-room/:chatId/:audioRoomId"
+                  element={<CurrentAudioRoom />}
+                />
+                <Route path="open-ai" element={<OpenAI />} />
+                <Route path="calendar" element={<BigCalendar />} />
               </Route>
               <Route element={<LandingPageView />}>
                 <Route path="/signin" element={<SignIn />} />
