@@ -12,7 +12,14 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { getAllTeamMembers } from "../../services/teams.service";
-import { createChannel } from "../../services/channel.service";
+import {
+  addRoomIDChannel,
+  createChannel,
+  deleteChannel,
+} from "../../services/channel.service";
+import { API_KEY, BASE_URL, ORGANIZATION_ID } from "../../common/dyte-api";
+import { useNavigate } from "react-router";
+import axios from "axios";
 
 interface IUserData {
   firstName: string;
@@ -20,7 +27,12 @@ interface IUserData {
   handle: string;
 }
 
-const CreateChannel = ({ teamName, isModalOpen, setIsModalOpen }) => {
+const CreateChannel = ({
+  teamName,
+  isModalOpen,
+  setIsModalOpen,
+  userHandle = userData.handle,
+}) => {
   const [users, setUsers] = useState<IUserData[]>([]);
   const { userData } = useContext(AppContext) as IAppContext;
   const [members, setMembers] = useState<string[]>([]);
@@ -55,6 +67,8 @@ const CreateChannel = ({ teamName, isModalOpen, setIsModalOpen }) => {
   }, [users.length]);
   //console.log(teamName);
 
+  const navigate = useNavigate();
+
   const handleCheckboxChange = (handle: string) => {
     setMembers((prevMembers) =>
       prevMembers.includes(handle)
@@ -62,6 +76,28 @@ const CreateChannel = ({ teamName, isModalOpen, setIsModalOpen }) => {
         : [...prevMembers, handle]
     );
   };
+
+  // const handleCheckboxChange = (handle, firstName, lastName) => {
+  //   setMembers((prevMembers) => {
+  //     const existingMemberIndex = prevMembers.findIndex(
+  //       (member) => member.handle === handle
+  //     );
+  //     console.log(members);
+  //     if (existingMemberIndex !== -1) {
+  //       // Member already exists, remove it
+  //       const updatedMembers = [...prevMembers];
+  //       updatedMembers.splice(existingMemberIndex, 1);
+  //       return updatedMembers;
+  //     } else {
+  //       // Member doesn't exist, add it
+  //       return [
+  //         ...prevMembers,
+  //         { handle: handle, firstName: firstName, lastName: lastName },
+  //       ];
+  //     }
+  //   });
+  // };
+
   const handleCreateChannel = async (
     channelName: string,
     members: string[]
@@ -89,10 +125,50 @@ const CreateChannel = ({ teamName, isModalOpen, setIsModalOpen }) => {
     }
     try {
       if (channelName) {
-        const userHandle = userData?.handle;
+        // const user = {
+        //   handle: userData?.handle,
+        //   firstName: userData?.firstName,
+        //   lastName: userData?.lastName,
+        // };
         if (userHandle) {
-          const updatedMembers = [...members, userHandle];
-          await createChannel(channelName, updatedMembers, v4(), teamName);
+          const updatedMembers = [...members];
+          await createChannel(
+            channelName,
+            updatedMembers,
+            v4(),
+            teamName,
+            userHandle
+          );
+
+          const { channelId } = newChannel;
+
+          const encodedString = btoa(`${ORGANIZATION_ID}:${API_KEY}`);
+
+          const dyteRoomCreate = {
+            method: "POST",
+            url: `${BASE_URL}/meetings`,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Basic ${encodedString}`,
+              "Access-Control-Allow-Origin": "*",
+            },
+            data: { title: channelName },
+          };
+          navigate(`${channelId}`);
+
+          try {
+            const response = await axios.request(dyteRoomCreate);
+            console.log("Dyte Room Created:", response);
+            const dyteID = response.data.data.id;
+
+            addRoomIDChannel(channelId, dyteID);
+            navigate(`${channelId}`);
+          } catch (error) {
+            console.error("Error creating Dyte room:", error);
+            console.error("Response data:", error.response?.data);
+            // Additional logging for debugging
+            console.error("Dyte Room Creation failed:", error.message);
+          }
         }
       }
     } catch (error) {
@@ -221,7 +297,7 @@ const CreateChannel = ({ teamName, isModalOpen, setIsModalOpen }) => {
                             <input
                               type="checkbox"
                               checked={members.includes(user.handle)}
-                              onChange={() => handleCheckboxChange(user.handle)}
+                              onChange={() => handleCheckboxChange(user.handle, user.firstName, user.lastName)}
                               className="mr-2"
                             />
                             {user.firstName} {user.lastName} ({user.handle})

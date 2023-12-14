@@ -32,6 +32,8 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        // const result = await getAllTeamMembers(teamName);
+        // setUsers(result);
         getAllUsers((usersData) => {
           setUsers(usersData);
         });
@@ -44,6 +46,7 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
       fetchUsers();
     }
   }, [userData, users]);
+
 
   useEffect(() => {
     const members = [...channel.members];
@@ -66,10 +69,11 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
     });
   };
 
-  const handleChannelDelete = () => {
+  const handleChannelDelete = () =>{
+ 
     const channelRef = ref(db, `channels/${channelId}`);
     remove(channelRef);
-    navigate("../teams");
+    navigate("../");
   };
 
   const handleEdit = () => {
@@ -102,11 +106,11 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
     get(channelRef).then((snapshot) => {
       if (snapshot.exists()) {
         const channelData = snapshot.val();
-
+       
         const updatedMembers = channelData.members.filter(
           (member) => member !== userHandle
         );
-
+        //  console.log(channelData)
         set(channelRef, {
           ...channelData,
           members: updatedMembers,
@@ -116,6 +120,7 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
     });
   };
 
+  
   const handleCancel = () => {
     setEditedName(channel.channelName);
     setEditMode(false);
@@ -124,8 +129,6 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
   const handleChangeView = (newView) => {
     setView(newView);
   };
-
-
 
   const handleAddMembers = () => {
     const channelRef = ref(db, `channels/${channel.channelId}`);
@@ -149,6 +152,7 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
   };
 
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
+  const [teamMembersFullName, setTeamMembersFullName] = useState<IUserData[]>([]);
   const [channelUsers, setChannelUsers] = useState<IUserData[]>([]);
 
   useEffect(() => {
@@ -156,16 +160,44 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
       try {
         const result = await getAllTeamMembers(teamName);
         setTeamMembers(result);
-        //console.log(teamMembers)
+       // console.log(teamMembers)
       } catch (error) {
         console.error("Error fetching users:", error);
       }
     };
-
-    if (users.length === 0) {
       fetchUsers();
-    }
+    
   }, [users.length]);
+
+
+  useEffect(() => {
+    const handleUserByHandle = async () => {
+      try {
+        const teamData = [];
+
+        for (const member of teamMembers) {
+          const snapshot = await getUserByHandle(member);
+
+          if (snapshot.exists()) {
+            const userDataForMember = snapshot.val();
+            if (userDataForMember) {
+              teamData.push({
+                firstName: userDataForMember.firstName,
+                lastName: userDataForMember.lastName,
+                handle: userDataForMember.handle,
+              });
+            }
+          }
+        }
+        setTeamMembersFullName(teamData);
+       // console.log(teamMembersFullName);
+        return userData;
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    handleUserByHandle();
+  }, [teamMembers, userData]);	
 
   useEffect(() => {
     const handleUserByHandle = async () => {
@@ -187,6 +219,7 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
           }
         }
         setChannelUsers(userData);
+      //  console.log(channelUsers)
         return userData;
       } catch (error) {
         console.error(error);
@@ -308,11 +341,11 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
                       className="border w-full mb-2 rounded-lg pl-0.5"
                     />
                   </div>
-                  {users
+                  {teamMembersFullName
                     .filter(
                       (user) =>
                         user.handle !== userData?.handle &&
-                        !channelMembers.some(
+                        !channelUsers.some(
                           (member) => member.handle === user.handle
                         )
                     )
@@ -363,8 +396,6 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
                 </div>
               </div>
             )}
-
-            
           </div>
         </div>
       </dialog>
