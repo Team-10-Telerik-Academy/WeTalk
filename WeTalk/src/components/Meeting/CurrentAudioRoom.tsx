@@ -8,7 +8,7 @@ import { IAppContext } from '../../common/types';
 import { API_KEY, BASE_URL, ORGANIZATION_ID } from '../../common/dyte-api';
 import MyAudio from './MyAudio';
 
-const CurrentAudioRoom: React.FC = ({ setIsAudioCallButtonClicked }) => {
+const CurrentAudioRoom: React.FC = () => {
   const [meeting, initMeeting] = useDyteClient();
   const { audioRoomId } = useParams();
   const { userData } = useContext(AppContext) as IAppContext;
