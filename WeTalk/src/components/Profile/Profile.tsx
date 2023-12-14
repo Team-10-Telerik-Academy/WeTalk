@@ -13,15 +13,13 @@ const Profile: React.FC<ProfileProps> = ({ handle }) => {
   useEffect(() => {
     const userCallback = (userData: IUserData) => {
       setUser(userData);
-      console.log(userData);
+      console.log('user fetched');
     };
 
     const unsubscribe = getUserByHandleLive(handle, userCallback);
-    console.log(unsubscribe);
 
     return () => {
       unsubscribe();
-      console.log(unsubscribe);
     };
   }, [handle]);
 
