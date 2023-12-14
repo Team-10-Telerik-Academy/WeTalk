@@ -50,7 +50,7 @@ const PictureChange: React.FC<PictureChangeProps> = ({
   const handlePictureSave = () => {
     if (selectedFile) {
       const imgRef = ref(imageDb, `Profile pictures/${userData?.handle}`);
-      console.log(selectedFile);
+      console.log('selected file');
 
       uploadBytes(imgRef, selectedFile)
         .then(async () => {
