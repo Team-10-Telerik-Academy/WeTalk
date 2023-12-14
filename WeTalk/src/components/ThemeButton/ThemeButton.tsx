@@ -14,7 +14,7 @@ function ThemeButton() {
   useEffect(() => {
     localStorage.setItem('theme', theme);
     const localTheme = localStorage.getItem('theme');
-    console.log(localTheme);
+    console.log('theme');
     document
       .querySelector('html')
       ?.setAttribute('data-theme', localTheme || '');
