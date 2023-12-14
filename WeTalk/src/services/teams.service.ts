@@ -9,6 +9,7 @@ import {
 } from 'firebase/database';
 import { db } from '../config/firebase-config';
 import { ITeam } from '../common/types';
+import { createTeamNotification } from './notifications.service';
 
 export const fromTeamsDocument = (snapshot: DataSnapshot) => {
   const teamsDocument = snapshot.val();
@@ -25,8 +26,8 @@ export const fromTeamsDocument = (snapshot: DataSnapshot) => {
 export const createTeam = async (
   teamName: string,
   teamId: string,
-  owner: string,
-  members: string[]
+  owner: any,
+  members: any[]
 ) => {
   await set(ref(db, `teams/${teamName}`), {
     teamName,
@@ -36,8 +37,11 @@ export const createTeam = async (
     createdOn: Date.now(),
     channels: {},
   });
-  await addTeamToUser(owner, teamName);
-  members.forEach(async (member) => await addTeamToUser(member, teamName));
+  await addTeamToUser(owner.handle, teamName);
+  members.forEach(
+    async (member) => await addTeamToUser(member.handle, teamName)
+  );
+  createTeamNotification(owner.handle, members, teamName);
 };
 
 export const addTeamToUser = async (handle: string, teamName: string) => {
@@ -79,9 +83,9 @@ export const getAllTeams = (callback: (teamsArray: ITeam[]) => void) => {
   return unsubscribe;
 };
 
-const removeTeamFromUsers = async (teamName: string, members: string[]) => {
+const removeTeamFromUsers = async (teamName: string, members: any) => {
   members.forEach(async (member) => {
-    const userTeamsRef = ref(db, `users/${member}/teams`);
+    const userTeamsRef = ref(db, `users/${member.handle}/teams`);
     const userTeamsSnapshot = await get(userTeamsRef);
 
     if (userTeamsSnapshot.exists()) {
@@ -97,7 +101,7 @@ export const deleteTeam = async (teamName: string, owner: string) => {
   const teamSnapshot = await get(ref(db, `teams/${teamName}`));
   const teamData = teamSnapshot.val();
 
-  if (teamData && teamData.owner === owner) {
+  if (teamData && teamData.owner.handle === owner) {
     await removeTeamFromUsers(teamName, teamData.members);
     await remove(ref(db, `teams/${teamName}`));
   } else {
@@ -154,7 +158,7 @@ export const removeMemberFromTeam = async (
   }
 };
 
-export const addMembersToTeam = async (teamName: string, members: string[]) => {
+export const addMembersToTeam = async (teamName: string, members: any) => {
   try {
     const teamRef = ref(db, `teams/${teamName}/members`);
     const teamSnapshot = await get(teamRef);
@@ -163,7 +167,9 @@ export const addMembersToTeam = async (teamName: string, members: string[]) => {
       const currentMembers = teamSnapshot.val();
       const updatedMembers = [...currentMembers, ...members];
 
-      members.forEach(async (member) => await addTeamToUser(member, teamName));
+      members.forEach(
+        async (member) => await addTeamToUser(member.handle, teamName)
+      );
       await set(teamRef, updatedMembers);
     }
   } catch (error) {
@@ -205,4 +211,11 @@ export const updateTeamName = async (
   } catch (error) {
     console.error('Error updating team name:', error);
   }
+};
+
+export const getUserTeams = async (handle: string) => {
+  const userTeamsRef = ref(db, `users/${handle}/teams`);
+
+  const userTeams = await get(userTeamsRef);
+  return userTeams.val();
 };
