@@ -33,7 +33,7 @@ const SingleTeam: React.FC<ISingleTeamProps> = ({
           if (teamSnapshot && teamSnapshot.exists()) {
             const teamData = teamSnapshot.val();
             setTeamData(teamData);
-            console.log(teamData);
+            console.log('team data fetched');
           }
         });
       } catch (error) {
