@@ -50,12 +50,14 @@ const TeamsView: React.FC<ITeamsViewProps> = ({
         </div>
         <hr className="mt-4" />
         {/* <p className="px-7 text-gray-500 text-sm lg:text-[16px]">My teams</p> */}
-        <div className="px-3">
+        <div>
           {teams &&
             teams.map(
               (team) =>
                 Array.isArray(team.members) &&
-                team.members.includes(userData?.handle ?? '') && (
+                team.members.some(
+                  (member) => member.handle === userData?.handle
+                ) && (
                   <SingleTeam
                     key={team.teamId}
                     teamName={team.teamName}
