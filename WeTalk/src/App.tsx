@@ -68,12 +68,12 @@ const App: React.FC = () => {
                   <Route path=":channelId" element={<SingleChannelView />} />
                 </Route>
                 <Route path="chats" element={<Chats />}>
-                  <Route path="" element={<MainContent />}></Route>
                   <Route element={<UserChatsRoute />}>
                     <Route path=":chatId" element={<SingleChatView />}>
                       <Route path=":roomId" element={<CurrentRoom />} />
                     </Route>
                   </Route>
+                  {/* <Route path="" element={<MainContent />}></Route> */}
                 </Route>
               </Route>
               <Route element={<LandingPageView />}>

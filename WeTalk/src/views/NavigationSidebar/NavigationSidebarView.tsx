@@ -1,11 +1,11 @@
-import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCommentDots } from '@fortawesome/free-solid-svg-icons';
-import { IAppContext } from '../../common/types';
-import Profile from '../../components/Profile/Profile';
-import AppContext from '../../context/AuthContext';
-import { useContext } from 'react';
-import Settings from '../../components/Profile/Settings';
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
+import { IAppContext } from "../../common/types";
+import Profile from "../../components/Profile/Profile";
+import AppContext from "../../context/AuthContext";
+import { useContext } from "react";
+import Settings from "../../components/Profile/Settings";
 
 type NavigationSidebarViewProps = {
   onLogout: () => void;
@@ -29,10 +29,10 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
         className={`flex flex-col items-center w-20 
         
         
-        px-2 min-h-screen sm:h-full md:min-h-screen lg:min-h-screen py-8 bg-primary`}
+        px-2 min-h-screen sm:h-full md:min-h-screen lg:min-h-screen py-8 bg-[#0A2A4C] border-r border-primary`}
       >
         <nav className="flex flex-col items-center flex-1 space-y-6">
-          <h1 className="font-extrabold text-3xl text-secondary">W</h1>
+          <h1 className="font-extrabold text-3xl text-[#FFFFFF]">W</h1>
 
           <div className="flex flex-col text-center items-center justify-center">
             <Link
@@ -148,7 +148,7 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               stroke="currentColor"
-              className="w-6 h-6"
+              className="w-6 h-6 text-[#FFFFFF]"
             >
               <path
                 strokeLinecap="round"

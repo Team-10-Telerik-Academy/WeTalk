@@ -59,13 +59,21 @@ const ChatSettings = ({ chat, chatId }) => {
 
   const handleChatDelete = () => {
     const chatRef = ref(db, `chats/${chatId}`);
+    const chatMembersRef = ref(db, `chats/${chatId}/members`);
+
+    get(chatMembersRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const chatMembers = snapshot.val();
+
+        chatMembers.forEach((member) => {
+          const userChatRef = ref(db, `users/${member.handle}/chats/${chatId}`);
+          remove(userChatRef);
+        });
+      }
+    });
+
     remove(chatRef);
     navigate("../");
-  };
-
-  const handleEdit = () => {
-    setEditMode(true);
-    setEditedName(chat.chatName);
   };
 
   const handleSave = () => {
@@ -102,6 +110,9 @@ const ChatSettings = ({ chat, chatId }) => {
           ...chatData,
           members: updatedMembers,
         });
+
+        const userChatRef = ref(db, `users/${userHandle}/chats/${chatId}`);
+        remove(userChatRef);
         navigate("../");
       }
     });
