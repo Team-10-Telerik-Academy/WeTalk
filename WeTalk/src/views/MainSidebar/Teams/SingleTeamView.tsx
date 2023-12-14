@@ -9,6 +9,7 @@ import {
   faUserPlus,
   faCheck,
   faXmark,
+  faCalendarDays,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown } from 'flowbite-react';
@@ -17,6 +18,7 @@ import AppContext from '../../../context/AuthContext';
 import { IAppContext, ITeam } from '../../../common/types';
 import MembersModal from '../../../components/MainSidebar/Teams/MembersModal';
 import AddMembersModal from '../../../components/MainSidebar/Teams/AddMembersModal';
+import ScheduleTeamMeeting from '../../../components/MainSidebar/Teams/ScheduleTeamMeeting';
 
 // import nhAvatar from "../../../assets/images/avatar-NH.jpg";
 // import Profile from "../../../components/Profile/Profile";
@@ -32,7 +34,7 @@ type ISingleTeamViewProps = {
   onDeleteTeam: (teamName: string, owner: string) => void;
   onRemoveMember: (
     teamName: string,
-    owner: string,
+    owner: any,
     memberToRemove: string
   ) => void;
   users: IUser[];
@@ -56,6 +58,8 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   );
   const [isEditingTeamName, setIsEditingTeamName] = useState(false);
   const [newTeamName, setNewTeamName] = useState(teamData.teamName);
+  const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] =
+    useState(false);
 
   const { userData } = useContext(AppContext) as IAppContext;
 
@@ -82,7 +86,7 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   };
 
   const handleDeleteTeam = async () => {
-    onDeleteTeam(teamData.teamName, teamData.owner);
+    onDeleteTeam(teamData.teamName, teamData.owner.handle);
   };
 
   const handleToggleChannels = () => {
@@ -90,7 +94,7 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   };
 
   const handleRemoveMember = (selectedMember: string) => {
-    onRemoveMember(teamData.teamName, teamData.owner, selectedMember);
+    onRemoveMember(teamData.teamName, teamData.owner.handle, selectedMember);
   };
 
   const handleAddMembersToTeam = (selectedMember: string[]) => {
@@ -105,6 +109,14 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
 
   const handleEditTeamName = () => {
     setIsEditingTeamName(!isEditingTeamName);
+  };
+
+  const openScheduleMeetingModal = () => {
+    setIsScheduleMeetingModalOpen(true);
+  };
+
+  const closeScheduleMeetingModal = () => {
+    setIsScheduleMeetingModalOpen(false);
   };
 
   return (
@@ -179,7 +191,8 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
                   Members ({teamData.members.length})
                 </div>
               </Dropdown.Item>
-              {teamData.owner === userData?.handle && (
+
+              {teamData.owner.handle === userData?.handle && (
                 <>
                   <Dropdown.Item>
                     <div className="flex gap-2 items-center hover:bg-gray-100 text-xs lg:text-sm">
@@ -188,6 +201,15 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
                         className="text-primary cursor-pointer text-xs lg:text-sm"
                       />
                       Add channel
+                    </div>
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={openScheduleMeetingModal}>
+                    <div className="flex gap-1 items-center hover:bg-gray-100 text-xs lg:text-sm">
+                      <FontAwesomeIcon
+                        icon={faCalendarDays}
+                        className="text-primary cursor-pointer text-xs lg:text-sm"
+                      />
+                      Schedule meeting
                     </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={handleEditTeamName}>
@@ -245,6 +267,13 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
         isOpen={isAddMembersModalOpen}
         onClose={closeAddMembersModal}
         onAddMembersToTeam={handleAddMembersToTeam}
+      />
+
+      <ScheduleTeamMeeting
+        teamData={teamData}
+        users={users}
+        isOpen={isScheduleMeetingModalOpen}
+        onClose={closeScheduleMeetingModal}
       />
     </>
   );
