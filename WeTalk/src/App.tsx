@@ -19,6 +19,7 @@ import CurrentRoom from "./components/Meeting/CurrentRoom";
 import LandingPageView from "./views/LandingPage/LandingPageView";
 import SingleChannelView from "./views/MainSidebar/Teams/Channels/SingleChannelView";
 import UserChatsRoute from "./hoc/UserChatsRoute";
+import UserChannelsRoute from "./hoc/UserChannelsRoute";
 // import AuthenticatedRoute from './hoc/AuthenticatedRoute';
 // import Register from './components/Auth/Register/Register';
 
@@ -63,12 +64,15 @@ const App: React.FC = () => {
 
             <Route element={<AuthenticatedRoute />}>
               <Route path="home" element={<Home />}>
-                <Route path="" element={<MainContent />}></Route>
+                <Route path="" element={<MainContent />} />
+
                 <Route path="teams" element={<Teams />}>
-                  <Route path=":channelId" element={<SingleChannelView />} />
+                  {/* <Route element={<UserChannelsRoute />}> */}
+                    <Route path=":channelId" element={<SingleChannelView />} />
+                  {/* </Route> */}
                 </Route>
                 <Route path="chats" element={<Chats />}>
-                  <Route path="" element={<MainContent />}></Route>
+                  <Route path="" element={<MainContent />} />
                   <Route element={<UserChatsRoute />}>
                     <Route path=":chatId" element={<SingleChatView />}>
                       <Route path=":roomId" element={<CurrentRoom />} />
@@ -76,10 +80,10 @@ const App: React.FC = () => {
                   </Route>
                 </Route>
               </Route>
-              <Route element={<LandingPageView />}>
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/signup" element={<Register />} />
-              </Route>
+            </Route>
+            <Route element={<LandingPageView />}>
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<Register />} />
             </Route>
           </Routes>
         </AppContext.Provider>
