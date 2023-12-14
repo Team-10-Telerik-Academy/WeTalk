@@ -9,6 +9,13 @@ import {
 } from '@firebase/database';
 import { db } from '../config/firebase-config';
 import { Unsubscribe } from '@firebase/util';
+import {
+  createChatAudioCallNotification,
+  createChatNotification,
+  createChatVideoCallNotification,
+} from './notifications.service';
+import { setUserStatus } from './users.service';
+import { UserStatus } from '../common/status-enum';
 
 // Sends a message to a specified chat and returns the message ID
 export const SendMessage = async (
@@ -53,23 +60,33 @@ export const getChatMessages = async (
 };
 
 // Creates a new chat with a given name, members, and chat ID
-export const CreateChat = async (chatName: string, members, chatId: string) => {
+export const CreateChat = async (
+  creator: string,
+  chatName: string,
+  members,
+  chatId: string
+) => {
   const initialTypingStatus = members.reduce((acc, member) => {
     acc[member?.handle] = false;
     return acc;
   }, {});
 
-  console.log(initialTypingStatus);
-
   await set(ref(db, `chats/${chatId}`), {
+    creator,
     chatName,
     chatId,
     members: [...members],
     typingStatus: initialTypingStatus,
     createdOn: Date.now(),
     messages: [],
-    roomId: '',
-    roomStatus: '',
+    audioRoomInfo: {
+      audioRoomId: '',
+      audioRoomParticipants: {},
+    },
+    videoRoomInfo: {
+      videoRoomId: '',
+      videoRoomParticipants: {},
+    },
   });
 
   members.forEach(async (member) => {
@@ -79,6 +96,15 @@ export const CreateChat = async (chatName: string, members, chatId: string) => {
       },
     });
   });
+
+  createChatNotification(
+    creator,
+    members
+      .filter((member) => member.handle !== creator)
+      .map((member) => member.handle),
+    chatName,
+    chatId
+  );
 
   return getChatDataById(chatId);
 };
@@ -94,16 +120,29 @@ export const getChatDataById = async (chatId: string) => {
   return chat;
 };
 
-// Adds a room ID to a chat
-export const addRoomID = async (chatId: string, roomId: string) => {
-  if (chatId && roomId) {
+// Adds a video room ID to a chat
+export const addVideoRoomID = async (chatId: string, videoRoomId: string) => {
+  if (chatId && videoRoomId) {
     const updateData = {
-      [`chats/${chatId}/roomId`]: roomId,
+      [`chats/${chatId}/videoRoomInfo/videoRoomId`]: videoRoomId,
     };
 
     await update(ref(db), updateData);
 
-    console.log('Room created successfully!');
+    console.log('Video room created successfully!');
+  }
+};
+
+// Adds an audio room ID to a chat
+export const addAudioRoomID = async (chatId: string, audioRoomId: string) => {
+  if (chatId && audioRoomId) {
+    const updateData = {
+      [`chats/${chatId}/audioRoomInfo/audioRoomId`]: audioRoomId,
+    };
+
+    await update(ref(db), updateData);
+
+    console.log('Audio room created successfully!');
   }
 };
 
@@ -223,14 +262,160 @@ export const registerChatsUpdate = (callback: (chats: any) => void) => {
   return unsubscribe;
 };
 
-export const setChatRoomStatus = async (chatId: string, status: string) => {
-  if (chatId && status) {
-    const updateStatus = {
-      [`chats/${chatId}/roomStatus`]: status,
-    };
+export const getChatAudioRoomParticipants = async (chatId: string) => {
+  const chatAudioRoomParticipantsRef = ref(
+    db,
+    `chats/${chatId}/audioRoomInfo/audioRoomParticipants`
+  );
 
-    await update(ref(db), updateStatus);
+  const audioRoomParticipantsSnapshot = await get(chatAudioRoomParticipantsRef);
+  return audioRoomParticipantsSnapshot.val();
+};
 
-    console.log('Room status updated successfully!');
+export const addChatAudioRoomParticipant = async (
+  chatId: string,
+  participant: string
+) => {
+  if (chatId && participant) {
+    const audioRoomParticipants = await getChatAudioRoomParticipants(chatId);
+    const chatData = await getChatDataById(chatId);
+
+    const updateParticipants: { [key: string]: any } = {};
+
+    if (!audioRoomParticipants) {
+      updateParticipants[
+        `chats/${chatId}/audioRoomInfo/audioRoomParticipants/${participant}`
+      ] = 'host';
+      createChatAudioCallNotification(
+        participant,
+        chatData.members
+          .filter(
+            (member: { [key: string]: any }) => member.handle !== participant
+          )
+          .map((member: { [key: string]: any }) => member.handle),
+        chatData.chatName,
+        chatId
+      );
+      SendMessage(
+        chatId,
+        `${participant} has started an audio call`,
+        participant
+      );
+    } else {
+      updateParticipants[
+        `chats/${chatId}/audioRoomInfo/audioRoomParticipants/${participant}`
+      ] = 'participant';
+    }
+
+    setUserStatus(participant, UserStatus.BUSY.toLocaleLowerCase());
+
+    await update(ref(db), updateParticipants);
+
+    console.log('Video room status updated successfully!');
+  }
+};
+
+export const deleteChatAudioRoomParticipant = async (
+  chatId: string,
+  participant: string
+) => {
+  if (chatId && participant) {
+    const audioRoomParticipants = await getChatAudioRoomParticipants(chatId);
+
+    const updateParticipants: { [key: string]: any } = {};
+    updateParticipants[
+      `chats/${chatId}/audioRoomInfo/audioRoomParticipants/${participant}`
+    ] = null;
+
+    if (Object.keys(audioRoomParticipants).length === 1) {
+      SendMessage(
+        chatId,
+        `${participant} has ended an audio call`,
+        participant
+      );
+    }
+
+    setUserStatus(participant, UserStatus.ONLINE.toLocaleLowerCase());
+
+    await update(ref(db), updateParticipants);
+
+    console.log('Audio room status updated successfully!');
+  }
+};
+
+export const getChatVideoRoomParticipants = async (chatId: string) => {
+  const chatVideoRoomParticipantsRef = ref(
+    db,
+    `chats/${chatId}/videoRoomInfo/videoRoomParticipants`
+  );
+
+  const videoRoomParticipantsSnapshot = await get(chatVideoRoomParticipantsRef);
+  return videoRoomParticipantsSnapshot.val();
+};
+
+export const addChatVideoRoomParticipant = async (
+  chatId: string,
+  participant: string
+) => {
+  if (chatId && participant) {
+    const videoRoomParticipants = await getChatVideoRoomParticipants(chatId);
+    const chatData = await getChatDataById(chatId);
+
+    const updateParticipants: { [key: string]: any } = {};
+
+    if (!videoRoomParticipants) {
+      updateParticipants[
+        `chats/${chatId}/videoRoomInfo/videoRoomParticipants/${participant}`
+      ] = 'host';
+      createChatVideoCallNotification(
+        participant,
+        chatData.members
+          .filter(
+            (member: { [key: string]: any }) => member.handle !== participant
+          )
+          .map((member: { [key: string]: any }) => member.handle),
+        chatData.chatName,
+        chatId
+      );
+      SendMessage(
+        chatId,
+        `${participant} has started a video call`,
+        participant
+      );
+    } else {
+      updateParticipants[
+        `chats/${chatId}/videoRoomInfo/videoRoomParticipants/${participant}`
+      ] = 'participant';
+    }
+
+    setUserStatus(participant, UserStatus.BUSY.toLocaleLowerCase());
+
+    await update(ref(db), updateParticipants);
+
+    console.log('Video room status updated successfully!');
+  }
+};
+
+export const deleteChatVideoRoomParticipant = async (
+  chatId: string,
+  participant: string
+) => {
+  if (chatId && participant) {
+    const videoRoomParticipants = await getChatVideoRoomParticipants(chatId);
+
+    const updateParticipants: { [key: string]: any } = {};
+    updateParticipants[
+      `chats/${chatId}/videoRoomInfo/videoRoomParticipants/${participant}`
+    ] = null;
+
+    if (Object.keys(videoRoomParticipants).length === 1) {
+      SendMessage(chatId, `${participant} has ended a video call`, participant);
+    }
+
+    setUserStatus(participant, UserStatus.ONLINE.toLocaleLowerCase());
+
+    await update(ref(db), updateParticipants);
+
+    console.log('Video room status updated successfully!');
   }
 };
