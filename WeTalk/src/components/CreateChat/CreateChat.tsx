@@ -2,7 +2,11 @@ import { useContext, useEffect, useState } from 'react';
 import { getAllUsers } from '../../services/users.service';
 import { IAppContext, IUserData } from '../../common/types';
 import AppContext from '../../context/AuthContext';
-import { CreateChat, addRoomID } from '../../services/chat.service';
+import {
+  CreateChat,
+  addAudioRoomID,
+  addVideoRoomID,
+} from '../../services/chat.service';
 import { v4 } from 'uuid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -19,7 +23,7 @@ const CreateNewChat = () => {
     try {
       const usersCallback = (usersData: IUserData[]) => {
         setUsers(usersData);
-        console.log(usersData);
+        console.log('users data fetched');
       };
 
       const unsubscribe = getAllUsers(usersCallback);
@@ -32,7 +36,11 @@ const CreateNewChat = () => {
     }
   }, []);
 
-  const handleCheckboxChange = (handle, firstName, lastName) => {
+  const handleCheckboxChange = (
+    handle: string,
+    firstName: string,
+    lastName: string
+  ) => {
     setMembers((prevMembers) =>
       prevMembers.some((member) => member.handle === handle)
         ? prevMembers.filter((member) => member.handle !== handle)
@@ -54,38 +62,53 @@ const CreateNewChat = () => {
         const updatedMembers = [...members, user];
 
         if (updatedMembers.length > 0) {
-          CreateChat(chatName, updatedMembers, v4()).then((chat) => {
-            const { chatName, chatId } = chat;
+          CreateChat(user?.handle, chatName, updatedMembers, v4())
+            .then((chat) => {
+              const { chatName, chatId } = chat;
 
-            const encodedString = btoa(`${ORGANIZATION_ID}:${API_KEY}`);
+              const encodedString = btoa(`${ORGANIZATION_ID}:${API_KEY}`);
 
-            const dyteRoomCreate = {
-              method: 'POST',
-              url: `${BASE_URL}/meetings`,
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Basic ${encodedString}`,
-                'Access-Control-Allow-Origin': '*',
-              },
-              data: { title: chatName },
-            };
+              const dyteRoomCreate = {
+                method: 'POST',
+                url: `${BASE_URL}/meetings`,
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Basic ${encodedString}`,
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                },
+                data: { title: chatName },
+              };
 
-            axios
-              .request(dyteRoomCreate)
-              .then((response) => {
-                console.log(response);
-                const dyteID = response.data.data.id;
+              axios
+                .request(dyteRoomCreate)
+                .then((response) => {
+                  console.log(response);
+                  const dyteAudioRoomID = response.data.data.id;
 
-                addRoomID(chatId, dyteID);
-              })
-              .catch((error) => {
-                console.error('Error creating room', error);
-                console.error('Response data:', error.response.data);
-              })
-              .catch((error) => {
-                console.error('Error creating chat', error);
-              });
-          });
+                  addAudioRoomID(chatId, dyteAudioRoomID);
+                })
+                .catch((error) => {
+                  console.error('Error creating video room', error);
+                  console.error('Response data:', error.response.data);
+                });
+
+              axios
+                .request(dyteRoomCreate)
+                .then((response) => {
+                  console.log(response);
+                  const dyteVideoRoomID = response.data.data.id;
+
+                  addVideoRoomID(chatId, dyteVideoRoomID);
+                })
+                .catch((error) => {
+                  console.error('Error creating video room', error);
+                  console.error('Response data:', error.response.data);
+                });
+            })
+            .catch((error) => {
+              console.error('Error creating chat', error);
+            });
         } else {
           console.error('At least two members are required.');
         }
