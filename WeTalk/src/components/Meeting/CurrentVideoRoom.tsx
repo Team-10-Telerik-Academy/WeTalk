@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { DyteProvider, useDyteClient } from '@dytesdk/react-web-core';
 import MyMeeting from './MyMeeting';
 import Loading from './Loading';
-// import RoomContext from '../../context/RoomContext';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import AppContext from '../../context/AuthContext';
