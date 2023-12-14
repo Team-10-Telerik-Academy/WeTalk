@@ -23,7 +23,7 @@ const Teams = () => {
     try {
       const usersCallback = (usersData: IUserData[]) => {
         setUsers(usersData);
-        console.log(usersData);
+        console.log('teams data fetched');
       };
 
       const unsubscribe = getAllUsers(usersCallback);
@@ -48,14 +48,19 @@ const Teams = () => {
     };
   }, []);
 
-  const handleCreateTeam = async (teamName: string, members: string[]) => {
+  const handleCreateTeam = async (teamName: string, members: any[]) => {
+    const owner = {
+      handle: userData?.handle,
+      firstName: userData?.firstName,
+      lastName: userData?.lastName,
+    };
     try {
       await createTeam(
         teamName,
         v4(),
-        userData?.handle || '',
+        owner,
         members
-          .filter((member) => member !== userData?.handle)
+          .filter((member) => member.handle !== userData?.handle)
           .map((member) => member)
       );
     } catch (error) {
@@ -90,10 +95,7 @@ const Teams = () => {
     }
   };
 
-  const handleAddMembersToTeam = async (
-    teamName: string,
-    members: string[]
-  ) => {
+  const handleAddMembersToTeam = async (teamName: string, members: any) => {
     try {
       await addMembersToTeam(teamName, members);
     } catch (error) {
