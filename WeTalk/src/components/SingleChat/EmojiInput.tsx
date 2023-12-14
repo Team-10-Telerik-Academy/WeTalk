@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import EmojiPicker, { EmojiStyle, EmojiClickData } from 'emoji-picker-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFaceLaugh } from '@fortawesome/free-regular-svg-icons';
-import { faShareSquare } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
 type EmojiMap = { [key: string]: string };
 
@@ -235,9 +235,9 @@ const EmojiInput: React.FC<EmojiInputProps> = ({ onSubmit, handleChange }) => {
         </div>
         <button
           type="submit"
-          className="ml-2 p-4 bg-blue-500 text-secondary rounded-xl my-4"
+          className="ml-2 p-4 bg-blue-500 text-secondary rounded-xl my-4 hover:bg-blue-600"
         >
-          <FontAwesomeIcon icon={faShareSquare} size="lg" />
+          <FontAwesomeIcon icon={faPaperPlane} size="xl" />
         </button>
       </form>
     </div>
