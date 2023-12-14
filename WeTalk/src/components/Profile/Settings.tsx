@@ -8,6 +8,7 @@ import PictureChange from './PictureChange';
 import { Dropdown } from 'flowbite-react';
 import { setUserStatus } from '../../services/users.service';
 import { UserStatus } from '../../common/status-enum';
+import Profile from './Profile';
 
 const Settings = () => {
   const { userData } = useContext(AppContext) as IAppContext;
@@ -70,8 +71,8 @@ const Settings = () => {
 
   useEffect(() => {
     const userHandle = userData?.handle;
-    console.log(userHandle);
-    console.log(profilePictureURL);
+    console.log('user handle');
+    console.log('user avatar');
 
     if (userHandle && profilePictureURL !== null) {
       const dbRef = ref(db, `users/${userHandle}`);
@@ -88,12 +89,12 @@ const Settings = () => {
     }
   }, [profilePictureURL, userData?.handle]);
 
-  const handleStatusClick = (
+  const handleStatusClick = async (
     handle: string,
     newStatus: string,
     status: string
   ) => {
-    setUserStatus(handle, newStatus);
+    await setUserStatus(handle, newStatus);
     setCurrentUserStatus((prevStatus) => (prevStatus = status));
   };
 
@@ -101,14 +102,15 @@ const Settings = () => {
     <>
       <a
         href="#"
-        className="p-1.5 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-125"
+        className="p-1.5 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-110"
+        title="SETTINGS"
         onClick={() =>
           (
             document.getElementById('my_modal_1') as HTMLDialogElement
           )?.showModal()
         }
       >
-        <svg
+        {/* <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -126,7 +128,8 @@ const Settings = () => {
             strokeLinejoin="round"
             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
           />
-        </svg>
+        </svg> */}
+        <Profile handle={userData?.handle!} />
       </a>
       <dialog id="my_modal_1" className="modal">
         <div className="modal-box flex flex-col bg-secondary justify-center gap-4">
