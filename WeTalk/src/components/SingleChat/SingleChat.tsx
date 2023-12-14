@@ -3,10 +3,9 @@ import AppContext from '../../context/AuthContext';
 import InputField from './InputField';
 import { IAppContext } from '../../common/types';
 import Profile from '../Profile/Profile';
-import { Link, useNavigate } from 'react-router-dom';
-import CurrentRoom from '../Meeting/CurrentRoom';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faVideo } from '@fortawesome/free-solid-svg-icons';
+import { faGear, faPhone, faVideo } from '@fortawesome/free-solid-svg-icons';
 import { onChatUpdate } from '../../services/chat.service';
 import { ref, update } from 'firebase/database';
 import { db } from '../../config/firebase-config';
@@ -21,8 +20,8 @@ type ChatType = {
   chatName: string;
   members;
   messages: Record<string, MessageType>;
-  roomId: string;
-  roomStatus: string;
+  audioRoomInfo: any;
+  videoRoomInfo: any;
 };
 
 type SingleChatProps = {
@@ -31,48 +30,11 @@ type SingleChatProps = {
 
 const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
   const { userData } = useContext(AppContext) as IAppContext;
-  const [chat, setChat] = useState<ChatType | null>({
-    chatName: '',
-    members: [],
-    messages: {},
-  });
-  const [isCallButtonClicked, setIsCallButtonClicked] = useState(false);
+  const [chat, setChat] = useState<ChatType | null>(null);
   const [typingStatus, setTypingStatus] = useState<Record<string, boolean>>({});
   const [inputValue, setInputValue] = useState('');
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
-
-  const navigate = useNavigate();
-
-  // const handleInputKeyDown = () => {
-  //   // Set typing status to true when a key is pressed
-  //   setTypingStatus((prevStatus) => ({
-  //     ...prevStatus,
-  //     [userData?.handle!]: true,
-  //   }));
-
-  //   console.log(typingStatus);
-
-  //   // Update typing status in Firebase
-  //   update(ref(db, `chats/${chatId}/typingStatus`), {
-  //     [userData?.handle!]: true,
-  //   });
-  // };
-
-  // const handleInputKeyUp = () => {
-  //   // Set typing status to false when a key is released
-  //   setTypingStatus((prevStatus) => ({
-  //     ...prevStatus,
-  //     [userData?.handle!]: false,
-  //   }));
-
-  //   console.log(typingStatus);
-
-  //   // Update typing status in Firebase
-  //   update(ref(db, `chats/${chatId}/typingStatus`), {
-  //     [userData?.handle!]: false,
-  //   });
-  // };
 
   const handleInputChange = (value: string) => {
     setInputValue(value);
@@ -118,18 +80,18 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
         setChat(chatData);
       },
       (messagesData: Record<string, MessageType>) => {
-        console.log('Messages updated:', messagesData);
+        console.log('Messages updated');
         setChat((prevChat) => ({
           ...prevChat!,
           messages: messagesData,
         }));
       },
       (typingStatus: Record<string, boolean>) => {
-        console.log('Typing status updated:', typingStatus);
+        console.log('Typing status updated');
         setTypingStatus(typingStatus);
       }
     );
-    console.log(onChatUpdate);
+    console.log('chat updated');
 
     return () => {
       unsubscribe();
@@ -141,58 +103,99 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-    console.log(chatContainerRef.current);
+    console.log('chat container');
   }, [chat?.messages]);
 
-  useEffect(() => {
-    // Add a class to the body to hide the main scrollbar
-    document.body.style.overflow = 'hidden';
-
-    console.log('Scrollbar');
-
-    return () => {
-      // Remove the class when the component is unmounted
-      document.body.style.overflow = 'auto';
-    };
-  }, []);
-
-  const handleCallButtonClick = () => {
-    if (chat?.roomId) {
-      console.log('Room opened');
-      setIsCallButtonClicked(true);
-      navigate(`/home/chats/${chatId}/${chat?.roomId}`);
+  const handleVideoCallButtonClick = () => {
+    if (chat?.videoRoomInfo.videoRoomId) {
+      console.log('Video room opened');
     }
   };
 
-  if (isCallButtonClicked) {
-    return <CurrentRoom setIsCallButtonClicked={setIsCallButtonClicked} />;
-  }
+  const handleAudioCallButtonClick = () => {
+    if (chat?.audioRoomInfo.audioRoomId) {
+      console.log('Audio room opened');
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-secondary">
-      <div className="flex items-center justify-between py-2 shadow border-b">
-        <div className="flex-grow">
-          <h1 className="h-12 flex items-center justify-center text-2xl font-bold text-primary ml-14">
-            {chat?.members.length > 2
-              ? chat?.chatName
-              : chat?.members[0]?.handle !== userData?.handle
-              ? `${chat?.members[0]?.firstName} ${chat?.members[0]?.lastName} (${chat?.members[0]?.handle})`
-              : `${chat?.members[1]?.firstName} ${chat?.members[1]?.lastName} (${chat?.members[1]?.handle})`}
-          </h1>
+      <div className="flex items-center justify-between py-2 border-b">
+        <div className="flex justify-start items-center px-4">
+          <div className="text-primary">
+            {chat?.members.length > 2 ? (
+              chat?.chatName
+            ) : chat?.members[0]?.handle !== userData?.handle ? (
+              chat?.members[0]?.firstName && chat?.members[0]?.lastName ? (
+                <div className="flex flex-col text-xl font-bold">
+                  {`${chat?.members[0]?.firstName} ${chat?.members[0]?.lastName}`}{' '}
+                  <span className="text-primary text-opacity-50 text-sm tracking-wide">{`@${chat?.members[0]?.handle}`}</span>
+                </div>
+              ) : (
+                'Loading...'
+              )
+            ) : chat?.members[1]?.firstName && chat?.members[1]?.lastName ? (
+              <div className="flex flex-col text-xl font-bold">
+                {`${chat?.members[1]?.firstName} ${chat?.members[1]?.lastName}`}{' '}
+                <span className="text-primary text-opacity-50 text-sm tracking-wide">{`@${chat?.members[1]?.handle}`}</span>
+              </div>
+            ) : (
+              'Loading...'
+            )}
+          </div>
         </div>
-        <div className="flex justify-between items-center gap-4">
-          <Link to={chat?.roomId ? `${chat?.roomId}` : ''}>
-            <button
-              className="bg-blue-500 text-secondary px-4 py-2 rounded"
-              onClick={handleCallButtonClick}
+        {chat ? (
+          <div className="flex justify-between items-center gap-2 px-4">
+            <Link
+              to={
+                chat?.audioRoomInfo.audioRoomId
+                  ? `/home/audio-room/${chatId}/${chat?.audioRoomInfo.audioRoomId}`
+                  : ''
+              }
+              target="_blank"
             >
-              <FontAwesomeIcon icon={faVideo} />
+              <button
+                className="bg-blue-500 text-secondary px-4 py-2 rounded hover:bg-blue-600"
+                onClick={handleAudioCallButtonClick}
+              >
+                {chat?.audioRoomInfo.audioRoomParticipants &&
+                Object.keys(chat?.audioRoomInfo.audioRoomParticipants).length >
+                  0 ? (
+                  <span className="animate-pulse">Ongoing audio call...</span>
+                ) : (
+                  <FontAwesomeIcon icon={faPhone} />
+                )}
+              </button>
+            </Link>
+            <Link
+              to={
+                chat?.videoRoomInfo.videoRoomId
+                  ? `/home/video-room/${chatId}/${chat?.videoRoomInfo.videoRoomId}`
+                  : ''
+              }
+              target="_blank"
+            >
+              <button
+                className="bg-blue-500 text-secondary px-4 py-2 rounded hover:bg-blue-600"
+                onClick={handleVideoCallButtonClick}
+              >
+                {chat?.videoRoomInfo.videoRoomParticipants &&
+                Object.keys(chat?.videoRoomInfo.videoRoomParticipants).length >
+                  0 ? (
+                  <span className="animate-pulse">Ongoing video call...</span>
+                ) : (
+                  <FontAwesomeIcon icon={faVideo} />
+                )}
+              </button>
+            </Link>
+            <button className="bg-blue-500 text-secondary px-4 py-2 rounded hover:bg-blue-600">
+              <FontAwesomeIcon icon={faGear} />
             </button>
-          </Link>
-          <p className="text-primary mr-4">settings</p>
-        </div>
+          </div>
+        ) : (
+          <div className="px-4">Loading...</div>
+        )}
       </div>
-      {/* <div className="h-0.5 w-full bg-accent"></div> */}
 
       <div
         ref={chatContainerRef}
@@ -220,17 +223,25 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
           `}
         </style>
         {chat ? (
-          <h1 className="text-center mt-3 text-primary r">
+          <div className="text-center mt-3 text-primary">
             This is the start of your conversation with
-            <h2 className="font-bold">
+            <div>
               {chat?.members.length > 2
                 ? chat?.chatName
                 : chat?.members[0]?.handle !== userData?.handle
-                ? `${chat?.members[0]?.firstName} ${chat?.members[0]?.lastName}`
-                : `${chat?.members[1]?.firstName} ${chat?.members[1]?.lastName}`}
-            </h2>
-          </h1>
-        ) : null}
+                ? chat?.members[0]?.firstName && chat?.members[0]?.lastName
+                  ? `${chat?.members[0]?.firstName} ${chat?.members[0]?.lastName} (${chat?.members[0]?.handle})`
+                  : 'Loading...'
+                : chat?.members[1]?.firstName && chat?.members[1]?.lastName
+                ? `${chat?.members[1]?.firstName} ${chat?.members[1]?.lastName} (${chat?.members[1]?.handle})`
+                : 'Loading...'}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center mt-3 text-primary">
+            Loading chat details...
+          </div>
+        )}
         {chat && renderMessages(chat.messages, userData?.handle!, chat.members)}
       </div>
 
@@ -251,193 +262,96 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
   );
 };
 
-// const renderMessages = (
-//   messages: Record<string, MessageType>,
-//   userHandle: string,
-//   members
-// ) => {
-//   if (!messages || Object.keys(messages).length === 0) {
-//     return <div className="text-center mt-3 text-primary">No messages yet</div>;
-//   }
-
-//   const now = new Date();
-//   const yesterday = new Date();
-//   yesterday.setDate(yesterday.getDate() - 1);
-
-//   return Object.values(messages).map((message) => {
-//     const messageDate = new Date(message.timestamp);
-
-//     if (
-//       messageDate.getDate() === now.getDate() &&
-//       messageDate.getMonth() === now.getMonth() &&
-//       messageDate.getFullYear() === now.getFullYear()
-//     ) {
-//       return (
-//         <div
-//           key={message.timestamp}
-//           className={`px-4 py-2 chat w-full ${
-//             message.sender === userHandle ? 'chat-end' : 'chat-start'
-//           }`}
-//         >
-//           <div className="chat-image">
-//             <Profile handle={message.sender} />
-//           </div>
-//           <div className="chat-header text-primary font-bold text-md m-2 mb-1">
-//             {members
-//               .filter((member) => member.handle === message.sender)
-//               .map((member) => `${member.firstName} ${member.lastName}`)}
-//           </div>
-//           <div
-//             className={`chat-bubble flex flex-col px-4 text-md ${
-//               message.sender === userHandle
-//                 ? 'bg-primary text-secondary'
-//                 : 'bg-primary bg-opacity-10 text-primary'
-//             }`}
-//           >
-//             {message.message}
-//             <time className="text-xs opacity-50 mr-2">
-//               Today at{' '}
-//               {new Date(message.timestamp).toLocaleString('en-US', {
-//                 hour: 'numeric',
-//                 minute: 'numeric',
-//               })}
-//             </time>
-//           </div>
-//         </div>
-//       );
-//     } else if (
-//       messageDate.getDate() === yesterday.getDate() &&
-//       messageDate.getMonth() === yesterday.getMonth() &&
-//       messageDate.getFullYear() === yesterday.getFullYear()
-//     ) {
-//       return (
-//         <div
-//           key={message.timestamp}
-//           className={`px-4 chat w-full ${
-//             message.sender === userHandle ? 'chat-end' : 'chat-start'
-//           }`}
-//         >
-//           <div className="chat-image">
-//             <Profile handle={message.sender} />
-//           </div>
-//           <div className="chat-header text-primary font-bold text-md mt-2 mb-1">
-//             {members
-//               .filter((member) => member.handle === message.sender)
-//               .map((member) => `${member.firstName} ${member.lastName}`)}
-//           </div>
-//           <div
-//             className={`chat-bubble flex flex-col px-4 text-md ${
-//               message.sender === userHandle
-//                 ? 'bg-primary text-secondary'
-//                 : 'bg-primary bg-opacity-10 text-primary'
-//             }`}
-//           >
-//             {message.message}
-//             <time className="text-xs opacity-50 mr-2">
-//               Yesterday at{' '}
-//               {new Date(message.timestamp).toLocaleString('en-US', {
-//                 hour: 'numeric',
-//                 minute: 'numeric',
-//               })}
-//             </time>
-//           </div>
-//         </div>
-//       );
-//     } else {
-//       return (
-//         <div
-//           key={message.timestamp}
-//           className={`px-4 chat w-full ${
-//             message.sender === userHandle ? 'chat-start' : 'chat-end'
-//           }`}
-//         >
-//           <div className="chat-image">
-//             <Profile handle={message.sender} />
-//           </div>
-//           <div className="chat-header text-primary font-bold text-md mt-2 mb-1">
-//             {members
-//               .filter((member) => member.handle === message.sender)
-//               .map((member) => `${member.firstName} ${member.lastName}`)}
-//           </div>
-//           <div
-//             className={`chat-bubble flex flex-col px-4 text-md ${
-//               message.sender === userHandle
-//                 ? 'bg-primary text-secondary'
-//                 : 'bg-primary bg-opacity-10 text-primary'
-//             }`}
-//           >
-//             {message.message}
-//             <time className="text-xs opacity-50 mr-2">
-//               {new Date(message.timestamp).toLocaleString('en-US', {
-//                 year: 'numeric',
-//                 month: 'long',
-//                 day: 'numeric',
-//                 hour: 'numeric',
-//                 minute: 'numeric',
-//               })}
-//             </time>
-//           </div>
-//         </div>
-//       );
-//     }
-//   });
-// };
-
-const renderTime = (timestamp) => (
-  <time className="text-xs opacity-50 mr-2">{timestamp}</time>
+const renderTime = (timestamp, isToday, isYesterday) => (
+  <time>
+    {isToday
+      ? `Today at ${new Date(timestamp).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: 'numeric',
+        })}`
+      : isYesterday
+      ? `Yesterday at ${new Date(timestamp).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: 'numeric',
+        })}`
+      : new Date(timestamp).toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+        })}
+  </time>
 );
 
-const renderChatBubble = (
-  message,
-  userHandle,
-  members,
-  isToday,
-  isYesterday
-) => (
-  <div
-    key={message.timestamp}
-    className={`px-4 chat w-full ${
-      message.sender === userHandle ? 'chat-end' : 'chat-start'
-    }`}
-  >
-    <div className="chat-image">
-      <Profile handle={message.sender} />
+const renderChatBubble = (message, userHandle, members, isToday, isYesterday) =>
+  message.message.includes('has started an audio call') ||
+  message.message.includes('has ended an audio call') ? (
+    <div className="px-8 text-primary text-sm mt-6 mb-4 flex items-center gap-4">
+      <FontAwesomeIcon
+        icon={faPhone}
+        size="xl"
+        className={`${
+          message.message.includes('has started an audio call')
+            ? 'text-green-600'
+            : 'text-red-600'
+        }`}
+      />
+      <div className="flex items-center gap-2">
+        <span>{message.message}</span>
+        <span className="font-bold text-xs">
+          ({renderTime(message.timestamp, isToday, isYesterday)})
+        </span>
+      </div>
     </div>
-    <div className="chat-header text-primary font-bold text-md mt-2 mb-1">
-      {members
-        .filter((member) => member.handle === message.sender)
-        .map((member) => `${member.firstName} ${member.lastName}`)}
+  ) : message.message.includes('has started a video call') ||
+    message.message.includes('has ended a video call') ? (
+    <div className="px-8 text-primary text-sm mt-6 mb-4 flex items-center gap-4">
+      <FontAwesomeIcon
+        icon={faVideo}
+        size="xl"
+        className={`${
+          message.message.includes('has started a video call')
+            ? 'text-green-600'
+            : 'text-red-600'
+        }`}
+      />
+      <div className="flex items-center gap-2">
+        <span>{message.message}</span>
+        <span className="font-bold text-xs">
+          ({renderTime(message.timestamp, isToday, isYesterday)})
+        </span>
+      </div>
     </div>
+  ) : (
     <div
-      className={`chat-bubble flex flex-col px-4 text-md ${
-        message.sender === userHandle
-          ? 'bg-primary text-secondary'
-          : 'bg-primary bg-opacity-10 text-primary'
+      key={message.timestamp}
+      className={`px-6 chat w-full ${
+        message.sender === userHandle ? 'chat-end' : 'chat-start'
       }`}
     >
-      {message.message}
-      {renderTime(
-        isToday
-          ? `Today at ${new Date(message.timestamp).toLocaleTimeString(
-              'en-US',
-              { hour: 'numeric', minute: 'numeric' }
-            )}`
-          : isYesterday
-          ? `Yesterday at ${new Date(message.timestamp).toLocaleTimeString(
-              'en-US',
-              { hour: 'numeric', minute: 'numeric' }
-            )}`
-          : new Date(message.timestamp).toLocaleString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: 'numeric',
-              minute: 'numeric',
-            })
-      )}
+      <div className="chat-image">
+        <Profile handle={message.sender} />
+      </div>
+      <div className="chat-header text-primary font-bold text-md mt-2 mb-1">
+        {members
+          .filter((member) => member.handle === message.sender)
+          .map((member) => `${member.firstName} ${member.lastName}`)}
+      </div>
+      <div
+        className={`chat-bubble flex flex-col px-4 text-md ${
+          message.sender === userHandle
+            ? 'bg-primary text-secondary'
+            : 'bg-primary bg-opacity-10 text-primary'
+        }`}
+      >
+        {message.message}
+        <span className="text-xs opacity-50 mr-2">
+          {renderTime(message.timestamp, isToday, isYesterday)}
+        </span>
+      </div>
     </div>
-  </div>
-);
+  );
 
 const renderMessages = (
   messages: Record<string, MessageType>,
@@ -445,7 +359,11 @@ const renderMessages = (
   members
 ) => {
   if (!messages || Object.keys(messages).length === 0) {
-    return <div className="text-center mt-3 text-primary">No messages yet</div>;
+    return (
+      <div className="text-center mt-3 text-primary font-bold">
+        No messages yet...
+      </div>
+    );
   }
 
   const now = new Date();
