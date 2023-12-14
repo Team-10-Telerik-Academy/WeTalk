@@ -2,10 +2,9 @@ import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
 import { faCrown } from '@fortawesome/free-solid-svg-icons';
-import nhAvatar from '../../../assets/images/avatar-NH.jpg';
 import { IAppContext, ITeam } from '../../../common/types';
 import AppContext from '../../../context/AuthContext';
-import Status from '../../Profile/Status';
+// import Status from '../../Profile/Status';
 import Profile from '../../Profile/Profile';
 
 type IUser = {
@@ -38,7 +37,7 @@ const MembersModal: React.FC<MembersModalProps> = ({
           <div className="flex items-center justify-center min-h-screen xl:py-10">
             <div className="bg-white w-full md:w-1/2 lg:w-1/3 2xl:w-1/4 pt-6 rounded shadow-lg animate-jump-in">
               <div className="flex flex-col items-center justify-center mb-8">
-                <h2 className="text-xl text-primary font-bold text-center">
+                <h2 className="text-xl text-primary font-extrabold text-center uppercase">
                   {teamData.teamName} Members
                 </h2>
                 <hr className="w-12 border-t-4 border-accent mt-2" />
@@ -46,12 +45,12 @@ const MembersModal: React.FC<MembersModalProps> = ({
               <div className="space-y-2 p-2 rounded mb-10">
                 {teamData.members.map((member) => (
                   <div
-                    key={member}
+                    key={member.handle}
                     className="flex items-center justify-between border border-primary rounded p-2 hover:bg-primary hover:bg-opacity-5"
                   >
                     <div className="flex items-center py-1">
                       {users
-                        .filter((user) => user.handle === member)
+                        .filter((user) => user.handle === member.handle)
                         .map((user) => (
                           <>
                             <div className="flex gap-2 items-center">
@@ -64,7 +63,7 @@ const MembersModal: React.FC<MembersModalProps> = ({
                               </div>
                             </div>
                             <span className="font-bold text-primary text-xs md:text-sm">
-                              {member === teamData.owner && (
+                              {member.handle === teamData.owner.handle && (
                                 <FontAwesomeIcon
                                   icon={faCrown}
                                   className="text- cursor-pointer px-2 text-xs md:text-sm"
@@ -74,11 +73,11 @@ const MembersModal: React.FC<MembersModalProps> = ({
                           </>
                         ))}
                     </div>
-                    {userData?.handle === teamData.owner && (
+                    {userData?.handle === teamData.owner.handle && (
                       <FontAwesomeIcon
                         icon={faTrashCan}
                         className="text-primary cursor-pointer px-2 text-xs md:text-lg"
-                        onClick={() => onRemoveMember(member)}
+                        onClick={() => onRemoveMember(member.handle)}
                       />
                     )}
                   </div>
