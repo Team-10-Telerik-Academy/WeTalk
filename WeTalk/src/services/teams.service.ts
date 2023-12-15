@@ -45,15 +45,15 @@ export const createTeam = async (
   );
   createTeamNotification(owner.handle, members, teamName);
 
-  // await createGeneralChannel(teamName, members, v4(), owner);
+  await createGeneralChannel(teamName, members, v4(), owner);
 
-  const createGenChannel = await createGeneralChannel(
-    teamName,
-    members,
-    v4(),
-    owner
-  );
-  console.log(createGenChannel);
+  // const createGenChannel = await createGeneralChannel(
+  //   teamName,
+  //   members,
+  //   v4(),
+  //   owner
+  // );
+  // console.log(createGenChannel);
   await update(ref(db, `teams/${teamName}/channels`), {
     general: true,
   });

@@ -105,31 +105,3 @@ const BigCalendar = () => {
 };
 
 export default BigCalendar;
-
-{
-  /* <h1>Calendar</h1>
-      <h2>Add new Event</h2>
-      <div>
-        <input
-          type="text"
-          placeholder="Add Title"
-          style={{ width: '20%', marginRight: '10px' }}
-          value={newEvent.title}
-          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-        />
-        <DatePicker
-          placeholderText="Start Date"
-          style={{ marginRight: '10px' }}
-          selected={newEvent.start}
-          onChange={(start) => setNewEvent({ ...newEvent, start })}
-        />
-        <DatePicker
-          placeholderText="End Date"
-          selected={newEvent.end}
-          onChange={(end) => setNewEvent({ ...newEvent, end })}
-        />
-        <button style={{ marginTop: '10px' }} onClick={handleAddEvent}>
-          Add Event
-        </button>
-      </div> */
-}

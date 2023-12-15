@@ -35,8 +35,8 @@ type ChannelType = {
   teamName: string;
   owner: any;
   createdOn: Date;
-  audioRoomInfo: any;
-  videoRoomInfo: any;
+  roomId: '';
+  roomStatus: '';
   typingStatus: any;
 };
 
@@ -54,14 +54,8 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
     teamName: '',
     owner: {},
     createdOn: new Date(),
-    audioRoomInfo: {
-      audioRoomId: '',
-      audioRoomParticipants: {},
-    },
-    videoRoomInfo: {
-      videoRoomId: '',
-      videoRoomParticipants: {},
-    },
+    roomId: '',
+    roomStatus: '',
   });
   const [isCallButtonClicked, setIsCallButtonClicked] = useState(false);
   const [typingStatus, setTypingStatus] = useState<Record<string, boolean>>({});
@@ -76,14 +70,8 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
     teamName: '',
     owner: {},
     createdOn: new Date(),
-    audioRoomInfo: {
-      audioRoomId: '',
-      audioRoomParticipants: {},
-    },
-    videoRoomInfo: {
-      videoRoomId: '',
-      videoRoomParticipants: {},
-    },
+    roomId: '',
+    roomStatus: '',
   });
 
   const filteredMembers = channel?.members
@@ -190,17 +178,17 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
     };
   }, []);
 
-  const handleVideoCallButtonClick = () => {
-    if (channel?.videoRoomInfo.videoRoomId) {
-      console.log('Video room opened');
+  const handleCallButtonClick = () => {
+    if (channel?.roomId) {
+      console.log('Room opened');
+      setIsCallButtonClicked(true);
+      navigate(`/home/channels/${channelId}/${channel?.roomId}`);
     }
   };
 
-  const handleAudioCallButtonClick = () => {
-    if (channel?.audioRoomInfo.audioRoomId) {
-      console.log('Audio room opened');
-    }
-  };
+  if (isCallButtonClicked) {
+    return <CurrentRoom setIsCallButtonClicked={setIsCallButtonClicked} />;
+  }
 
   const isMounted = useIsMounted();
 
@@ -251,48 +239,13 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
           </h1>
         </div>
         <div className="flex justify-between items-center gap-2 px-4">
-          <Link
-            to={
-              channelData?.audioRoomInfo.audioRoomId
-                ? `/home/audio-room/${channelData.channelId}/${channelData?.audioRoomInfo.audioRoomId}`
-                : ''
-            }
-            target="_blank"
-          >
-            <button
-              className="bg-blue-500 text-secondary px-4 py-2 rounded hover:bg-blue-600"
-              onClick={handleAudioCallButtonClick}
-            >
-              {channelData?.audioRoomInfo.audioRoomParticipants &&
-              Object.keys(channelData?.audioRoomInfo.audioRoomParticipants)
-                .length > 0 ? (
-                <span className="animate-pulse">Ongoing audio call...</span>
-              ) : (
-                <FontAwesomeIcon icon={faPhone} />
-              )}
-            </button>
-          </Link>
-          <Link
-            to={
-              channelData?.videoRoomInfo.videoRoomId
-                ? `/home/video-room/${channelData.channelId}/${channelData?.videoRoomInfo.videoRoomId}`
-                : ''
-            }
-            target="_blank"
-          >
-            <button
-              className="bg-blue-500 text-secondary px-4 py-2 rounded hover:bg-blue-600"
-              onClick={handleVideoCallButtonClick}
-            >
-              {channelData?.videoRoomInfo.videoRoomParticipants &&
-              Object.keys(channelData?.videoRoomInfo.videoRoomParticipants)
-                .length > 0 ? (
-                <span className="animate-pulse">Ongoing video call...</span>
-              ) : (
-                <FontAwesomeIcon icon={faVideo} />
-              )}
-            </button>
-          </Link>
+          <button className="bg-blue-500 text-secondary px-4 py-2 rounded hover:bg-blue-600">
+            <FontAwesomeIcon icon={faPhone} />
+          </button>
+
+          <button className="bg-blue-500 text-secondary px-4 py-2 rounded hover:bg-blue-600">
+            <FontAwesomeIcon icon={faVideo} />
+          </button>
           <p className="text-primary mx-2 mt-1">
             <ChannelSettings
               channel={channelData}
