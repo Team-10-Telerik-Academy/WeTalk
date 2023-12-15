@@ -1,4 +1,4 @@
-import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
+import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
 import {
   faChevronRight,
   faChevronDown,
@@ -20,11 +20,10 @@ import MembersModal from '../../../components/MainSidebar/Teams/MembersModal';
 import AddMembersModal from '../../../components/MainSidebar/Teams/AddMembersModal';
 import ScheduleTeamMeeting from '../../../components/MainSidebar/Teams/ScheduleTeamMeeting';
 import { findChannelByTeamName } from '../../../services/channel.service';
-import { getAllChannelsInTeam } from "../../../services/channel.service";
-import CreateChannel from "../../../components/CreateChannel/CreateChannel";
-import { Link } from "react-router-dom";
+import { getAllChannelsInTeam } from '../../../services/channel.service';
+import CreateChannel from '../../../components/CreateChannel/CreateChannel';
+import { Link } from 'react-router-dom';
 //import ScheduleTeamMeeting from '../../../components/MainSidebar/Teams/ScheduleTeamMeeting';
-
 
 type IUser = {
   handle: string;
@@ -343,7 +342,6 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
         onAddMembersToTeam={handleAddMembersToTeam}
       />
 
-      <ScheduleTeamMeeting
       <ScheduleTeamMeeting
         teamData={teamData}
         users={users}

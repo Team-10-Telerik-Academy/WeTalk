@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState, useRef } from 'react';
-import { useContext, useEffect, useState, useRef } from 'react';
 import AppContext from '../../context/AuthContext';
 import InputField from './InputField';
 import { IAppContext } from '../../common/types';
