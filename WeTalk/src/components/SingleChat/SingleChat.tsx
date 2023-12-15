@@ -348,151 +348,174 @@ const renderTime = (timestamp, isToday, isYesterday) => (
   </time>
 );
 
-const renderChatBubble = (message, userHandle, members, isToday, isYesterday) =>
-  message.message.includes('has started an audio call') ||
-  message.message.includes('has ended an audio call') ? (
-    <div className="px-8 text-primary text-sm mt-6 mb-4 flex items-center gap-4">
-      <FontAwesomeIcon
-        icon={faPhone}
-        size="xl"
-        className={`${
-          message.message.includes('has started an audio call')
-            ? 'text-green-600'
-            : 'text-red-600'
-        }`}
-      />
-      <div className="flex items-center gap-2">
-        <span>{message.message}</span>
-        <span className="font-bold text-xs">
-          ({renderTime(message.timestamp, isToday, isYesterday)})
-        </span>
-      </div>
-    </div>
-  ) : message.message.includes('has started a video call') ||
-    message.message.includes('has ended a video call') ? (
-    <div className="px-8 text-primary text-sm mt-6 mb-4 flex items-center gap-4">
-      <FontAwesomeIcon
-        icon={faVideo}
-        size="xl"
-        className={`${
-          message.message.includes('has started a video call')
-            ? 'text-green-600'
-            : 'text-red-600'
-        }`}
-      />
-      <div className="flex items-center gap-2">
-        <span>{message.message}</span>
-        <span className="font-bold text-xs">
-          ({renderTime(message.timestamp, isToday, isYesterday)})
-        </span>
-      </div>
-    </div>
-  ) : (
-    <div
-      key={message.timestamp}
-      className={`px-6 chat w-full ${
-        message.sender === userHandle ? 'chat-end' : 'chat-start'
-      }`}
-    >
-      <div className="flex-start">
-        {message.sender === userHandle && (
-          <MessageSettings
-            chatId={chatId}
-            messageId={message.messageId}
-            message={message.message}
-            type={message.type}
-            fileName={message.fileName}
-          />
-        )}
-      </div>
-      <div className="chat-image">
-        <Profile handle={message.sender} />
-      </div>
-      <div className="chat-header text-primary font-bold text-md mt-2 mb-1">
-        {members
-          .filter((member) => member.handle === message.sender)
-          .map((member) => `${member.firstName} ${member.lastName}`)}
-      </div>
-      <div
-        className={`chat-bubble flex flex-col px-4 text-md ${
-          message.sender === userHandle
-            ? 'bg-primary text-secondary'
-            : 'bg-primary bg-opacity-10 text-primary'
-        }`}
-      >
-        {message.message}
-        <span className="text-xs opacity-50 mr-2">
-          {renderTime(message.timestamp, isToday, isYesterday)}
-        </span>
-      </div>
-      <div className="flex">
-        {message.edited && (
-          <p className="text-primary text-xs font-bold mr-3 underline">
-            edited
-          </p>
-        )}
-        <div>
-          {filteredMembers.length === 2 && message.sender === userHandle ? (
-            <>
-              {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
-                <p className="text-xs font-bold text-primary">seen</p>
-              ) : (
-                <p className="text-xs font-bold text-primary">delivered</p>
-              )}
-            </>
-          ) : (
-            <>
-              {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
-                <p className="text-xs font-bold text-primary">seen by all</p>
-              ) : (
-                <>
-                  {membersWhoHaveSeen(message, filteredMembers, userHandle)
-                    .length > 0 &&
-                  membersWhoHaveSeen(message, filteredMembers, userHandle)
-                    .length < filteredMembers.length &&
-                  message.sender === userHandle ? (
-                    <div
-                      className="dropdown dropdown-hover dropdown-left h-0.5 mt-0 pt-0 z-[1]"
-                      key={filteredMembers[0]}
-                    >
-                      <div
-                        tabIndex={0}
-                        role="button"
-                        className="btn-xs bg-secondary border-none shadow-none text-xs font-bold w-0.5 h-0.5 mt-0 pt-0 mr-4 text-primary"
-                      >
-                        seen
-                      </div>
-                      <div>
-                        <ul
-                          tabIndex={0}
-                          className="dropdown-content z-[1] menu shadow bg-secondary shadow rounded-box w-max z=[1]"
-                          style={{ display: 'flex', flexDirection: 'row' }}
-                        >
-                          {filteredMembers.map((member) => (
-                            <div key={member} style={{ marginRight: '1px' }}>
-                              {message.seenBy &&
-                                message.seenBy[member] === true && (
-                                  <SeenIcons handle={member} />
-                                )}
-                            </div>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {membersWhoHaveSeen(message, filteredMembers, userHandle)
-                    .length === 0 && message.sender === userHandle ? (
-                    <p className="text-xs font-bold">delivered</p>
-                  ) : null}
-                </>
-              )}
-            </>
-          )}
+const renderChatBubble = (
+  message,
+  userHandle,
+  members,
+  isToday,
+  isYesterday,
+  chatId,
+  filteredMembers
+) => {
+  if (
+    message.message.includes('has started an audio call') ||
+    message.message.includes('has ended an audio call')
+  ) {
+    return (
+      <div className="px-8 text-primary text-sm mt-6 mb-4 flex items-center gap-4">
+        <FontAwesomeIcon
+          icon={faPhone}
+          size="xl"
+          className={`${
+            message.message.includes('has started an audio call')
+              ? 'text-green-600'
+              : 'text-red-600'
+          }`}
+        />
+        <div className="flex items-center gap-2">
+          <span>{message.message}</span>
+          <span className="font-bold text-xs">
+            ({renderTime(message.timestamp, isToday, isYesterday)})
+          </span>
         </div>
       </div>
-    </div>
-  );
+    );
+  } else if (
+    message.message.includes('has started a video call') ||
+    message.message.includes('has ended a video call')
+  ) {
+    return (
+      <div className="px-8 text-primary text-sm mt-6 mb-4 flex items-center gap-4">
+        <FontAwesomeIcon
+          icon={faVideo}
+          size="xl"
+          className={`${
+            message.message.includes('has started a video call')
+              ? 'text-green-600'
+              : 'text-red-600'
+          }`}
+        />
+        <div className="flex items-center gap-2">
+          <span>{message.message}</span>
+          <span className="font-bold text-xs">
+            ({renderTime(message.timestamp, isToday, isYesterday)})
+          </span>
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <div
+        key={message.timestamp}
+        className={`px-6 chat w-full ${
+          message.sender === userHandle ? 'chat-end' : 'chat-start'
+        }`}
+      >
+        <div className="flex-start">
+          {message.sender === userHandle && (
+            <MessageSettings
+              chatId={chatId}
+              messageId={message.messageId}
+              message={message.message}
+              type={message.type}
+              fileName={message.fileName}
+            />
+          )}
+        </div>
+        <div className="chat-image">
+          <Profile handle={message.sender} />
+        </div>
+        <div className="chat-header text-primary font-bold text-md mt-2 mb-1">
+          {members
+            .filter((member) => member.handle === message.sender)
+            .map((member) => `${member.firstName} ${member.lastName}`)}
+        </div>
+        <div
+          className={`chat-bubble flex flex-col px-4 text-md ${
+            message.sender === userHandle
+              ? 'bg-primary text-secondary'
+              : 'bg-primary bg-opacity-10 text-primary'
+          }`}
+        >
+          {message?.type! === 'file' ? (
+            <img className="w-64 h-64" src={message.message} alt="img" />
+          ) : (
+            <div>{message.message}</div>
+          )}
+          <span className="text-xs opacity-50 mr-2">
+            {renderTime(message.timestamp, isToday, isYesterday)}
+          </span>
+        </div>
+        <div className="flex">
+          {message.edited && (
+            <p className="text-primary text-xs font-bold mr-3 underline">
+              edited
+            </p>
+          )}
+          <div>
+            {filteredMembers.length === 2 && message.sender === userHandle ? (
+              <>
+                {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
+                  <p className="text-xs font-bold text-primary">seen</p>
+                ) : (
+                  <p className="text-xs font-bold text-primary">delivered</p>
+                )}
+              </>
+            ) : (
+              <>
+                {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
+                  <p className="text-xs font-bold text-primary">seen by all</p>
+                ) : (
+                  <>
+                    {membersWhoHaveSeen(message, filteredMembers, userHandle)
+                      .length > 0 &&
+                    membersWhoHaveSeen(message, filteredMembers, userHandle)
+                      .length < filteredMembers.length &&
+                    message.sender === userHandle ? (
+                      <div
+                        className="dropdown dropdown-hover dropdown-left h-0.5 mt-0 pt-0 z-[1]"
+                        key={filteredMembers[0]}
+                      >
+                        <div
+                          tabIndex={0}
+                          role="button"
+                          className="btn-xs bg-secondary border-none shadow-none text-xs font-bold w-0.5 h-0.5 mt-0 pt-0 mr-4 text-primary"
+                        >
+                          seen
+                        </div>
+                        <div>
+                          <ul
+                            tabIndex={0}
+                            className="dropdown-content z-[1] menu shadow bg-secondary shadow rounded-box w-max z=[1]"
+                            style={{ display: 'flex', flexDirection: 'row' }}
+                          >
+                            {filteredMembers.map((member) => (
+                              <div key={member} style={{ marginRight: '1px' }}>
+                                {message.seenBy &&
+                                  message.seenBy[member] === true && (
+                                    <SeenIcons handle={member} />
+                                  )}
+                              </div>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {membersWhoHaveSeen(message, filteredMembers, userHandle)
+                      .length === 0 && message.sender === userHandle ? (
+                      <p className="text-xs font-bold">delivered</p>
+                    ) : null}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+};
 
 const renderMessages = (
   messages: Record<string, MessageType>,

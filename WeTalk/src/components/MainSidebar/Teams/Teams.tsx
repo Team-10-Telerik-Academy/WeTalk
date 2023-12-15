@@ -12,8 +12,7 @@ import TeamsView from '../../../views/MainSidebar/Teams/TeamsView';
 import { v4 } from 'uuid';
 import { IAppState, ITeam, IUserData } from '../../../common/types';
 import { getAllUsers } from '../../../services/users.service';
-import MainContent from '../../MainContent/MainContent';
-import { Outlet } from 'react-router';
+import { Outlet } from 'react-router-dom';
 
 const Teams = () => {
   const { userData } = useContext(AppContext) as IAppState;
@@ -123,7 +122,7 @@ const Teams = () => {
         onSaveTeamName={handleSaveTeamName}
         users={users}
       />
-      <MainContent />
+      {/* <MainContent /> */}
       <Outlet />
     </>
   );

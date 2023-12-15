@@ -3,8 +3,10 @@ import AppContext from "../../context/AuthContext";
 import { IAppContext } from "../../common/types";
 import Profile from "../Profile/Profile";
 import ChannelInputField from "./ChannelInputField";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
 import {
+  getChannelById,
+  getChannelByIdSecond,
   onChannelUpdate,
   setAllMessagesToSeenChannel,
 } from "../../services/channel.service";
@@ -17,7 +19,7 @@ import { faVideo } from "@fortawesome/free-solid-svg-icons";
 import ChannelSettings from "./ChannelSettings";
 import ChannelMessageSettings from "./ChannelMessageSettings";
 import SeenIcons from "../MainSidebar/Chats/SeenIcons";
-import { getUserByHandle } from "../../services/users.service";
+
 import { getAllTeamMembers } from "../../services/teams.service";
 
 type MessageType = {
@@ -27,12 +29,16 @@ type MessageType = {
 };
 
 type ChannelType = {
+  channelId: string;
   channelName: string;
-  members: string[];
+  members: any[];
   messages: Record<string, MessageType>;
   teamName: string;
-  roomId: string;
-  roomStatus: string;
+  owner: any;
+  createdOn: Date;
+  roomId: "";
+  roomStatus: "";
+  typingStatus: any;
 };
 
 type SingleChannelProps = {
@@ -42,10 +48,13 @@ type SingleChannelProps = {
 const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
   const { userData } = useContext(AppContext) as IAppContext;
   const [channel, setChannel] = useState<ChannelType | null>({
+    channelId: "",
     channelName: "",
     members: [],
     messages: {},
     teamName: "",
+    owner: {},
+    createdOn: new Date(),
     roomId: "",
     roomStatus: "",
   });
@@ -54,53 +63,79 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
   const [inputValue, setInputValue] = useState("");
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
   const [users, setUsers] = useState<IUserData[]>([]);
+  const [channelData, setChannelData] = useState<ChannelType | null>({
+    channelId: "",
+    channelName: "",
+    members: [],
+    messages: {},
+    teamName: "",
+    owner: {},
+    createdOn: new Date(),
+    roomId: "",
+    roomStatus: "",
+  });
+  // const [filteredMembers, setFilteredMembers] = useState([]);
   // const [filteredMembers, setFilteredMembers] = useState([]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const result = await getAllTeamMembers(channel.teamName);
-        setTeamMembers(result);
-        //console.log(teamMembers)
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    if (users.length === 0) {
-      fetchUsers();
-    }
-  }, [users.length]);
   //console.log(teamName)
 
-  useEffect(() => {
-    const handleUserByHandle = async () => {
-      try {
-        const userData = [];
+  // useEffect(() => {
+  //   const channelCallBack = (channelData) => {
+  //     setChannelData(channelData);
+  //     console.log(channelData);
+  //   };
 
-        for (const member of teamMembers) {
-          const snapshot = await getUserByHandle(member);
+  //   const unsubscribe = getChannelById(channelId, channelCallBack);
 
-          if (snapshot.exists()) {
-            const userDataForMember = snapshot.val();
-            if (userDataForMember) {
-              userData.push({
-                firstName: userDataForMember.firstName,
-                lastName: userDataForMember.lastName,
-                handle: userDataForMember.handle,
-              });
-            }
-          }
-        }
-        setUsers(userData);
-        //console.log(users);
-        return userData;
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    handleUserByHandle();
-  }, [teamMembers]);
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, []);
+
+  // useEffect(() => {
+  //   const fetchChannelData = async () => {
+  //     try {
+  //       const channelData = await getChannelByIdSecond(channelId);
+  //       setChannelData(channelData);
+  //       console.log(channelData);
+  //     } catch (error) {
+  //       console.log("Error fetching channelData", error.message);
+  //     }
+  //   };
+
+  //   fetchChannelData();
+  // }, [channelId]);
+
+  //console.log(teamName)
+
+  // useEffect(() => {
+  //   const handleUserByHandle = async () => {
+  //     try {
+  //       const userData = [];
+
+  //       for (const member of teamMembers) {
+  //         const snapshot = await getUserByHandle(member);
+
+  //         if (snapshot.exists()) {
+  //           const userDataForMember = snapshot.val();
+  //           if (userDataForMember) {
+  //             userData.push({
+  //               firstName: userDataForMember.firstName,
+  //               lastName: userDataForMember.lastName,
+  //               handle: userDataForMember.handle,
+  //             });
+  //           }
+  //         }
+  //       }
+  //       setUsers(userData);
+  //       //console.log(users);
+  //       return userData;
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
+  //   handleUserByHandle();
+  // }, [teamMembers]);
 
   //  console.log(users);
 
@@ -117,7 +152,7 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
 
     // Update typing status in Firebase
     update(ref(db, `channels/${channelId}/typingStatus`), {
-      [userData?.handle!]: value !== "", // Set to true if input is not empty
+      [userData?.handle!]: value !== "", 
     });
   };
 
@@ -153,8 +188,10 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
     const unsubscribe = onChannelUpdate(
       channelId,
       (channelData: ChannelType) => {
-        setChannel(channelData);
+        setChannelData(channelData);
+        console.log(channelData);
       },
+
       (messagesData: Record<string, MessageType>) => {
         console.log("Messages updated:", messagesData);
         setChannel((prevChannel) => ({
@@ -173,6 +210,20 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
       unsubscribe();
     };
   }, [channelId]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const result = await getAllTeamMembers(channelData.teamName);
+        setTeamMembers(result);
+        console.log(result);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     if (channelContainerRef.current) {
@@ -249,11 +300,11 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
       <div className="flex items-center justify-between py-2 shadow border-b">
         <div className="flex-grow">
           <h1 className="h-12 flex items-center justify-center text-2xl font-bold text-primary ml-14">
-            #{channel?.channelName}
+            #{channelData?.channelName}
           </h1>
         </div>
         <div className="flex justify-between items-center gap-4">
-          <Link to={channel?.roomId ? `${channel?.roomId}` : ""}>
+          <Link to={channelData?.roomId ? `${channelData?.roomId}` : ""}>
             <button
               className="bg-blue-500 text-secondary px-4 py-2 rounded"
               onClick={handleCallButtonClick}
@@ -263,9 +314,9 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
           </Link>
           <p className="text-primary mr-4 mt-1">
             <ChannelSettings
-              channel={channel}
-              channelId={channelId}
-              teamName={channel.teamName}
+              channel={channelData}
+              channelId={channelData?.channelId}
+              teamName={channelData?.teamName}
             />
           </p>
         </div>
@@ -308,12 +359,12 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
             </h2>
           </h1>
         ) : null} */}
-        {channel &&
+        {channelData &&
           renderMessages(
-            channel.messages,
+            channelData.messages,
             userData?.handle!,
-            channel.members,
-            channel.channelId,
+            channelData.members,
+            channelData?.channelId,
             filteredMembers
           )}
       </div>
@@ -325,7 +376,7 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
           </div>
         </div>
         <ChannelInputField
-          channelId={channelId}
+          channelId={channelData?.channelId}
           handle={userData?.handle!}
           setInputValue={setInputValue}
           handleInputChange={handleInputChange}
@@ -369,10 +420,9 @@ const renderChannelBubble = (
       <Profile handle={message.sender} />
     </div>
     <div className="chat-header text-primary font-bold text-md mt-2 mb-1">
-      {/* {members
+      {members
         .filter((member) => member.handle === message.sender)
-        .map((member) => `${member.firstName} ${member.lastName}`)} */}
-        {message.sender}
+        .map((member) => `${member.firstName} ${member.lastName}`)}
     </div>
     <div
       className={`chat-bubble flex flex-col px-4 text-md ${
@@ -507,32 +557,39 @@ const renderMessages = (
 };
 
 const allMembersHaveSeen = (message, members, userHandle) => {
-  const filteredMembers = members.filter((member) => member !== userHandle);
+  const filteredMembers = members.filter(
+    (member) => member.handle !== userHandle
+  );
+ //console.log(userHandle)
   const seenBy = message.seenBy || {};
 
   const filteredSeenBy = Object.keys(seenBy).reduce((acc, member) => {
-    if (member !== userHandle) {
-      acc[member] = seenBy[member];
+    if (member.handle !== userHandle) {
+      acc[member.handle] = seenBy[member.handle];
     }
     return acc;
   }, {});
 
-  return filteredMembers.every((member) => filteredSeenBy[member] === true);
+  return filteredMembers.every(
+    (member) => filteredSeenBy[member.handle] === true
+  );
 };
 
 const membersWhoHaveSeen = (message, members, userHandle) => {
-  const filteredMembers = members.filter((member) => member !== userHandle);
+  const filteredMembers = members.filter(
+    (member) => member.handle !== userHandle
+  );
   const seenBy = message.seenBy || {};
 
   const filteredSeenBy = Object.keys(seenBy).reduce((acc, member) => {
-    if (member !== userHandle) {
-      acc[member] = seenBy[member];
+    if (member.handle !== userHandle) {
+      acc[member.handle] = seenBy[member.handle];
     }
     return acc;
   }, {});
 
   const seenMembers = filteredMembers.filter(
-    (member) => filteredSeenBy[member]
+    (member) => filteredSeenBy[member.handle]
   );
 
   return seenMembers;

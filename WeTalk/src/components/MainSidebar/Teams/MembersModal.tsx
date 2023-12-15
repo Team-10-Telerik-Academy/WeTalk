@@ -6,13 +6,13 @@ import { IAppContext, ITeam } from '../../../common/types';
 import AppContext from '../../../context/AuthContext';
 // import Status from '../../Profile/Status';
 import Profile from '../../Profile/Profile';
-
+ 
 type IUser = {
   handle: string;
   firstName: string;
   lastName: string;
 };
-
+ 
 type MembersModalProps = {
   teamData: ITeam;
   users: IUser[];
@@ -20,7 +20,7 @@ type MembersModalProps = {
   onClose: () => void;
   onRemoveMember: (selectedMember: string) => void;
 };
-
+ 
 const MembersModal: React.FC<MembersModalProps> = ({
   teamData,
   users,
@@ -29,7 +29,7 @@ const MembersModal: React.FC<MembersModalProps> = ({
   onRemoveMember,
 }) => {
   const { userData } = useContext(AppContext) as IAppContext;
-
+ 
   return (
     <>
       {isOpen && (
@@ -98,5 +98,5 @@ const MembersModal: React.FC<MembersModalProps> = ({
     </>
   );
 };
-
+ 
 export default MembersModal;

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { IUserData } from "../../common/types";
+
 import {
   getUserByHandleLive,
   getUserByHandle,
 } from "../../../services/users.service";
+
 
 interface ProfileProps {
   handle: string;

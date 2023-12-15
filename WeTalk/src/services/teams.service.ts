@@ -7,10 +7,10 @@ import {
   update,
   onValue,
 } from 'firebase/database';
+import { createTeamNotification } from './notifications.service';
 import { db } from '../config/firebase-config';
 import { ITeam } from '../common/types';
-import { createTeamNotification } from './notifications.service';
-import { createGeneralChanel } from './channel.service';
+import { createGeneralChannel } from './channel.service';
 import { v4 } from 'uuid';
 
 export const fromTeamsDocument = (snapshot: DataSnapshot) => {
@@ -47,6 +47,13 @@ export const createTeam = async (
 
   await createGeneralChanel(teamName, members, v4(), owner);
 
+  const createGenChannel = await createGeneralChannel(
+    teamName,
+    members,
+    v4(),
+    owner
+  );
+  console.log(createGenChannel);
   await update(ref(db, `teams/${teamName}/channels`), {
     general: true,
   });

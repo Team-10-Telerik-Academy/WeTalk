@@ -11,7 +11,6 @@ import {
 } from "../../common/constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { getAllTeamMembers } from "../../services/teams.service";
 import {
   addRoomIDChannel,
   createChannel,
@@ -26,54 +25,38 @@ interface IUserData {
   lastName: string;
   handle: string;
 }
-
-const CreateChannel = ({
+interface CreateChannelProps {
+  teamName: string;
+  isModalOpen: boolean;
+  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  owner: any; // Replace 'any' with the actual type
+  teamData: any; // Replace 'any' with the actual type
+}
+const CreateChannel: React.FC<CreateChannelProps> = ({
   teamName,
   isModalOpen,
   setIsModalOpen,
-  userHandle = userData.handle,
+  owner,
+  teamData,
 }) => {
   const [users, setUsers] = useState<IUserData[]>([]);
   const { userData } = useContext(AppContext) as IAppContext;
-  const [members, setMembers] = useState<string[]>([]);
-  const [teamMembers, setTeamMembers] = useState<string[]>([]);
-
+  const [channelMembers, setChannelMembers] = useState<string[]>([]);
   const [channelName, setChannelName] = useState<string>("");
   //const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
 
-  //const teamName: string = 'Team 10';
-
-  // useEffect(() => {
-  //   if (isOpenInitially) {
-  //     openModal();
-  //   }
-  // }, [isOpenInitially]);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const result = await getAllTeamMembers(teamName);
-        setTeamMembers(result);
-        //console.log(teamMembers)
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    if (users.length === 0) {
-      fetchUsers();
-    }
-  }, [users.length]);
-  //console.log(teamName);
-
   const navigate = useNavigate();
 
-  const handleCheckboxChange = (handle: string) => {
-    setMembers((prevMembers) =>
-      prevMembers.includes(handle)
-        ? prevMembers.filter((member: string) => member !== handle)
-        : [...prevMembers, handle]
+  const handleCheckboxChange = (
+    handle: string,
+    firstName: string,
+    lastName: string
+  ) => {
+    setChannelMembers((prevMembers) =>
+      prevMembers.some((member) => member.handle === handle)
+        ? prevMembers.filter((member: string) => member.handle !== handle)
+        : [...prevMembers, { handle, firstName, lastName }]
     );
   };
 
@@ -100,7 +83,7 @@ const CreateChannel = ({
 
   const handleCreateChannel = async (
     channelName: string,
-    members: string[]
+    channelMembers: string[]
   ) => {
     if (!channelName) {
       toast.warning("Channel Name is required!", {
@@ -125,19 +108,19 @@ const CreateChannel = ({
     }
     try {
       if (channelName) {
-        // const user = {
-        //   handle: userData?.handle,
-        //   firstName: userData?.firstName,
-        //   lastName: userData?.lastName,
-        // };
-        if (userHandle) {
-          const updatedMembers = [...members];
-          await createChannel(
+        const user = {
+          handle: userData?.handle,
+          firstName: userData?.firstName,
+          lastName: userData?.lastName,
+        };
+        if (owner) {
+          const updatedMembers = [...channelMembers];
+          const newChannel = await createChannel(
             channelName,
             updatedMembers,
             v4(),
             teamName,
-            userHandle
+            owner
           );
 
           const { channelId } = newChannel;
@@ -189,7 +172,7 @@ const CreateChannel = ({
     setSelectAll(false);
   };
   const handleCreateButtonClick = () => {
-    handleCreateChannel(channelName, members);
+    handleCreateChannel(channelName, channelMembers);
     closeModal();
     // console.log(userData);
   };
@@ -202,45 +185,39 @@ const CreateChannel = ({
     }
   };
 
+  // const handleSelectAll = () => {
+  //   // const newUsers = users.map((user) => ({
+  //   //   handle: user.handle,
+  //   //   firstName: user.firstName,
+  //   //   lastName: user.lastName
+  //   // }))
+  //   setSelectAll(!selectAll);
+  //   setChannelMembers((prevMembers) =>
+  //     selectAll
+  //       ? prevMembers.filter(
+  //           (member) =>
+  //             !teamData.members.map((member) =>
+  //               member.handle.includes(member.handle)
+  //             ) && member.handle !== userData.handle
+  //         )
+  //       : [...prevMembers, ...channelMembers]
+  //   );
+  // };
+
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
-    setMembers((prevMembers) =>
+    setChannelMembers((prevMembers) =>
       selectAll
         ? prevMembers.filter(
             (member) =>
-              !teamMembers.includes(member) && member !== userData?.handle
+              !teamData.members
+                .map((user) => user.handle)
+                .includes(member.handle) && member.handle !== userData?.handle
           )
-        : [...prevMembers, ...teamMembers]
+        : [...prevMembers, ...teamData.members.map((member) => member)]
     );
+    // console.log(selectAll);
   };
-
-  useEffect(() => {
-    const handleUserByHandle = async () => {
-      try {
-        const userData = [];
-
-        for (const member of teamMembers) {
-          const snapshot = await getUserByHandle(member);
-
-          if (snapshot.exists()) {
-            const userDataForMember = snapshot.val();
-            if (userDataForMember) {
-              userData.push({
-                firstName: userDataForMember.firstName,
-                lastName: userDataForMember.lastName,
-                handle: userDataForMember.handle,
-              });
-            }
-          }
-        }
-        setUsers(userData);
-        return userData;
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    handleUserByHandle();
-  }, [teamMembers]);
 
   return (
     <>
@@ -286,21 +263,31 @@ const CreateChannel = ({
                         Select All
                       </span>
                     </div>
-                    {users
-                      .filter((user) => user.handle !== userData?.handle)
-                      .map((user) => (
+                    {teamData.members
+                      .filter((member) => member.handle !== userData?.handle)
+                      .map((member) => (
                         <div
-                          key={user.handle}
+                          key={member.handle}
                           className="flex items-center bg-gray-100 p-2 hover:bg-gray-200 text-xs md:text-sm"
                         >
                           <label className="flex items-center w-full text-primary">
                             <input
                               type="checkbox"
-                              checked={members.includes(user.handle)}
-                              onChange={() => handleCheckboxChange(user.handle, user.firstName, user.lastName)}
+                              checked={channelMembers.some(
+                                (channelMember) =>
+                                  channelMember.handle === member.handle
+                              )}
+                              onChange={() =>
+                                handleCheckboxChange(
+                                  member.handle,
+                                  member.firstName,
+                                  member.lastName
+                                )
+                              }
                               className="mr-2"
                             />
-                            {user.firstName} {user.lastName} ({user.handle})
+                            {member.firstName} {member.lastName} (
+                            {member.handle})
                           </label>
                         </div>
                       ))}

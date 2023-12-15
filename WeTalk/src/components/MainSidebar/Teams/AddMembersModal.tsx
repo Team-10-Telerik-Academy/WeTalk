@@ -4,13 +4,13 @@ import { faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { IAppContext, ITeam } from '../../../common/types';
 // import AppContext from '../../../context/AuthContext';
 import Profile from '../../Profile/Profile';
-
+ 
 type IUser = {
   handle: string;
   firstName: string;
   lastName: string;
 };
-
+ 
 type AddMembersModalProps = {
   teamData: ITeam;
   users: IUser[];
@@ -19,7 +19,7 @@ type AddMembersModalProps = {
   onClose: () => void;
   onAddMembersToTeam: (selectedMembers: string[]) => void;
 };
-
+ 
 const AddMembersModal: React.FC<AddMembersModalProps> = ({
   teamData,
   users,
@@ -29,7 +29,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
   onAddMembersToTeam,
 }) => {
   // const { userData } = useContext(AppContext) as IAppContext;
-
+ 
   return (
     <>
       {isOpen && (
@@ -94,5 +94,5 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
     </>
   );
 };
-
+ 
 export default AddMembersModal;

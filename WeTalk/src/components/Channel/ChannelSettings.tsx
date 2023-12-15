@@ -11,6 +11,7 @@ import { getAllUsers, getUserByHandle } from "../../services/users.service";
 import { db } from "../../config/firebase-config";
 import ChannelMedia from "./ChannelMedia";
 import { getAllTeamMembers } from "../../services/teams.service";
+import { getChannelOwner } from "../../services/channel.service";
 
 interface IUserData {
   firstName: string;
@@ -21,13 +22,30 @@ interface IUserData {
 const ChannelSettings = ({ channel, channelId, teamName }) => {
   const modalId = `my_modal_${channelId}`;
   const [editMode, setEditMode] = useState(false);
-  const [editedName, setEditedName] = useState(channel.chatName || "");
+  const [editedName, setEditedName] = useState(channel.channelName || "");
   const { userData } = useContext(AppContext) as IAppContext;
   const [users, setUsers] = useState<IUserData[]>([]);
   const [view, setView] = useState("main"); // "main", "addMember", "uploadPhoto"
   const [members, setMembers] = useState<string[]>([]);
-  const [channelMembers, setChannelMembers] = useState<string[]>([]);
+  const [channelMembers, setChannelMembers] = useState<string[]>([
+    ...channel.members,
+  ]);
+  const [channelOwner, setChannelOwner] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchChannelOwner = async () => {
+      try {
+        const channelOwner = await getChannelOwner(channelId);
+        setChannelOwner(channelOwner);
+        console.log(channelOwner);
+      } catch (error) {
+        console.error("Error fetching channelOwner:", error);
+      }
+    };
+
+    fetchChannelOwner();
+  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -47,32 +65,52 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
     }
   }, [userData, users]);
 
+  // useEffect(() => {
+  //   const members = [...channel.members];
+  //   setChannelMembers(members);
+  //   console.log(channel.members);
+  //   console.log("channel members:", channelMembers);
+  //   console.log("users:", users);
+  // }, [channel.members]);
 
-  useEffect(() => {
-    const members = [...channel.members];
-    setChannelMembers(members);
-    console.log("channel members:", channelMembers);
-    console.log("users:", users);
-  }, [channel.members]);
+  // useEffect(() => {
+  //   console.log("Updated members:", members);
+  // }, [members]);
 
-  useEffect(() => {
-    console.log("Updated members:", members);
-  }, [members]);
+  // const handleCheckboxChange = (
+  //   handle: string,
+  //   firstName: string,
+  //   lastName: string
+  // ) => {
+  //   setMembers((prevMembers) =>
+  //     prevMembers.some((member) => member.handle === handle)
+  //       ? prevMembers.filter((member) => member.handle !== handle)
+  //       : [...prevMembers, { handle, firstName, lastName }]
+  //   );
+  // };
 
-  const handleCheckboxChange = (handle: string) => {
+  const handleCheckboxChange = (
+    handle: string,
+    firstName: string,
+    lastName: string
+  ) => {
     setMembers((prevMembers) => {
       if (prevMembers.includes(handle)) {
         return prevMembers.filter((member) => member !== handle);
       } else {
-        return [...prevMembers, handle];
+        return [...prevMembers, { handle, firstName, lastName }];
       }
     });
   };
 
-  const handleChannelDelete = () =>{
- 
+  const handleChannelDelete = () => {
     const channelRef = ref(db, `channels/${channelId}`);
     remove(channelRef);
+    const userChannelRef = ref(
+      db,
+      `users/${userData.handle}/channels/${channelId}`
+    );
+    remove(userChannelRef);
     navigate("../");
   };
 
@@ -106,21 +144,26 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
     get(channelRef).then((snapshot) => {
       if (snapshot.exists()) {
         const channelData = snapshot.val();
-       
+
         const updatedMembers = channelData.members.filter(
-          (member) => member !== userHandle
+          (member) => member.handle !== userHandle
         );
         //  console.log(channelData)
         set(channelRef, {
           ...channelData,
           members: updatedMembers,
         });
+
+        const userChannelRef = ref(
+          db,
+          `users/${userData.handle}/channels/${channelId}`
+        );
+        remove(userChannelRef);
         navigate("../");
       }
     });
   };
 
-  
   const handleCancel = () => {
     setEditedName(channel.channelName);
     setEditMode(false);
@@ -151,8 +194,10 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
     });
   };
 
-  const [teamMembers, setTeamMembers] = useState<string[]>([]);
-  const [teamMembersFullName, setTeamMembersFullName] = useState<IUserData[]>([]);
+  const [teamMembers, setTeamMembers] = useState(null);
+  const [teamMembersFullName, setTeamMembersFullName] = useState<IUserData[]>(
+    []
+  );
   const [channelUsers, setChannelUsers] = useState<IUserData[]>([]);
 
   useEffect(() => {
@@ -160,75 +205,75 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
       try {
         const result = await getAllTeamMembers(teamName);
         setTeamMembers(result);
-       // console.log(teamMembers)
+        console.log(channel);
+        console.log(teamMembers);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
     };
-      fetchUsers();
-    
-  }, [users.length]);
+    fetchUsers();
+  }, [channel]);
 
+  // useEffect(() => {
+  //   const handleUserByHandle = async () => {
+  //     try {
+  //       const teamData = [];
 
-  useEffect(() => {
-    const handleUserByHandle = async () => {
-      try {
-        const teamData = [];
+  //       for (const member of teamMembers) {
+  //         const snapshot = await getUserByHandle(member);
 
-        for (const member of teamMembers) {
-          const snapshot = await getUserByHandle(member);
+  //         if (snapshot.exists()) {
+  //           const userDataForMember = snapshot.val();
+  //           if (userDataForMember) {
+  //             teamData.push({
+  //               firstName: userDataForMember.firstName,
+  //               lastName: userDataForMember.lastName,
+  //               handle: userDataForMember.handle,
+  //             });
+  //           }
+  //         }
+  //       }
+  //       setTeamMembersFullName(teamData);
+  //      // console.log(teamMembersFullName);
+  //       return userData;
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
+  //   handleUserByHandle();
+  // }, [teamMembers, userData]);
 
-          if (snapshot.exists()) {
-            const userDataForMember = snapshot.val();
-            if (userDataForMember) {
-              teamData.push({
-                firstName: userDataForMember.firstName,
-                lastName: userDataForMember.lastName,
-                handle: userDataForMember.handle,
-              });
-            }
-          }
-        }
-        setTeamMembersFullName(teamData);
-       // console.log(teamMembersFullName);
-        return userData;
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    handleUserByHandle();
-  }, [teamMembers, userData]);	
+  // useEffect(() => {
+  //   const handleUserByHandle = async () => {
+  //     try {
+  //       const userData = [];
 
-  useEffect(() => {
-    const handleUserByHandle = async () => {
-      try {
-        const userData = [];
+  //       for (const member of channelMembers) {
+  //         const snapshot = await getUserByHandle(member);
 
-        for (const member of channelMembers) {
-          const snapshot = await getUserByHandle(member);
+  //         if (snapshot.exists()) {
+  //           const userDataForMember = snapshot.val();
+  //           if (userDataForMember) {
+  //             userData.push({
+  //               firstName: userDataForMember.firstName,
+  //               lastName: userDataForMember.lastName,
+  //               handle: userDataForMember.handle,
+  //             });
+  //           }
+  //         }
+  //       }
+  //       setChannelUsers(userData);
+  //     //  console.log(channelUsers)
+  //       return userData;
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
+  //   handleUserByHandle();
+  // }, [channelMembers]);
 
-          if (snapshot.exists()) {
-            const userDataForMember = snapshot.val();
-            if (userDataForMember) {
-              userData.push({
-                firstName: userDataForMember.firstName,
-                lastName: userDataForMember.lastName,
-                handle: userDataForMember.handle,
-              });
-            }
-          }
-        }
-        setChannelUsers(userData);
-      //  console.log(channelUsers)
-        return userData;
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    handleUserByHandle();
-  }, [channelMembers]);
-
-  const isChannelOwner = channel.userHandle === userData?.handle;
+  const isChannelOwner = channel.owner?.handle === userData?.handle;
+  console.log(isChannelOwner);
 
   return (
     <div>
@@ -324,12 +369,12 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
             )}
 
             {view === "addMember" && (
-              <div className="w-64">
+              <div className="w-72">
                 <div className="mb-3">
                   <p className="font-bold underline">Members:</p>
-                  {channelUsers.map((user) => (
+                  {channel.members.map((member) => (
                     <p className="border-b font-bold text-lg">
-                      {user.firstName} {user.lastName} ({user.handle})
+                      {member.firstName} {member.lastName} ({member.handle})
                     </p>
                   ))}
                 </div>
@@ -341,27 +386,37 @@ const ChannelSettings = ({ channel, channelId, teamName }) => {
                       className="border w-full mb-2 rounded-lg pl-0.5"
                     />
                   </div>
-                  {teamMembersFullName
+                  {teamMembers
                     .filter(
-                      (user) =>
-                        user.handle !== userData?.handle &&
-                        !channelUsers.some(
-                          (member) => member.handle === user.handle
+                      (memberData) =>
+                        memberData.handle !== userData?.handle &&
+                        !channel.members.some(
+                          (member) => member.handle === memberData.handle
                         )
                     )
-                    .map((user) => (
+                    .map((memberData) => (
                       <div
-                        key={user.handle}
+                        key={memberData.handle}
                         className="flex items-center bg-gray-100 p-2 hover:bg-gray-200"
                       >
                         <label className="flex items-center w-full text-primary">
                           <input
                             type="checkbox"
-                            checked={members.includes(user.handle)}
-                            onChange={() => handleCheckboxChange(user.handle)}
+                            checked={channelMembers.some(
+                              (channelMember) =>
+                                channelMember.handle === memberData.handle
+                            )}
+                            onChange={() =>
+                              handleCheckboxChange(
+                                memberData.handle,
+                                memberData.firstName,
+                                memberData.lastName
+                              )
+                            }
                             className="mr-2"
                           />
-                          {user.firstName} {user.lastName} ({user.handle})
+                          {memberData.firstName} {memberData.lastName} (
+                          {memberData.handle})
                         </label>
                       </div>
                     ))}

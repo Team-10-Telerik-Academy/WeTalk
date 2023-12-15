@@ -102,8 +102,7 @@ const Settings = () => {
     <>
       <a
         href="#"
-        className="p-1.5 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-400 dark:hover:bg-gray-800 hover:text-secondary hover:scale-110"
-        title="SETTINGS"
+        className="p-1.5 inline-block text-gray-300 focus:outline-nones transition-colors duration-200 rounded-lg  hover:text-secondary hover:scale-125"
         onClick={() =>
           (
             document.getElementById('my_modal_1') as HTMLDialogElement

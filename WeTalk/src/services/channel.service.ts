@@ -19,10 +19,10 @@ import {
 
 export const createChannel = async (
   channelName: string,
-  members: string[],
+  members: any[],
   channelId: string,
   teamName: string,
-  userHandle: string
+  owner: any
 ) => {
   const initialTypingStatus = members.reduce((acc, member) => {
     acc[member?.handle] = false;
@@ -33,8 +33,8 @@ export const createChannel = async (
     await set(ref(db, `channels/${channelId}`), {
       channelName,
       channelId,
-      userHandle,
-      members: [userHandle, ...members],
+      owner,
+      members: [...members, owner],
       typingStatus: initialTypingStatus,
       teamName,
       createdOn: Date.now(),
@@ -54,22 +54,28 @@ export const createChannel = async (
   });
 };
 
-export const createGeneralChanel = async (
+export const createGeneralChannel = async (
   teamName: string,
-  members: string[],
+  members: any[],
   channelId: string,
-  userHandle: string
+  owner: string
 ) => {
   try {
-    await set(ref(db, `channels/${channelId}`), {
+    // console.log(teamName);
+    // console.log(channelId);
+    // console.log(owner);
+    // console.log(members);
+    const create = await set(ref(db, `channels/${channelId}`), {
       teamName,
       channelName: "general",
       channelId,
-      userHandle,
-      members: [userHandle, ...members],
+      owner,
+      members: [owner, ...members],
       createdOn: Date.now(),
       messages: [],
     });
+
+    return create;
   } catch (error) {
     console.error("Error creating channel:", error);
   }
@@ -82,13 +88,19 @@ export const createGeneralChanel = async (
   });
 };
 
-export const getChannelById = (channelId: string) => {
-  return get(ref(db, `channels/${channelId}`));
+export const getChannelByIdSecond = async (channelId: string) => {
+  try {
+    const channelData = await get(ref(db, `channels/${channelId}`));
+
+    return channelData.val();
+  } catch (error) {
+    console.error("Error fetching channels by ID", error.message);
+  }
 };
 
 export const deleteChannel = async (channelId: string) => {
   try {
-    const channelSnapshot = await getChannelById(channelId);
+    const channelSnapshot = await getChannelByIdSecond(channelId);
     const channelData = channelSnapshot.val();
     if (channelData) {
       await remove(ref(db, `teams/${channelId}`));
@@ -152,6 +164,30 @@ export const onChannelUpdate = (
     messagesUnsubscribe();
     typingStatusUnsubscribe();
   };
+};
+
+export const getChannelOwner = async (channelId: string) => {
+  const channelOwnerRef = ref(db, `channels/${channelId}/owner`);
+  const channelOwnerData = await get(channelOwnerRef);
+
+  if (channelOwnerData.exists()) {
+    return channelOwnerData.val();
+  } else {
+    return null;
+  }
+};
+
+export const getChannelById = (
+  channelId: string,
+  callback: (channelData: any) => void
+) => {
+  const channelRef = ref(db, `channels/${channelId}`);
+  const unsubscribe = onValue(channelRef, (snapshot: DataSnapshot) => {
+    const channelData = snapshot.val();
+    callback(channelData);
+  });
+
+  return unsubscribe;
 };
 
 export const GetChannel = (

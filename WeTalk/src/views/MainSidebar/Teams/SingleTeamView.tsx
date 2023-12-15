@@ -1,4 +1,4 @@
-import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
+import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import {
   faChevronRight,
   faChevronDown,
@@ -19,12 +19,12 @@ import { IAppContext, ITeam } from '../../../common/types';
 import MembersModal from '../../../components/MainSidebar/Teams/MembersModal';
 import AddMembersModal from '../../../components/MainSidebar/Teams/AddMembersModal';
 import ScheduleTeamMeeting from '../../../components/MainSidebar/Teams/ScheduleTeamMeeting';
-import CreateChannel from '../../../components/CreateChannel/CreateChannel';
 import { findChannelByTeamName } from '../../../services/channel.service';
-import { Link } from 'react-router-dom';
+import { getAllChannelsInTeam } from "../../../services/channel.service";
+import CreateChannel from "../../../components/CreateChannel/CreateChannel";
+import { Link } from "react-router-dom";
+//import ScheduleTeamMeeting from '../../../components/MainSidebar/Teams/ScheduleTeamMeeting';
 
-// import nhAvatar from "../../../assets/images/avatar-NH.jpg";
-// import Profile from "../../../components/Profile/Profile";
 
 type IUser = {
   handle: string;
@@ -51,6 +51,20 @@ type IChannelType = {
   createdOn: number;
   members: string[];
   teamName: string;
+  userHandle: string;
+};
+
+type ISingleTeamViewProps = {
+  teamData: ITeam;
+  onDeleteTeam: (teamName: string, owner: string) => void;
+  onRemoveMember: (
+    teamName: string,
+    owner: any,
+    memberToRemove: string
+  ) => void;
+  users: IUser[];
+  onAddMembersToTeam: (teamName: string, members: string[]) => void;
+  onSaveTeamName: (teamData: ITeam, newName: string) => void;
 };
 
 const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
@@ -73,7 +87,6 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
     useState(false);
   const [isAddChannelOpen, setIsAddChannelOpen] = useState(false);
   const [channels, setChannels] = useState<IChannelType[]>([]);
->>>>>>> 5b3dc12d2b3625df752f4daed05ff7e925420d6a
 
   const { userData } = useContext(AppContext) as IAppContext;
 
@@ -132,22 +145,27 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   const closeScheduleMeetingModal = () => {
     setIsScheduleMeetingModalOpen(false);
   };
+
   const handleAddChannel = () => {
     setIsAddChannelOpen(true);
   };
 
   useEffect(() => {
-    const fetchChannelData = async () => {
-      try {
-        const channelData = await findChannelByTeamName(teamData.teamName);
-        setChannels(channelData);
-      } catch (error) {
-        console.error("Error fetching channel data:", error);
-      }
+    const channelsCallback = (channelsData) => {
+      setChannels(channelsData);
+      //console.log(channelsData);
+      //console.log(channels);
     };
 
-    fetchChannelData();
-  }, [teamData.teamName]);
+    const unsubscribe = getAllChannelsInTeam(
+      teamData.teamName,
+      channelsCallback
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [teamData.teamName, channels]);
 
   return (
     <>
@@ -272,27 +290,39 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
           teamName={teamData.teamName}
           isModalOpen={isAddChannelOpen}
           setIsModalOpen={setIsAddChannelOpen}
+          owner={{
+            firstName: userData?.firstName,
+            lastName: userData?.lastName,
+            handle: userData?.handle,
+          }}
+          teamData={teamData}
         />
       )}
 
-{isChannelsVisible && (
-        <div className="">
-          <div className="px-10 pb-2 text-xs lg:text-[16px]">
-            <p className="text-gray-500 cursor-pointer hover:text-primary hover:underline">
-              {channels
-                .filter((channel) => channel.teamName === teamData.teamName)
-                .map((channel) => (
-                  <div
-                    key={channel.channelName}
-                    className="flex items-center bg-gray-100 p-2 hover:bg-gray-200 text-xs md:text-sm"
-                  >
-                    <Link to={`${channel.channelId}`}>
-                      #{channel.channelName}
-                    </Link>
-                  </div>
-                ))}
-            </p>
-          </div>
+      {isChannelsVisible && (
+        <div className="px-10 pb-2 text-xs lg:text-[16px] w-48">
+          {channels
+            .filter((channel) => channel.teamName === teamData.teamName)
+            .map((channel) => {
+              const isUserInChannel = channel.members.some(
+                (member) => member.handle === userData.handle
+              );
+
+              return (
+                isUserInChannel && (
+                  <Link to={`${channel.channelId}`}>
+                    <div
+                      key={channel.channelId}
+                      className="flex items-center bg-gray-100 p-2 hover:bg-gray-200 text-xs md:text-sm"
+                    >
+                      <p className="text-gray-500 cursor-pointer hover:text-primary hover:underline">
+                        #{channel.channelName}
+                      </p>
+                    </div>
+                  </Link>
+                )
+              );
+            })}
         </div>
       )}
 
@@ -313,6 +343,7 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
         onAddMembersToTeam={handleAddMembersToTeam}
       />
 
+      <ScheduleTeamMeeting
       <ScheduleTeamMeeting
         teamData={teamData}
         users={users}

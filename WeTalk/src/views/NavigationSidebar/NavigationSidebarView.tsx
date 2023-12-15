@@ -4,12 +4,13 @@ import {
   faCalendarDays,
   faCommentDots,
 } from '@fortawesome/free-solid-svg-icons';
-import { IAppContext } from '../../common/types';
-// import Profile from '../../components/Profile/Profile';
-import AppContext from '../../context/AuthContext';
-import { useContext, useState } from 'react';
-import Settings from '../../components/Profile/Settings';
 import Notifications from '../../components/Notifications/Notifications';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCommentDots } from '@fortawesome/free-solid-svg-icons';
+import { IAppContext } from '../../common/types';
+import AppContext from '../../context/AuthContext';
+import { useContext } from 'react';
+import Settings from '../../components/Profile/Settings';
 
 type NavigationSidebarViewProps = {
   onLogout: () => void;
