@@ -346,64 +346,69 @@ const renderChatBubble = (
             })
       )}
     </div>
-    <div>
-      {filteredMembers.length === 2 && message.sender === userHandle ? (
-        <>
-          {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
-            <p className="text-xs font-bold">seen</p>
-          ) : (
-            <p className="text-xs font-bold">delivered</p>
-          )}
-        </>
-      ) : (
-        <>
-          {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
-            <p className="text-xs font-bold">seen by all</p>
-          ) : (
-            <>
-              {membersWhoHaveSeen(message, filteredMembers, userHandle).length >
-                0 &&
-              membersWhoHaveSeen(message, filteredMembers, userHandle).length <
-                filteredMembers.length &&
-              message.sender === userHandle ? (
-                <div
-                  className="dropdown dropdown-hover dropdown-left h-0.5 mt-0 pt-0 z-[1]"
-                  key={filteredMembers[0]}
-                >
-                  <div
-                    tabIndex={0}
-                    role="button"
-                    className="btn-xs bg-secondary border-none shadow-none text-xs font-bold w-0.5 h-0.5 mt-0 pt-0 mr-4"
-                  >
-                    seen
-                  </div>
-                  <div>
-                    <ul
-                      tabIndex={0}
-                      className="dropdown-content z-[1] menu shadow bg-secondary shadow rounded-box w-max z=[1]"
-                      style={{ display: "flex", flexDirection: "row" }}
-                    >
-                      {filteredMembers.map((member) => (
-                        <div key={member} style={{ marginRight: "1px" }}>
-                          {message.seenBy &&
-                            message.seenBy[member] === true && (
-                              <SeenIcons handle={member} />
-                            )}
-                        </div>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ) : null}
-
-              {membersWhoHaveSeen(message, filteredMembers, userHandle)
-                .length === 0 && message.sender === userHandle ? (
-                <p className="text-xs font-bold">delivered</p>
-              ) : null}
-            </>
-          )}
-        </>
+    <div className="flex">
+      {message.edited && (
+        <p className="text-primary text-xs font-bold mr-3 underline">edited</p>
       )}
+      <div>
+        {filteredMembers.length === 2 && message.sender === userHandle ? (
+          <>
+            {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
+              <p className="text-xs font-bold text-primary">seen</p>
+            ) : (
+              <p className="text-xs font-bold text-primary">delivered</p>
+            )}
+          </>
+        ) : (
+          <>
+            {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
+              <p className="text-xs font-bold text-primary">seen by all</p>
+            ) : (
+              <>
+                {membersWhoHaveSeen(message, filteredMembers, userHandle)
+                  .length > 0 &&
+                membersWhoHaveSeen(message, filteredMembers, userHandle)
+                  .length < filteredMembers.length &&
+                message.sender === userHandle ? (
+                  <div
+                    className="dropdown dropdown-hover dropdown-left h-0.5 mt-0 pt-0 z-[1]"
+                    key={filteredMembers[0]}
+                  >
+                    <div
+                      tabIndex={0}
+                      role="button"
+                      className="btn-xs bg-secondary border-none shadow-none text-xs font-bold w-0.5 h-0.5 mt-0 pt-0 mr-4 text-primary"
+                    >
+                      seen
+                    </div>
+                    <div>
+                      <ul
+                        tabIndex={0}
+                        className="dropdown-content z-[1] menu shadow bg-secondary shadow rounded-box w-max z=[1]"
+                        style={{ display: "flex", flexDirection: "row" }}
+                      >
+                        {filteredMembers.map((member) => (
+                          <div key={member} style={{ marginRight: "1px" }}>
+                            {message.seenBy &&
+                              message.seenBy[member] === true && (
+                                <SeenIcons handle={member} />
+                              )}
+                          </div>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ) : null}
+
+                {membersWhoHaveSeen(message, filteredMembers, userHandle)
+                  .length === 0 && message.sender === userHandle ? (
+                  <p className="text-xs font-bold">delivered</p>
+                ) : null}
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   </div>
 );

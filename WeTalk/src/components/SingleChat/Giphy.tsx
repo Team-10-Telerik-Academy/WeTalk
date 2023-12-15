@@ -58,7 +58,7 @@ const Giphy: React.FC<{ chatId: string; handle: string; members }> = ({
   return (
     <div>
       <button
-        className="btn text-4xl border-none text-primary pr-3"
+        className="btn text-4xl border-none text-primary pr-3 shadow-none"
         onClick={() => document.getElementById("my_modal_4").showModal()}
       >
         <MdOutlineGifBox />

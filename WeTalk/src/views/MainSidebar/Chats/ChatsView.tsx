@@ -196,7 +196,7 @@ const ChatsView = () => {
       <nav className="mt-6 space-y-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-primary text-xl md:text-2xl xl:text-3xl font-extrabold tracking-tight uppercase dark:text-gray-400">
+            <label className="text-primary text-xl md:text-2xl xl:text-3xl font-extrabold tracking-tight uppercase">
               Chats
             </label>
             <div className="flex items-center justify-between">

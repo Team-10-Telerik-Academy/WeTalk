@@ -68,16 +68,17 @@ const App: React.FC = () => {
 
                 <Route path="teams" element={<Teams />}>
                   {/* <Route element={<UserChannelsRoute />}> */}
-                    <Route path=":channelId" element={<SingleChannelView />} />
+                  <Route path=":channelId" element={<SingleChannelView />} />
                   {/* </Route> */}
                 </Route>
                 <Route path="chats" element={<Chats />}>
-                  <Route path="" element={<MainContent />} />
+                  {/* <Route path="" element={<MainContent />} /> */}
                   <Route element={<UserChatsRoute />}>
                     <Route path=":chatId" element={<SingleChatView />}>
                       <Route path=":roomId" element={<CurrentRoom />} />
                     </Route>
                   </Route>
+                  {/* <Route path="" element={<MainContent />}></Route> */}
                 </Route>
               </Route>
             </Route>
