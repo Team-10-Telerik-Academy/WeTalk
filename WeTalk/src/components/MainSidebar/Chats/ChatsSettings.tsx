@@ -95,7 +95,7 @@ const ChatSettings = ({ chat, chatId }) => {
         const chatData = snapshot.val();
 
         const updatedMembers = chatData.members.filter(
-          (member) => member !== userHandle
+          (member) => member.handle !== userHandle
         );
 
         set(chatRef, {
