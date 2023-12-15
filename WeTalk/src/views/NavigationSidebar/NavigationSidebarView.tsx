@@ -1,15 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendarDays,
   faCommentDots,
 } from '@fortawesome/free-solid-svg-icons';
 import Notifications from '../../components/Notifications/Notifications';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCommentDots } from '@fortawesome/free-solid-svg-icons';
-import { IAppContext } from '../../common/types';
-import AppContext from '../../context/AuthContext';
-import { useContext } from 'react';
+import { useState } from 'react';
 import Settings from '../../components/Profile/Settings';
 
 type NavigationSidebarViewProps = {
@@ -36,7 +32,6 @@ const NavigationSidebarView: React.FC<NavigationSidebarViewProps> = ({
     setActiveNavLink(linkName);
   };
 
-  const { userData } = useContext(AppContext) as IAppContext;
   return (
     <>
       {/* Review this 

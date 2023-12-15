@@ -1,17 +1,17 @@
-import { useEffect, useState } from "react";
-import CreateNewChat from "../../../components/CreateChat/CreateChat";
+import { useEffect, useState } from 'react';
+import CreateNewChat from '../../../components/CreateChat/CreateChat';
 import {
   getAllChats,
   getLastMessage,
   onChatUpdate,
-} from "../../../services/chat.service";
-import { IAppContext } from "../../../common/types";
-import AppContext from "../../../context/AuthContext";
-import { useContext } from "react";
-import { Link } from "react-router-dom";
-import Profile from "../../../components/Profile/Profile";
-import SearchBar from "../../../components/SearchBar/SearchBar";
-import GroupAvatar from "../../../components/Profile/GroupAvatar";
+} from '../../../services/chat.service';
+import { IAppContext } from '../../../common/types';
+import AppContext from '../../../context/AuthContext';
+import { useContext } from 'react';
+import { Link } from 'react-router-dom';
+import Profile from '../../../components/Profile/Profile';
+import SearchBar from '../../../components/SearchBar/SearchBar';
+import GroupAvatar from '../../../components/Profile/GroupAvatar';
 
 type IChatData = {
   chatId: string;
@@ -43,14 +43,6 @@ const ChatsView = () => {
       unsubscribe();
     };
   }, []);
-
-  // const unsubscribe = onChatUpdate(userData?.handle || "", (updatedChats) => {
-  //   setChats(updatedChats);
-  // });
-
-  // return () => {
-  //   unsubscribe();
-  // };
 
   const [lastMessages, setLastMessages] = useState<
     Record<string, IMessageType | null>
@@ -99,15 +91,15 @@ const ChatsView = () => {
 
   const separateChats = (chatArray) => {
     return (
-      <div>
       <>
         {chatArray.length > 0 ? (
           chatArray.map((chat) => (
-            <Link to={`${chat.chatId}`} className="text-gray-500 tracking-wide">
-              <div
-                key={chat.chatId}
-                className="flex bg-blue-500 rounded-lg p-2 pl-1.5 pr-3 my-2 items-center hover:bg-blue-600 justify-between relative"
-              >
+            <Link
+              to={`${chat.chatId}`}
+              className="text-gray-500 tracking-wide"
+              key={chat.chatId}
+            >
+              <div className="flex bg-blue-500 rounded-lg p-2 pl-1.5 pr-3 my-2 items-center hover:bg-blue-600 justify-between relative">
                 <div className="flex items-center gap-2">
                   {chat?.members.length > 2 ? (
                     <GroupAvatar chat={chat} />
@@ -139,7 +131,7 @@ const ChatsView = () => {
                             )
                             .slice(-1)
                             .map((message) => (
-                              <div>
+                              <div key={message.timestamp}>
                                 {message.message.slice(0, 25)}
                                 {message.message.length > 25 && <>...</>}
                               </div>
@@ -156,7 +148,7 @@ const ChatsView = () => {
                         )
                         .slice(-1)
                         .map((message) => (
-                          <div>
+                          <div key={message.timestamp}>
                             {new Date(message.timestamp).toLocaleTimeString(
                               'en-US',
                               {
@@ -176,14 +168,15 @@ const ChatsView = () => {
                   <div className="absolute top-0 right-0 h-4 w-4 shadow-inner shadow-secondary/50 bg-error z-[1] rounded-full"></div>
                 ) : null}
               </div>
-            ))
-          ) : (
-            <div>No chats yet!</div>
-          )}
-        </div>
-      </div>
+            </Link>
+          ))
+        ) : (
+          <div>No chats yet!</div>
+        )}
+      </>
     );
   };
+
   const [showPersonalChats, setShowPersonalChats] = useState(true);
   const [showGroupChats, setShowGroupChats] = useState(false);
 
@@ -201,9 +194,9 @@ const ChatsView = () => {
   };
 
   const containerStyle = {
-    overflowY: "auto",
-    maxHeight: "65vh",
-    scrollbarWidth: "thin",
+    overflowY: 'auto',
+    maxHeight: '65vh',
+    scrollbarWidth: 'thin',
   };
 
   return (
@@ -225,8 +218,8 @@ const ChatsView = () => {
           <button
             className={`relative px-2 text-sm lg:text-[16px] h-8 rounded-xl mr-4 ${
               showPersonalChats === true
-                ? "bg-accent text-primary"
-                : "bg-primary text-secondary"
+                ? 'bg-accent text-primary'
+                : 'bg-primary text-secondary'
             }`}
             onClick={handlePersonalChats}
           >
@@ -243,8 +236,8 @@ const ChatsView = () => {
           <button
             className={`relative px-2 text-sm lg:text-[16px] h-8 rounded-xl mr-4 ${
               showGroupChats === true
-                ? "bg-accent text-primary"
-                : "bg-primary text-secondary"
+                ? 'bg-accent text-primary'
+                : 'bg-primary text-secondary'
             }`}
             onClick={handleGroupChats}
           >

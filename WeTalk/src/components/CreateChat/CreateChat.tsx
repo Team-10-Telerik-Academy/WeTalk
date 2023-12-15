@@ -2,18 +2,27 @@ import { useContext, useEffect, useState } from 'react';
 import { getAllUsers } from '../../services/users.service';
 import { IAppContext, IUserData } from '../../common/types';
 import AppContext from '../../context/AuthContext';
-import { CreateChat, addRoomID } from '../../services/chat.service';
+import {
+  CreateChat,
+  addAudioRoomID,
+  addRoomID,
+  addVideoRoomID,
+  findChatByMembers,
+} from '../../services/chat.service';
 import { v4 } from 'uuid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { ORGANIZATION_ID, API_KEY, BASE_URL } from '../../common/dyte-api';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const CreateNewChat = () => {
   const [users, setUsers] = useState<IUserData[]>([]);
-  const { userData } = useContext(AppContext) as IAppContext;
   const [members, setMembers] = useState<string[]>([]);
-  const [chatName, setChatName] = useState<string>("");
+  const [chatName, setChatName] = useState<string>('');
+
+  const { userData } = useContext(AppContext) as IAppContext;
+  const navigate = useNavigate();
 
   useEffect(() => {
     try {
@@ -28,7 +37,7 @@ const CreateNewChat = () => {
         unsubscribe();
       };
     } catch (error) {
-      console.error("Error fetching users", error);
+      console.error('Error fetching users', error);
     }
   }, []);
 
@@ -43,8 +52,6 @@ const CreateNewChat = () => {
     );
   };
 
-  const navigate = useNavigate();
-
   const handleCreateChat = async () => {
     try {
       const user = {
@@ -54,20 +61,20 @@ const CreateNewChat = () => {
       };
 
       if (!user) {
-        console.error("User data is not available.");
+        console.error('User data is not available.');
         return;
       }
 
       const updatedMembers = [...members, user];
-      console.log("updated members:", updatedMembers);
+      console.log('updated members:', updatedMembers);
 
       if (updatedMembers.length < 2) {
-        console.error("At least two members are required.");
+        console.error('At least two members are required.');
         return;
       }
 
       if (updatedMembers.length > 2 && !chatName) {
-        console.error("Chat name is required.");
+        console.error('Chat name is required.');
         return;
       }
 
@@ -78,12 +85,16 @@ const CreateNewChat = () => {
           navigate(`${existingChat.chatId}`);
         } else {
           // No existing chat found, create a new chat
-          const newChat = await CreateChat(chatName, updatedMembers, v4());
+          const newChat = await CreateChat(
+            userData?.handle,
+            chatName,
+            updatedMembers,
+            v4()
+          );
 
-        if (updatedMembers.length > 0) {
-          CreateChat(chatName, updatedMembers, v4()).then((chat) => {
-            const { chatName, chatId } = chat;
+          console.log(newChat);
 
+          if (updatedMembers.length > 0) {
             const encodedString = btoa(`${ORGANIZATION_ID}:${API_KEY}`);
 
             const dyteRoomCreate = {
@@ -93,34 +104,40 @@ const CreateNewChat = () => {
                 'Content-Type': 'application/json',
                 Authorization: `Basic ${encodedString}`,
                 'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
               },
-              data: { title: chatName },
+              data: { title: newChat.chatName || 'chat' },
             };
 
-            axios
-              .request(dyteRoomCreate)
-              .then((response) => {
-                console.log(response);
-                const dyteID = response.data.data.id;
+            try {
+              console.log('creating roooms');
+              const dyteAudioRoomIDResponse = await axios.request(
+                dyteRoomCreate
+              );
+              console.log(dyteAudioRoomIDResponse);
+              const dyteAudioRoomID = dyteAudioRoomIDResponse.data.data.id;
 
-                addRoomID(chatId, dyteID);
-              })
-              .catch((error) => {
-                console.error('Error creating room', error);
-                console.error('Response data:', error.response.data);
-              })
-              .catch((error) => {
-                console.error('Error creating chat', error);
-              });
-          });
-        } else {
-          console.error('At least two members are required.');
+              addAudioRoomID(newChat.chatId, dyteAudioRoomID);
+
+              const dyteVideoRoomIDResponse = await axios.request(
+                dyteRoomCreate
+              );
+              console.log(dyteVideoRoomIDResponse);
+              const dyteVideoRoomID = dyteVideoRoomIDResponse.data.data.id;
+
+              addVideoRoomID(newChat.chatId, dyteVideoRoomID);
+            } catch (error) {
+              console.error('Error creating rooms', error);
+            }
+          } else {
+            console.error('At least two members are required.');
+          }
         }
       } catch (error) {
-        console.error("Error checking existing chat:", error);
+        console.error('Error finding chat', error);
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
+      console.error('Error creating chat', error);
     }
   };
 
@@ -130,7 +147,7 @@ const CreateNewChat = () => {
 
   const handleCancel = () => {
     setMembers([]);
-    setChatName("");
+    setChatName('');
   };
 
   return (
@@ -138,7 +155,7 @@ const CreateNewChat = () => {
       <button
         onClick={() =>
           (
-            document.getElementById("Create_Chat_Modal") as HTMLDialogElement
+            document.getElementById('Create_Chat_Modal') as HTMLDialogElement
           )?.showModal()
         }
         className="inline-flex items-center gap-2 bg-accent text-primary text-xs uppercase p-2 lg:px-3 lg:py-2 rounded hover:bg-primary hover:text-secondary"

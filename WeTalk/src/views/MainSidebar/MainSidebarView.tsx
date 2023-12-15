@@ -1,5 +1,5 @@
-import { Outlet } from "react-router-dom";
-import SearchBar from "../../components/SearchBar/SearchBar";
+import { Outlet } from 'react-router-dom';
+import SearchBar from '../../components/SearchBar/SearchBar';
 
 const MainSidebarView: React.FC = () => {
   return (

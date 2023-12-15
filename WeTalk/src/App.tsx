@@ -22,9 +22,7 @@ import CurrentAudioRoom from './components/Meeting/CurrentAudioRoom';
 import BigCalendar from './components/Calendar/BigCalendar';
 import SingleChannelView from './views/MainSidebar/Teams/Channels/SingleChannelView';
 import UserChatsRoute from './hoc/UserChatsRoute';
-import UserChannelsRoute from './hoc/UserChannelsRoute';
-// import AuthenticatedRoute from './hoc/AuthenticatedRoute';
-// import Register from './components/Auth/Register/Register';
+// import UserChannelsRoute from './hoc/UserChannelsRoute';
 
 const App: React.FC = () => {
   const [user, loading] = useAuthState(auth);
@@ -75,27 +73,26 @@ const App: React.FC = () => {
                   {/* </Route> */}
                 </Route>
                 <Route path="chats" element={<Chats />}>
-                  {/* <Route path="" element={<MainContent />} /> */}
                   <Route element={<UserChatsRoute />}>
                     <Route path=":chatId" element={<SingleChatView />} />
                   </Route>
-                  {/* <Route path="" element={<MainContent />}></Route> */}
                 </Route>
+
+                <Route
+                  path="video-room/:chatId/:videoRoomId"
+                  element={<CurrentVideoRoom />}
+                />
+                <Route
+                  path="audio-room/:chatId/:audioRoomId"
+                  element={<CurrentAudioRoom />}
+                />
+                <Route path="open-ai" element={<OpenAI />} />
+                <Route path="calendar" element={<BigCalendar />} />
               </Route>
-              <Route
-                path="video-room/:chatId/:videoRoomId"
-                element={<CurrentVideoRoom />}
-              />
-              <Route
-                path="audio-room/:chatId/:audioRoomId"
-                element={<CurrentAudioRoom />}
-              />
-              <Route path="open-ai" element={<OpenAI />} />
-              <Route path="calendar" element={<BigCalendar />} />
-            </Route>
-            <Route element={<LandingPageView />}>
-              <Route path="/signin" element={<SignIn />} />
-              <Route path="/signup" element={<Register />} />
+              <Route element={<LandingPageView />}>
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/signup" element={<Register />} />
+              </Route>
             </Route>
           </Routes>
         </AppContext.Provider>

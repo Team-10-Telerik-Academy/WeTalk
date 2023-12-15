@@ -45,7 +45,7 @@ export const createTeam = async (
   );
   createTeamNotification(owner.handle, members, teamName);
 
-  await createGeneralChanel(teamName, members, v4(), owner);
+  // await createGeneralChannel(teamName, members, v4(), owner);
 
   const createGenChannel = await createGeneralChannel(
     teamName,

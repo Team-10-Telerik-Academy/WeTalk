@@ -1,26 +1,25 @@
-import { useContext, useEffect, useState, useRef } from "react";
-import AppContext from "../../context/AuthContext";
-import { IAppContext } from "../../common/types";
-import Profile from "../Profile/Profile";
-import ChannelInputField from "./ChannelInputField";
-import { useNavigate } from "react-router";
+import { useContext, useEffect, useState, useRef } from 'react';
+import AppContext from '../../context/AuthContext';
+import { IAppContext } from '../../common/types';
+import Profile from '../Profile/Profile';
+import ChannelInputField from './ChannelInputField';
+import { useNavigate } from 'react-router';
 import {
   getChannelById,
   getChannelByIdSecond,
   onChannelUpdate,
   setAllMessagesToSeenChannel,
-} from "../../services/channel.service";
-import { ref, update } from "@firebase/database";
-import { db } from "../../config/firebase-config";
-import CurrentRoom from "../Meeting/CurrentRoom";
-import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faVideo } from "@fortawesome/free-solid-svg-icons";
-import ChannelSettings from "./ChannelSettings";
-import ChannelMessageSettings from "./ChannelMessageSettings";
-import SeenIcons from "../MainSidebar/Chats/SeenIcons";
+} from '../../services/channel.service';
+import { ref, update } from '@firebase/database';
+import { db } from '../../config/firebase-config';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faVideo } from '@fortawesome/free-solid-svg-icons';
+import ChannelSettings from './ChannelSettings';
+import ChannelMessageSettings from './ChannelMessageSettings';
+import SeenIcons from '../MainSidebar/Chats/SeenIcons';
 
-import { getAllTeamMembers } from "../../services/teams.service";
+import { getAllTeamMembers } from '../../services/teams.service';
 
 type MessageType = {
   sender: string;
@@ -36,8 +35,8 @@ type ChannelType = {
   teamName: string;
   owner: any;
   createdOn: Date;
-  roomId: "";
-  roomStatus: "";
+  roomId: '';
+  roomStatus: '';
   typingStatus: any;
 };
 
@@ -48,96 +47,32 @@ type SingleChannelProps = {
 const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
   const { userData } = useContext(AppContext) as IAppContext;
   const [channel, setChannel] = useState<ChannelType | null>({
-    channelId: "",
-    channelName: "",
+    channelId: '',
+    channelName: '',
     members: [],
     messages: {},
-    teamName: "",
+    teamName: '',
     owner: {},
     createdOn: new Date(),
-    roomId: "",
-    roomStatus: "",
+    roomId: '',
+    roomStatus: '',
   });
   const [isCallButtonClicked, setIsCallButtonClicked] = useState(false);
   const [typingStatus, setTypingStatus] = useState<Record<string, boolean>>({});
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
   const [users, setUsers] = useState<IUserData[]>([]);
   const [channelData, setChannelData] = useState<ChannelType | null>({
-    channelId: "",
-    channelName: "",
+    channelId: '',
+    channelName: '',
     members: [],
     messages: {},
-    teamName: "",
+    teamName: '',
     owner: {},
     createdOn: new Date(),
-    roomId: "",
-    roomStatus: "",
+    roomId: '',
+    roomStatus: '',
   });
-  // const [filteredMembers, setFilteredMembers] = useState([]);
-  // const [filteredMembers, setFilteredMembers] = useState([]);
-
-  //console.log(teamName)
-
-  // useEffect(() => {
-  //   const channelCallBack = (channelData) => {
-  //     setChannelData(channelData);
-  //     console.log(channelData);
-  //   };
-
-  //   const unsubscribe = getChannelById(channelId, channelCallBack);
-
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchChannelData = async () => {
-  //     try {
-  //       const channelData = await getChannelByIdSecond(channelId);
-  //       setChannelData(channelData);
-  //       console.log(channelData);
-  //     } catch (error) {
-  //       console.log("Error fetching channelData", error.message);
-  //     }
-  //   };
-
-  //   fetchChannelData();
-  // }, [channelId]);
-
-  //console.log(teamName)
-
-  // useEffect(() => {
-  //   const handleUserByHandle = async () => {
-  //     try {
-  //       const userData = [];
-
-  //       for (const member of teamMembers) {
-  //         const snapshot = await getUserByHandle(member);
-
-  //         if (snapshot.exists()) {
-  //           const userDataForMember = snapshot.val();
-  //           if (userDataForMember) {
-  //             userData.push({
-  //               firstName: userDataForMember.firstName,
-  //               lastName: userDataForMember.lastName,
-  //               handle: userDataForMember.handle,
-  //             });
-  //           }
-  //         }
-  //       }
-  //       setUsers(userData);
-  //       //console.log(users);
-  //       return userData;
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   };
-  //   handleUserByHandle();
-  // }, [teamMembers]);
-
-  //  console.log(users);
 
   const filteredMembers = channel?.members
     .filter((member) => member !== userData?.handle)
@@ -152,12 +87,12 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
 
     // Update typing status in Firebase
     update(ref(db, `channels/${channelId}/typingStatus`), {
-      [userData?.handle!]: value !== "", 
+      [userData?.handle!]: value !== '',
     });
   };
 
   const renderTypingIndicator = () => {
-    if (typingStatus && typeof typingStatus === "object") {
+    if (typingStatus && typeof typingStatus === 'object') {
       const typingMembers = Object.keys(typingStatus).filter(
         (member) => typingStatus[member] && member !== userData?.handle
       );
@@ -166,7 +101,7 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
         const indicatorText =
           typingMembers.length === 1
             ? `${typingMembers[0]} is typing...`
-            : `${typingMembers.join(", ")} are typing...`;
+            : `${typingMembers.join(', ')} are typing...`;
 
         return (
           <div className="flex items-center justify-center">
@@ -193,14 +128,14 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
       },
 
       (messagesData: Record<string, MessageType>) => {
-        console.log("Messages updated:", messagesData);
+        console.log('Messages updated:', messagesData);
         setChannel((prevChannel) => ({
           ...prevChannel!,
           messages: messagesData,
         }));
       },
       (typingStatus: Record<string, boolean>) => {
-        console.log("Typing status updated:", typingStatus);
+        console.log('Typing status updated:', typingStatus);
         setTypingStatus(typingStatus);
       }
     );
@@ -218,7 +153,7 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
         setTeamMembers(result);
         console.log(result);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error('Error fetching users:', error);
       }
     };
 
@@ -234,18 +169,18 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
   }, [channel?.messages]);
 
   useEffect(() => {
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
 
-    console.log("Scrollbar");
+    console.log('Scrollbar');
 
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto';
     };
   }, []);
 
   const handleCallButtonClick = () => {
     if (channel?.roomId) {
-      console.log("Room opened");
+      console.log('Room opened');
       setIsCallButtonClicked(true);
       navigate(`/home/channels/${channelId}/${channel?.roomId}`);
     }
@@ -259,16 +194,16 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
 
   useEffect(() => {
     if (isMounted) {
-      console.log("Component mounted. Calling handleChangeMessageStatus.");
+      console.log('Component mounted. Calling handleChangeMessageStatus.');
       handleChangeMessageStatus();
     }
   }, [channel]);
 
   const handleChangeMessageStatus = async () => {
     try {
-      console.log("Channel:", channel);
+      console.log('Channel:', channel);
       if (!channel) {
-        console.error("Channel is undefined");
+        console.error('Channel is undefined');
         return;
       }
 
@@ -279,17 +214,17 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
               Object.keys(channel.messages).length - 1
             ]
           ];
-        console.log("Last message:", lastMessage);
+        console.log('Last message:', lastMessage);
 
         if (lastMessage && lastMessage.sender !== userData?.handle) {
-          await setAllMessagesToSeenChannel(channelId, userData?.handle || "");
+          await setAllMessagesToSeenChannel(channelId, userData?.handle || '');
         }
-        console.log("message has been seen");
+        console.log('message has been seen');
       } else {
-        console.log("No messages in the channel.");
+        console.log('No messages in the channel.');
       }
     } catch (error) {
-      console.error("Error fetching or updating message:", error);
+      console.error('Error fetching or updating message:', error);
     }
   };
 
@@ -304,7 +239,7 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
           </h1>
         </div>
         <div className="flex justify-between items-center gap-4">
-          <Link to={channelData?.roomId ? `${channelData?.roomId}` : ""}>
+          <Link to={channelData?.roomId ? `${channelData?.roomId}` : ''}>
             <button
               className="bg-blue-500 text-secondary px-4 py-2 rounded"
               onClick={handleCallButtonClick}
@@ -326,10 +261,10 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
         ref={channelContainerRef}
         className="flex-grow overflow-y-auto relative"
         style={{
-          marginBottom: "2rem",
-          overflowY: "scroll",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
+          marginBottom: '2rem',
+          overflowY: 'scroll',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
       >
         <style>
@@ -403,7 +338,7 @@ const renderChannelBubble = (
   <div
     key={message.timestamp}
     className={`px-4 chat w-full ${
-      message.sender === userHandle ? "chat-end" : "chat-start"
+      message.sender === userHandle ? 'chat-end' : 'chat-start'
     }`}
   >
     <div className="flex-start">
@@ -427,11 +362,11 @@ const renderChannelBubble = (
     <div
       className={`chat-bubble flex flex-col px-4 text-md ${
         message.sender === userHandle
-          ? "bg-primary text-secondary"
-          : "bg-primary bg-opacity-10 text-primary"
+          ? 'bg-primary text-secondary'
+          : 'bg-primary bg-opacity-10 text-primary'
       }`}
     >
-      {message?.type! === "file" ? (
+      {message?.type! === 'file' ? (
         <img className="w-64 h-64" src={message.message} alt="img" />
       ) : (
         <div>{message.message}</div>
@@ -439,20 +374,20 @@ const renderChannelBubble = (
       {renderTime(
         isToday
           ? `Today at ${new Date(message.timestamp).toLocaleTimeString(
-              "en-US",
-              { hour: "numeric", minute: "numeric" }
+              'en-US',
+              { hour: 'numeric', minute: 'numeric' }
             )}`
           : isYesterday
           ? `Yesterday at ${new Date(message.timestamp).toLocaleTimeString(
-              "en-US",
-              { hour: "numeric", minute: "numeric" }
+              'en-US',
+              { hour: 'numeric', minute: 'numeric' }
             )}`
-          : new Date(message.timestamp).toLocaleString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              hour: "numeric",
-              minute: "numeric",
+          : new Date(message.timestamp).toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: 'numeric',
             })
       )}
     </div>
@@ -491,10 +426,10 @@ const renderChannelBubble = (
                     <ul
                       tabIndex={0}
                       className="dropdown-content z-[1] menu shadow bg-secondary shadow rounded-box w-max z=[1]"
-                      style={{ display: "flex", flexDirection: "row" }}
+                      style={{ display: 'flex', flexDirection: 'row' }}
                     >
                       {filteredMembers.map((member) => (
-                        <div key={member} style={{ marginRight: "1px" }}>
+                        <div key={member} style={{ marginRight: '1px' }}>
                           {message.seenBy &&
                             message.seenBy[member] === true && (
                               <SeenIcons handle={member} />
@@ -560,7 +495,7 @@ const allMembersHaveSeen = (message, members, userHandle) => {
   const filteredMembers = members.filter(
     (member) => member.handle !== userHandle
   );
- //console.log(userHandle)
+  //console.log(userHandle)
   const seenBy = message.seenBy || {};
 
   const filteredSeenBy = Object.keys(seenBy).reduce((acc, member) => {

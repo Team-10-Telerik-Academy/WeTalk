@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import EmojiPicker, { EmojiStyle, EmojiClickData } from 'emoji-picker-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFaceLaugh } from '@fortawesome/free-regular-svg-icons';
-import { faShareSquare } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
 type EmojiMap = { [key: string]: string };
 
