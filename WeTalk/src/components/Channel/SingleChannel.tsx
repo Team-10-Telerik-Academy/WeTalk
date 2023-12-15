@@ -152,7 +152,7 @@ const SingleChannel: React.FC<SingleChannelProps> = ({ channelId }) => {
 
     // Update typing status in Firebase
     update(ref(db, `channels/${channelId}/typingStatus`), {
-      [userData?.handle!]: value !== "", // Set to true if input is not empty
+      [userData?.handle!]: value !== "", 
     });
   };
 
@@ -420,10 +420,9 @@ const renderChannelBubble = (
       <Profile handle={message.sender} />
     </div>
     <div className="chat-header text-primary font-bold text-md mt-2 mb-1">
-      {/* {members
+      {members
         .filter((member) => member.handle === message.sender)
-        .map((member) => `${member.firstName} ${member.lastName}`)} */}
-      {message.sender}
+        .map((member) => `${member.firstName} ${member.lastName}`)}
     </div>
     <div
       className={`chat-bubble flex flex-col px-4 text-md ${
@@ -561,6 +560,7 @@ const allMembersHaveSeen = (message, members, userHandle) => {
   const filteredMembers = members.filter(
     (member) => member.handle !== userHandle
   );
+ //console.log(userHandle)
   const seenBy = message.seenBy || {};
 
   const filteredSeenBy = Object.keys(seenBy).reduce((acc, member) => {
