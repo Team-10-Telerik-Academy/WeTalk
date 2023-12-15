@@ -9,13 +9,13 @@ import {
   MAX_TEAM_NAME_LENGTH,
   MIN_TEAM_NAME_LENGTH,
 } from '../../../common/constants';
-
+ 
 type ICreateTeamProps = {
   onCreateTeam: (teamName: string, members: string[]) => void;
   teams: ITeam[];
   users: IUserData[];
 };
-
+ 
 const CreateTeam: React.FC<ICreateTeamProps> = ({
   onCreateTeam,
   teams,
@@ -25,21 +25,21 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
   const [members, setMembers] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+ 
   const { userData } = useContext(AppContext) as IAppContext;
-
+ 
   const openModal = () => {
     setIsModalOpen(true);
   };
-
+ 
   const closeModal = () => {
     setIsModalOpen(false);
     setTeamName('');
     setMembers([]);
     setSelectAll(false);
   };
-
-  const handleCreateTeam = async () => {
+ 
+  const handleCreateTeam = () => {
     if (!teamName) {
       toast.warning('Team Name is required!', {
         autoClose: 3000,
@@ -47,7 +47,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
       });
       return;
     }
-
+ 
     if (
       teamName.length < MIN_TEAM_NAME_LENGTH ||
       teamName.length > MAX_TEAM_NAME_LENGTH
@@ -61,7 +61,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
       );
       return;
     }
-
+ 
     if (teams.some((team) => team.teamName === teamName)) {
       toast.warning(`Team with name ${teamName} already exists!`, {
         autoClose: 3000,
@@ -72,36 +72,41 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
       setSelectAll(false);
       return;
     }
-
+ 
     onCreateTeam(teamName, members);
-
+ 
     setTeamName('');
     setMembers([]);
     setSelectAll(false);
     closeModal();
   };
-
-  const handleCheckboxChange = (handle: string) => {
+ 
+  const handleCheckboxChange = (handle, firstName, lastName) => {
     setMembers((prevMembers) =>
-      prevMembers.includes(handle)
-        ? prevMembers.filter((member) => member !== handle)
-        : [...prevMembers, handle]
+      prevMembers.some((member) => member.handle === handle)
+        ? prevMembers.filter((member) => member.handle !== handle)
+        : [...prevMembers, { handle, firstName, lastName }]
     );
   };
-
+ 
   const handleSelectAll = () => {
+    const newUsers = users.map((user) => ({
+      handle: user.handle,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    }));
     setSelectAll(!selectAll);
     setMembers((prevMembers) =>
       selectAll
         ? prevMembers.filter(
             (member) =>
-              !users.map((user) => user.handle).includes(member) &&
-              member !== userData?.handle
+              !newUsers.map((user) => user.handle).includes(member.handle) &&
+              member.handle !== userData?.handle
           )
-        : [...prevMembers, ...users.map((user) => user.handle)]
+        : [...prevMembers, ...newUsers.map((user) => user)]
     );
   };
-
+ 
   return (
     <>
       <div className="relative">
@@ -113,7 +118,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
           <FontAwesomeIcon icon={faPlus} />
           <span className="tracking-tight text-xs lg:text-sm">Create</span>
         </button>
-
+ 
         {/* Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 z-10 overflow-y-auto bg-black bg-opacity-50">
@@ -139,7 +144,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
                 </label>
                 <label className="block mb-10 mt-4">
                   <p className="font-bold text-primary mb-2 text-sm  md:text-md">
-                    Members:
+                    Users:
                   </p>
                   <div className="space-y-2 border-2 p-2 rounded">
                     <div className="flex items-center">
@@ -163,8 +168,16 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
                           <label className="flex items-center w-full text-primary">
                             <input
                               type="checkbox"
-                              checked={members.includes(user.handle)}
-                              onChange={() => handleCheckboxChange(user.handle)}
+                              checked={members.some(
+                                (member) => member.handle === user.handle
+                              )}
+                              onChange={() =>
+                                handleCheckboxChange(
+                                  user.handle,
+                                  user.firstName,
+                                  user.lastName
+                                )
+                              }
                               className="mr-2"
                             />
                             {user.firstName} {user.lastName} ({user.handle})
@@ -198,5 +211,5 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({
     </>
   );
 };
-
+ 
 export default CreateTeam;
