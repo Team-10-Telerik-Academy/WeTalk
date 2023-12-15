@@ -1,20 +1,28 @@
 import { useEffect, useState } from "react";
 import { useContext } from "react";
 import { Link } from "react-router-dom";
-import AddChannel from "../../../../components/Channels/AddChannel";
 import AppContext from "../../../../context/AuthContext";
 import { IAppContext } from "../../../../common/types";
 import {
   getAllChannels,
   getLastMessage,
   updateMessageStatusToSeen,
-} from "../../../../services/channels.service";
+} from "../../../../services/channel.service";
+import ChannelSettings from "../../../../components/Channel/ChannelSettings";
 
 type IChannelData = {
   channelId: string;
   channelName: string;
   createdOn: number;
   members: string[];
+  messages: {
+    message: {
+      message: string;
+      sender: string;
+      timestamp: number;
+    };
+  };
+  teamName: string;
 };
 
 type IMessageType = {
@@ -37,10 +45,12 @@ const ChannelsView = () => {
   >({});
 
   useEffect(() => {
-    const unsubscribe = getAllChannels((channelsArray) => {
-      setChannels(channelsArray);
-    });
+    const channelsCallback = (channelsData) => {
+      setChannels(channelsData);
+      //console.log(channelsData);
+    };
 
+    const unsubscribe = getAllChannels(channelsCallback);
     return () => {
       unsubscribe();
     };
@@ -60,12 +70,6 @@ const ChannelsView = () => {
     });
   }, [channels]);
 
-  // // Sort userChannels by the timestamp of the last message in descending order
-  // const sortedUserChannels = userChannels.sort((a, b) => {
-  //   const timestampA = lastMessages[a.channelId]?.timestamp || 0;
-  //   const timestampB = lastMessages[b.channelId]?.timestamp || 0;
-  //   return timestampB - timestampA;
-  // });
 
   const handleChangeMessageStatus = async (channelId: string) => {
     try {
@@ -110,7 +114,7 @@ const ChannelsView = () => {
             marginBottom: "2rem",
           }}
         >
-          {sortedUserChannels.map((channel) => (
+          {channels.map((channel) => (
             <div key={channel.channelId}>
               <Link
                 to={`${channel.channelId}`}
@@ -149,10 +153,11 @@ const ChannelsView = () => {
                             lastMessages[channel.channelName]?.timestamp
                           ).toLocaleTimeString()}
                       </time> */}
-                      {/* <ChatSettings
+                      <ChannelSettings
                         channelName={channel.channelName}
-                        channel={channel}
-                      /> */}
+                        channelID={channel.channelId}
+                        teamName={channel.teamName}
+                      />
                     </div>
                     <div className="flex items-center text-primary w-64">
                       {lastMessages[channel.channelId] && (
