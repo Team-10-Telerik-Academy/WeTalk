@@ -8,14 +8,14 @@ import {
   remove,
   set,
   update,
-} from "firebase/database";
-import { db, imageDb } from "../config/firebase-config";
-import { Unsubscribe } from "@firebase/util";
+} from 'firebase/database';
+import { db, imageDb } from '../config/firebase-config';
+import { Unsubscribe } from '@firebase/util';
 import {
   getDownloadURL,
   ref as storageRef,
   uploadBytes,
-} from "@firebase/storage";
+} from '@firebase/storage';
 
 export const createChannel = async (
   channelName: string,
@@ -39,11 +39,17 @@ export const createChannel = async (
       teamName,
       createdOn: Date.now(),
       messages: [],
-      roomId: "",
-      roomStatus: "",
+      audioRoomInfo: {
+        audioRoomId: '',
+        audioRoomParticipants: {},
+      },
+      videoRoomInfo: {
+        videoRoomId: '',
+        videoRoomParticipants: {},
+      },
     });
   } catch (error) {
-    console.error("Error creating channel:", error);
+    console.error('Error creating channel:', error);
   }
   members.forEach(async (member) => {
     const userChannelsRef = ref(db, `users/${member.handle}/channels`);
@@ -67,7 +73,7 @@ export const createGeneralChannel = async (
     // console.log(members);
     const create = await set(ref(db, `channels/${channelId}`), {
       teamName,
-      channelName: "general",
+      channelName: 'general',
       channelId,
       owner,
       members: [owner, ...members],
@@ -77,7 +83,7 @@ export const createGeneralChannel = async (
 
     return create;
   } catch (error) {
-    console.error("Error creating channel:", error);
+    console.error('Error creating channel:', error);
   }
   members.forEach(async (member) => {
     const userChannelsRef = ref(db, `users/${member.handle}/channels`);
@@ -94,7 +100,7 @@ export const getChannelByIdSecond = async (channelId: string) => {
 
     return channelData.val();
   } catch (error) {
-    console.error("Error fetching channels by ID", error.message);
+    console.error('Error fetching channels by ID', error.message);
   }
 };
 
@@ -106,7 +112,7 @@ export const deleteChannel = async (channelId: string) => {
       await remove(ref(db, `teams/${channelId}`));
     }
   } catch (error) {
-    console.error("Error deleting channel:", error);
+    console.error('Error deleting channel:', error);
   }
 };
 
@@ -227,7 +233,7 @@ export const sendMessage = async (
     message,
     sender,
     timestamp: Date.now(),
-    type: "message",
+    type: 'message',
   });
   // Send the message to other members as well
   otherMembers.forEach(async (member) => {
@@ -252,17 +258,17 @@ export const getChannelMessages = async (
 
       return messagesArray;
     } else {
-      console.warn("No messages found for channel:", channelId);
+      console.warn('No messages found for channel:', channelId);
       return [];
     }
   } catch (error) {
-    console.error("Error fetching channel messages:", error);
+    console.error('Error fetching channel messages:', error);
     throw error;
   }
 };
 
 export const getAllChannels = (callback: (channelsArray) => void) => {
-  const channelsRef = ref(db, "channels");
+  const channelsRef = ref(db, 'channels');
 
   const unsubscribe = onValue(channelsRef, (snapshot) => {
     const channelsData = snapshot.val();
@@ -276,7 +282,7 @@ export const getAllChannels = (callback: (channelsArray) => void) => {
 };
 
 export const registerChannelsUpdate = (callback: (channels: any) => void) => {
-  const channelsRef = ref(db, "channels");
+  const channelsRef = ref(db, 'channels');
 
   const handleUpdate = (snapshot: DataSnapshot) => {
     const channelsData = snapshot.val();
@@ -339,14 +345,14 @@ export const updateMessageStatusToSeen = async (
     if (snapshot.exists()) {
       const messageData = snapshot.val();
 
-      set(messageRef, { ...messageData, status: "seen" });
+      set(messageRef, { ...messageData, status: 'seen' });
 
       console.log(`Message status updated to 'seen' for message ${messageId}`);
     } else {
       console.log(`Message not found for id ${messageId}`);
     }
   } catch (error) {
-    console.error("Error updating message status:", error);
+    console.error('Error updating message status:', error);
     throw error;
   }
 };
@@ -405,7 +411,7 @@ export const updateMessageStatusToSeen = async (
 
 export const findChannelByTeamName = async (teamName) => {
   try {
-    const channelsSnapshot = await get(ref(db, "channels"));
+    const channelsSnapshot = await get(ref(db, 'channels'));
 
     if (channelsSnapshot.exists()) {
       const channels = channelsSnapshot.val();
@@ -417,7 +423,7 @@ export const findChannelByTeamName = async (teamName) => {
       return filteredChannels;
     }
   } catch (error) {
-    console.error("Error finding channel by team name:", error);
+    console.error('Error finding channel by team name:', error);
   }
 };
 
@@ -425,10 +431,10 @@ export const getAllChannelsInTeam = (
   teamName: string,
   callback: (channelsArray) => void
 ) => {
-  const channelsRef = ref(db, "channels");
+  const channelsRef = ref(db, 'channels');
 
   const unsubscribe = onValue(channelsRef, async () => {
-    const channelsSnapshot = await get(ref(db, "channels"));
+    const channelsSnapshot = await get(ref(db, 'channels'));
 
     if (channelsSnapshot.exists()) {
       const channels = channelsSnapshot.val();
@@ -485,8 +491,8 @@ export const sendGiphyUrl = async (
       message: giphyUrl,
       sender,
       timestamp: Date.now(),
-      status: "delivered",
-      type: "file",
+      status: 'delivered',
+      type: 'file',
     });
 
     otherMembers.forEach(async (member) => {
@@ -498,7 +504,7 @@ export const sendGiphyUrl = async (
 
     return messageId;
   } catch (error) {
-    console.error("Error sending Giphy URL:", error);
+    console.error('Error sending Giphy URL:', error);
     throw error;
   }
 };
@@ -526,8 +532,8 @@ export const sendFile = async (
       message: downloadURL,
       sender,
       timestamp: Date.now(),
-      status: "delivered",
-      type: "file",
+      status: 'delivered',
+      type: 'file',
     });
 
     otherMembers.forEach(async (member) => {
@@ -539,7 +545,7 @@ export const sendFile = async (
 
     return messageId;
   } catch (error) {
-    console.error("Error sending file:", error);
+    console.error('Error sending file:', error);
     throw error;
   }
 };
@@ -552,7 +558,7 @@ export const addRoomIDChannel = async (channelId: string, roomId: string) => {
 
     await update(ref(db), updateData);
 
-    console.log("Room created successfully!");
+    console.log('Room created successfully!');
   }
 };
 
@@ -577,7 +583,7 @@ export const setAllMessagesToSeenChannel = async (channelId, handle) => {
           };
 
           console.log(`Message ${messageId} marked as seen for ${handle}`);
-          console.log("Updated message:", message);
+          console.log('Updated message:', message);
         }
       });
 
@@ -586,6 +592,6 @@ export const setAllMessagesToSeenChannel = async (channelId, handle) => {
       console.log(`No messages found in chat ${channelId}`);
     }
   } catch (error) {
-    console.error("Error updating messages:", error);
+    console.error('Error updating messages:', error);
   }
 };

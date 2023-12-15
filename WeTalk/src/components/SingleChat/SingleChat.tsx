@@ -27,8 +27,14 @@ type ChatType = {
   chatName: string;
   members: string[];
   messages: Record<string, MessageType>;
-  audioRoomInfo: any;
-  videoRoomInfo: any;
+  audioRoomInfo: {
+    audioRoomId: string;
+    audioRoomParticipants: { [key: value]: any };
+  };
+  videoRoomInfo: {
+    videoRoomId: string;
+    videoRoomParticipants: { [key: value]: any };
+  };
 };
 
 type SingleChatProps = {
@@ -42,6 +48,14 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
     chatName: '',
     members: [],
     messages: {},
+    audioRoomInfo: {
+      audioRoomId: '',
+      audioRoomParticipants: {},
+    },
+    videoRoomInfo: {
+      videoRoomId: '',
+      videoRoomParticipants: {},
+    },
   });
   const [typingStatus, setTypingStatus] = useState<Record<string, boolean>>({});
   const [inputValue, setInputValue] = useState('');
@@ -243,7 +257,7 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
                 )}
               </button>
             </Link>
-            <p className="text-primary mr-4 mt-1">
+            <p className="text-primary mx-2 mt-1">
               <ChatSettings chat={chat} chatId={chatId} />
             </p>
           </div>

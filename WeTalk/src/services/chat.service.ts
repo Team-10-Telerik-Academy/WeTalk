@@ -347,7 +347,7 @@ export const registerChatsUpdate = (callback: (chats: any) => void) => {
 };
 
 export const getChatAudioRoomParticipants = async (chatId: string) => {
-  const chatAudioRoomParticipantsRef = ref(
+  const chatAudioRoomParticipantsRef = dbDatabaseRef(
     db,
     `chats/${chatId}/audioRoomInfo/audioRoomParticipants`
   );
@@ -383,7 +383,8 @@ export const addChatAudioRoomParticipant = async (
       SendMessage(
         chatId,
         `${participant} has started an audio call`,
-        participant
+        participant,
+        []
       );
     } else {
       updateParticipants[
@@ -415,7 +416,8 @@ export const deleteChatAudioRoomParticipant = async (
       SendMessage(
         chatId,
         `${participant} has ended an audio call`,
-        participant
+        participant,
+        []
       );
     }
 
@@ -622,7 +624,7 @@ export const getLastMessageSentByUser = (
 
 export const setAllMessagesToSeen = async (chatId, handle) => {
   try {
-    const chatRef = ref(db, `chats/${chatId}/messages`);
+    const chatRef = dbDatabaseRef(db, `chats/${chatId}/messages`);
     const messageSnapshot = await get(chatRef);
 
     if (messageSnapshot.exists()) {
