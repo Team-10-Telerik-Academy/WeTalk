@@ -1,18 +1,18 @@
-import slide1 from '../../assets/images/slide-1.png';
-import slide2 from '../../assets/images/slide-2.png';
-import slide3 from '../../assets/images/slide-3.png';
-import slide4 from '../../assets/images/slide-4.png';
+import slide1 from "../../assets/images/slide-1.png";
+import slide2 from "../../assets/images/slide-2.png";
+import slide3 from "../../assets/images/slide-3.png";
+import slide4 from "../../assets/images/slide-4.png";
 
 const MainContentView = () => {
-  const isHomePage = location.pathname === '/home';
+  const isHomePage = location.pathname === "/home";
 
   const carouselWidth = isHomePage
-    ? 'w-full'
-    : 'w-full lg:w-full xl:w-[900px] 2xl:w-full';
+    ? "w-full"
+    : "w-full lg:w-[700px] xl:w-[1100px] 2xl:w-[1507px]";
 
   return (
-    <div className="hidden lg:block">
-      <div className={`carousel ${carouselWidth} h-full`}>
+    <div className="hidden xl:block">
+      <div className={`carousel ${carouselWidth} h-full z-[0]`}>
         <div id="slide1" className="carousel-item relative w-full">
           <img src={slide1} className="w-full" />
           {/*<div className="relative w-full h-full">

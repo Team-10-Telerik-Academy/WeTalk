@@ -2,11 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { getAllUsers } from '../../services/users.service';
 import { IAppContext, IUserData } from '../../common/types';
 import AppContext from '../../context/AuthContext';
-import {
-  CreateChat,
-  addAudioRoomID,
-  addVideoRoomID,
-} from '../../services/chat.service';
+import { CreateChat, addRoomID } from '../../services/chat.service';
 import { v4 } from 'uuid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -17,7 +13,7 @@ const CreateNewChat = () => {
   const [users, setUsers] = useState<IUserData[]>([]);
   const { userData } = useContext(AppContext) as IAppContext;
   const [members, setMembers] = useState<string[]>([]);
-  const [chatName, setChatName] = useState<string>('');
+  const [chatName, setChatName] = useState<string>("");
 
   useEffect(() => {
     try {
@@ -32,15 +28,11 @@ const CreateNewChat = () => {
         unsubscribe();
       };
     } catch (error) {
-      console.error('Error fetching users', error);
+      console.error("Error fetching users", error);
     }
   }, []);
 
-  const handleCheckboxChange = (
-    handle: string,
-    firstName: string,
-    lastName: string
-  ) => {
+  const handleCheckboxChange = (handle, firstName, lastName) => {
     setMembers((prevMembers) =>
       prevMembers.some((member) => member.handle === handle)
         ? prevMembers.filter((member) => member.handle !== handle)
@@ -51,72 +43,84 @@ const CreateNewChat = () => {
     );
   };
 
-  const handleCreateChat = () => {
-    if (chatName) {
+  const navigate = useNavigate();
+
+  const handleCreateChat = async () => {
+    try {
       const user = {
         handle: userData?.handle,
         firstName: userData?.firstName,
         lastName: userData?.lastName,
       };
-      if (user) {
-        const updatedMembers = [...members, user];
+
+      if (!user) {
+        console.error("User data is not available.");
+        return;
+      }
+
+      const updatedMembers = [...members, user];
+      console.log("updated members:", updatedMembers);
+
+      if (updatedMembers.length < 2) {
+        console.error("At least two members are required.");
+        return;
+      }
+
+      if (updatedMembers.length > 2 && !chatName) {
+        console.error("Chat name is required.");
+        return;
+      }
+
+      try {
+        const existingChat = await findChatByMembers(updatedMembers);
+
+        if (existingChat) {
+          navigate(`${existingChat.chatId}`);
+        } else {
+          // No existing chat found, create a new chat
+          const newChat = await CreateChat(chatName, updatedMembers, v4());
 
         if (updatedMembers.length > 0) {
-          CreateChat(user?.handle, chatName, updatedMembers, v4())
-            .then((chat) => {
-              const { chatName, chatId } = chat;
+          CreateChat(chatName, updatedMembers, v4()).then((chat) => {
+            const { chatName, chatId } = chat;
 
-              const encodedString = btoa(`${ORGANIZATION_ID}:${API_KEY}`);
+            const encodedString = btoa(`${ORGANIZATION_ID}:${API_KEY}`);
 
-              const dyteRoomCreate = {
-                method: 'POST',
-                url: `${BASE_URL}/meetings`,
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Basic ${encodedString}`,
-                  'Access-Control-Allow-Origin': '*',
-                  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                },
-                data: { title: chatName },
-              };
+            const dyteRoomCreate = {
+              method: 'POST',
+              url: `${BASE_URL}/meetings`,
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Basic ${encodedString}`,
+                'Access-Control-Allow-Origin': '*',
+              },
+              data: { title: chatName },
+            };
 
-              axios
-                .request(dyteRoomCreate)
-                .then((response) => {
-                  console.log(response);
-                  const dyteAudioRoomID = response.data.data.id;
+            axios
+              .request(dyteRoomCreate)
+              .then((response) => {
+                console.log(response);
+                const dyteID = response.data.data.id;
 
-                  addAudioRoomID(chatId, dyteAudioRoomID);
-                })
-                .catch((error) => {
-                  console.error('Error creating video room', error);
-                  console.error('Response data:', error.response.data);
-                });
-
-              axios
-                .request(dyteRoomCreate)
-                .then((response) => {
-                  console.log(response);
-                  const dyteVideoRoomID = response.data.data.id;
-
-                  addVideoRoomID(chatId, dyteVideoRoomID);
-                })
-                .catch((error) => {
-                  console.error('Error creating video room', error);
-                  console.error('Response data:', error.response.data);
-                });
-            })
-            .catch((error) => {
-              console.error('Error creating chat', error);
-            });
+                addRoomID(chatId, dyteID);
+              })
+              .catch((error) => {
+                console.error('Error creating room', error);
+                console.error('Response data:', error.response.data);
+              })
+              .catch((error) => {
+                console.error('Error creating chat', error);
+              });
+          });
         } else {
           console.error('At least two members are required.');
         }
-      } else {
-        console.error('User handle is not available.');
+      } catch (error) {
+        console.error("Error checking existing chat:", error);
       }
-    } else {
-      console.error('Chat name is required.');
+    } catch (error) {
+      console.error("Unexpected error:", error);
     }
   };
 
@@ -126,7 +130,7 @@ const CreateNewChat = () => {
 
   const handleCancel = () => {
     setMembers([]);
-    setChatName('');
+    setChatName("");
   };
 
   return (
@@ -134,7 +138,7 @@ const CreateNewChat = () => {
       <button
         onClick={() =>
           (
-            document.getElementById('Create_Chat_Modal') as HTMLDialogElement
+            document.getElementById("Create_Chat_Modal") as HTMLDialogElement
           )?.showModal()
         }
         className="inline-flex items-center gap-2 bg-accent text-primary text-xs uppercase p-2 lg:px-3 lg:py-2 rounded hover:bg-primary hover:text-secondary"
@@ -144,20 +148,24 @@ const CreateNewChat = () => {
       </button>
       <dialog id="Create_Chat_Modal" className="modal">
         <div className="modal-box">
-          <h3 className="font-bold text-lg text-primary text-center">
+          <h3 className="font-bold text-lg text-black text-center">
             Create Chat
           </h3>
           <div>
-            <span>chat name:</span>
-            <input
-              type="text"
-              className="border text-sm p-2 w-full"
-              onChange={handleNameChange}
-              value={chatName}
-            />
+            {members.length > 1 && (
+              <div>
+                <span className="text-black">chat name:</span>
+                <input
+                  type="text"
+                  className="border text-sm p-2 w-full text-black"
+                  onChange={handleNameChange}
+                  value={chatName}
+                />
+              </div>
+            )}
           </div>
           <div>
-            <div>Users:</div>
+            <div className="text-black">Users:</div>
             <div className="overflow-y-auto h-32">
               {users
                 .filter((user) => user.handle !== userData?.handle)
@@ -181,23 +189,22 @@ const CreateNewChat = () => {
                         }
                         className="mr-2"
                       />
-                      {user.firstName} {user.lastName} ({user.handle})
+                      <div className="text-black">
+                        {user.firstName} {user.lastName} ({user.handle})
+                      </div>
                     </label>
                   </div>
                 ))}
             </div>
           </div>
           <div className="flex justify-between items-center">
-            <button
-              className="btn text-primary mt-6"
-              onClick={handleCreateChat}
-            >
+            <button className="btn text-black mt-6" onClick={handleCreateChat}>
               Create
             </button>
             <div className="modal-action">
               <form method="dialog">
                 <div>
-                  <button className="btn text-primary" onClick={handleCancel}>
+                  <button className="btn text-black" onClick={handleCancel}>
                     Cancel
                   </button>
                 </div>

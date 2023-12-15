@@ -20,3 +20,6 @@ export const MIN_PASSWORD_LENGTH = 6;
 export const MIN_MEETING_TITLE_LENGTH = 5;
 
 export const MAX_MEETING_TITLE_LENGTH = 35;
+export const GIPHY_API_KEY = 'spE9TOBwVBj5T4iku6qWnPLTEgotBS3C';
+
+export const GIPHY_API_URL = 'https://api.giphy.com/v1/gifs';

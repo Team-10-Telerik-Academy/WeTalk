@@ -1,30 +1,28 @@
-import { ref, update } from "firebase/database";
-import { SendMessage, sendFile } from "../../services/chat.service";
-import EmojiInput from "./EmojiInput";
+import { useState } from "react";
+import { sendMessage, sendFile } from "../../services/channel.service";
+import { ref, update } from "@firebase/database";
 import { db } from "../../config/firebase-config";
-import { useEffect, useState } from "react";
-import Giphy from "./Giphy";
-import SendFile from "./SendFile";
+// import ChannelSendFile from "./ChannelSendFile";
+import ChannelGiphy from "./ChannelGiphy";
+import EmojiInput from "../SingleChat/EmojiInput";
+import ChannelSendFile from "./ChannelSendFile";
 
 interface InputFieldProps {
   handle: string;
-  chatId: string;
+  channelId: string;
   setInputValue: React.Dispatch<React.SetStateAction<string>>;
   handleInputChange: (value: string) => void;
   members: string[];
 }
 
-const InputField: React.FC<InputFieldProps> = ({
+const ChannelInputField: React.FC<InputFieldProps> = ({
   handle,
-  chatId,
+  channelId,
   members,
   setInputValue,
   handleInputChange,
 }) => {
   // console.log(members);
-
-  // const handles = members.map((member) => member.handle);
-  // console.log(handles);
 
   const filteredMembers = members.filter((member) => member !== handle);
   console.log(handle);
@@ -32,13 +30,13 @@ const InputField: React.FC<InputFieldProps> = ({
   const handleSendMessage = async (message: string) => {
     try {
       // Set typing status to false before sending the message
-      update(ref(db, `chats/${chatId}/typingStatus`), {
+      update(ref(db, `channels/${channelId}/typingStatus`), {
         [handle]: false,
       });
       console.log("filtered", filteredMembers);
 
       // Send the message
-      await SendMessage(chatId, message, handle, filteredMembers);
+      await sendMessage(channelId, message, handle, filteredMembers);
     } catch (error) {
       console.log(error);
     }
@@ -46,7 +44,7 @@ const InputField: React.FC<InputFieldProps> = ({
 
   const handleSaveFile = async (file: File) => {
     try {
-      await sendFile(chatId, file, handle, filteredMembers);
+      await sendFile(channelId, file, handle, filteredMembers);
     } catch (e) {
       console.log(e);
     }
@@ -60,11 +58,12 @@ const InputField: React.FC<InputFieldProps> = ({
 
   return (
     <div className="flex items-center">
-      <Giphy chatId={chatId} handle={handle} members={members} />
-      <SendFile onSave={handleSaveFile} chatId={chatId} />
+      <ChannelGiphy channelId={channelId} handle={handle} members={members} />
+      <ChannelSendFile onSave={handleSaveFile} channelId={channelId} />
       <EmojiInput onSubmit={handleSendMessage} handleChange={handleChange} />
     </div>
   );
 };
 
-export default InputField;
+export default ChannelInputField;
+

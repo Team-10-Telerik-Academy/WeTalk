@@ -10,6 +10,8 @@ import {
 import { db } from '../config/firebase-config';
 import { ITeam } from '../common/types';
 import { createTeamNotification } from './notifications.service';
+import { createGeneralChanel } from './channel.service';
+import { v4 } from 'uuid';
 
 export const fromTeamsDocument = (snapshot: DataSnapshot) => {
   const teamsDocument = snapshot.val();
@@ -42,6 +44,12 @@ export const createTeam = async (
     async (member) => await addTeamToUser(member.handle, teamName)
   );
   createTeamNotification(owner.handle, members, teamName);
+
+  await createGeneralChanel(teamName, members, v4(), owner);
+
+  await update(ref(db, `teams/${teamName}/channels`), {
+    general: true,
+  });
 };
 
 export const addTeamToUser = async (handle: string, teamName: string) => {
@@ -218,4 +226,16 @@ export const getUserTeams = async (handle: string) => {
 
   const userTeams = await get(userTeamsRef);
   return userTeams.val();
+};
+
+export const getAllTeamMembers = async (teamName: string) => {
+  try {
+    const snapshot = await get(ref(db, `teams/${teamName}/members`));
+
+    if (snapshot.exists()) {
+      return snapshot.val();
+    }
+  } catch (error) {
+    console.error('Error fetching team members:', error);
+  }
 };

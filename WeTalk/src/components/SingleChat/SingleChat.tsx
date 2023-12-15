@@ -1,14 +1,22 @@
 import { useContext, useEffect, useState, useRef } from 'react';
+import { useContext, useEffect, useState, useRef } from 'react';
 import AppContext from '../../context/AuthContext';
 import InputField from './InputField';
 import { IAppContext } from '../../common/types';
 import Profile from '../Profile/Profile';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGear, faPhone, faVideo } from '@fortawesome/free-solid-svg-icons';
-import { onChatUpdate } from '../../services/chat.service';
+import { faVideo, faPhone } from '@fortawesome/free-solid-svg-icons';
+import {
+  getLastMessage,
+  onChatUpdate,
+  setAllMessagesToSeen,
+} from '../../services/chat.service';
 import { ref, update } from 'firebase/database';
 import { db } from '../../config/firebase-config';
+import ChatSettings from '../MainSidebar/Chats/ChatsSettings';
+import MessageSettings from './MessageSettings';
+import SeenIcons from '../MainSidebar/Chats/SeenIcons';
 
 type MessageType = {
   sender: string;
@@ -18,7 +26,7 @@ type MessageType = {
 
 type ChatType = {
   chatName: string;
-  members;
+  members: string[];
   messages: Record<string, MessageType>;
   audioRoomInfo: any;
   videoRoomInfo: any;
@@ -30,11 +38,24 @@ type SingleChatProps = {
 
 const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
   const { userData } = useContext(AppContext) as IAppContext;
-  const [chat, setChat] = useState<ChatType | null>(null);
+  // const [chat, setChat] = useState<ChatType | null>(null);
+  const [chat, setChat] = useState<ChatType | null>({
+    chatName: '',
+    members: [],
+    messages: {},
+  });
   const [typingStatus, setTypingStatus] = useState<Record<string, boolean>>({});
   const [inputValue, setInputValue] = useState('');
 
+  // const [filteredMembers, setFilteredMembers] = useState([]);
+
+  const filteredMembers = chat?.members
+    .filter((member) => member !== userData?.handle)
+    .map((member) => member.handle);
+
   const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  const navigate = useNavigate();
 
   const handleInputChange = (value: string) => {
     setInputValue(value);
@@ -118,6 +139,41 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
     }
   };
 
+  const isMounted = useIsMounted();
+
+  useEffect(() => {
+    if (isMounted) {
+      console.log('Component mounted. Calling handleChangeMessageStatus.');
+      handleChangeMessageStatus();
+    }
+  }, [chat]);
+
+  const handleChangeMessageStatus = async () => {
+    try {
+      console.log('Chat:', chat);
+      if (!chat) {
+        console.error('Chat is undefined');
+        return;
+      }
+
+      if (chat.messages && Object.keys(chat.messages).length > 0) {
+        const lastMessage =
+          chat.messages[
+            Object.keys(chat.messages)[Object.keys(chat.messages).length - 1]
+          ];
+        console.log('Last message:', lastMessage);
+
+        if (lastMessage && lastMessage.sender !== userData?.handle) {
+          await setAllMessagesToSeen(chatId, userData?.handle || '');
+        }
+        console.log('message has been seen');
+      } else {
+        console.log('No messages in the chat.');
+      }
+    } catch (error) {
+      console.error('Error fetching or updating message:', error);
+    }
+  };
   return (
     <div className="flex flex-col h-screen bg-secondary">
       <div className="flex items-center justify-between py-2 border-b">
@@ -188,9 +244,9 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
                 )}
               </button>
             </Link>
-            <button className="bg-blue-500 text-secondary px-4 py-2 rounded hover:bg-blue-600">
-              <FontAwesomeIcon icon={faGear} />
-            </button>
+            <p className="text-primary mr-4 mt-1">
+              <ChatSettings chat={chat} chatId={chatId} />
+            </p>
           </div>
         ) : (
           <div className="px-4">Loading...</div>
@@ -203,8 +259,8 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
         style={{
           marginBottom: '2rem',
           overflowY: 'scroll',
-          scrollbarWidth: 'none', // For Firefox
-          msOverflowStyle: 'none', // For IE and Edge
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
       >
         <style>
@@ -242,7 +298,14 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
             Loading chat details...
           </div>
         )}
-        {chat && renderMessages(chat.messages, userData?.handle!, chat.members)}
+        {chat &&
+          renderMessages(
+            chat.messages,
+            userData?.handle!,
+            chat.members,
+            chat.chatId,
+            filteredMembers
+          )}
       </div>
 
       <div className="relative flex items-center justify-center">
@@ -256,6 +319,7 @@ const SingleChat: React.FC<SingleChatProps> = ({ chatId }) => {
           handle={userData?.handle!}
           setInputValue={setInputValue}
           handleInputChange={handleInputChange}
+          members={filteredMembers}
         />
       </div>
     </div>
@@ -330,6 +394,17 @@ const renderChatBubble = (message, userHandle, members, isToday, isYesterday) =>
         message.sender === userHandle ? 'chat-end' : 'chat-start'
       }`}
     >
+      <div className="flex-start">
+        {message.sender === userHandle && (
+          <MessageSettings
+            chatId={chatId}
+            messageId={message.messageId}
+            message={message.message}
+            type={message.type}
+            fileName={message.fileName}
+          />
+        )}
+      </div>
       <div className="chat-image">
         <Profile handle={message.sender} />
       </div>
@@ -350,13 +425,81 @@ const renderChatBubble = (message, userHandle, members, isToday, isYesterday) =>
           {renderTime(message.timestamp, isToday, isYesterday)}
         </span>
       </div>
+      <div className="flex">
+        {message.edited && (
+          <p className="text-primary text-xs font-bold mr-3 underline">
+            edited
+          </p>
+        )}
+        <div>
+          {filteredMembers.length === 2 && message.sender === userHandle ? (
+            <>
+              {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
+                <p className="text-xs font-bold text-primary">seen</p>
+              ) : (
+                <p className="text-xs font-bold text-primary">delivered</p>
+              )}
+            </>
+          ) : (
+            <>
+              {allMembersHaveSeen(message, filteredMembers, userHandle) ? (
+                <p className="text-xs font-bold text-primary">seen by all</p>
+              ) : (
+                <>
+                  {membersWhoHaveSeen(message, filteredMembers, userHandle)
+                    .length > 0 &&
+                  membersWhoHaveSeen(message, filteredMembers, userHandle)
+                    .length < filteredMembers.length &&
+                  message.sender === userHandle ? (
+                    <div
+                      className="dropdown dropdown-hover dropdown-left h-0.5 mt-0 pt-0 z-[1]"
+                      key={filteredMembers[0]}
+                    >
+                      <div
+                        tabIndex={0}
+                        role="button"
+                        className="btn-xs bg-secondary border-none shadow-none text-xs font-bold w-0.5 h-0.5 mt-0 pt-0 mr-4 text-primary"
+                      >
+                        seen
+                      </div>
+                      <div>
+                        <ul
+                          tabIndex={0}
+                          className="dropdown-content z-[1] menu shadow bg-secondary shadow rounded-box w-max z=[1]"
+                          style={{ display: 'flex', flexDirection: 'row' }}
+                        >
+                          {filteredMembers.map((member) => (
+                            <div key={member} style={{ marginRight: '1px' }}>
+                              {message.seenBy &&
+                                message.seenBy[member] === true && (
+                                  <SeenIcons handle={member} />
+                                )}
+                            </div>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {membersWhoHaveSeen(message, filteredMembers, userHandle)
+                    .length === 0 && message.sender === userHandle ? (
+                    <p className="text-xs font-bold">delivered</p>
+                  ) : null}
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 
 const renderMessages = (
   messages: Record<string, MessageType>,
   userHandle: string,
-  members
+  members,
+  chatId,
+  filteredMembers
 ) => {
   if (!messages || Object.keys(messages).length === 0) {
     return (
@@ -381,8 +524,61 @@ const renderMessages = (
       messageDate.getMonth() === yesterday.getMonth() &&
       messageDate.getFullYear() === yesterday.getFullYear();
 
-    return renderChatBubble(message, userHandle, members, isToday, isYesterday);
+    return renderChatBubble(
+      message,
+      userHandle,
+      members,
+      isToday,
+      isYesterday,
+      chatId,
+      filteredMembers
+    );
   });
+};
+
+const allMembersHaveSeen = (message, members, userHandle) => {
+  const filteredMembers = members.filter((member) => member !== userHandle);
+  const seenBy = message.seenBy || {};
+
+  const filteredSeenBy = Object.keys(seenBy).reduce((acc, member) => {
+    if (member !== userHandle) {
+      acc[member] = seenBy[member];
+    }
+    return acc;
+  }, {});
+
+  return filteredMembers.every((member) => filteredSeenBy[member] === true);
+};
+
+const membersWhoHaveSeen = (message, members, userHandle) => {
+  const filteredMembers = members.filter((member) => member !== userHandle);
+  const seenBy = message.seenBy || {};
+
+  const filteredSeenBy = Object.keys(seenBy).reduce((acc, member) => {
+    if (member !== userHandle) {
+      acc[member] = seenBy[member];
+    }
+    return acc;
+  }, {});
+
+  const seenMembers = filteredMembers.filter(
+    (member) => filteredSeenBy[member]
+  );
+
+  return seenMembers;
+};
+
+const useIsMounted = () => {
+  const [isMounted, setIsMounted] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => {
+      setIsMounted(false);
+    };
+  }, []);
+
+  return isMounted;
 };
 
 export default SingleChat;

@@ -3,7 +3,6 @@ import {
   get,
   onValue,
   push,
-  ref,
   set,
   update,
 } from '@firebase/database';
@@ -16,24 +15,128 @@ import {
 } from './notifications.service';
 import { setUserStatus } from './users.service';
 import { UserStatus } from '../common/status-enum';
+import { ref as dbDatabaseRef } from '@firebase/database';
+import { imageDb } from '../config/firebase-config';
+import {
+  getDownloadURL,
+  ref as storageRef,
+  uploadBytes,
+} from '@firebase/storage';
+import { v4 } from 'uuid';
 
 // Sends a message to a specified chat and returns the message ID
 export const SendMessage = async (
   chatId: string,
   message: string,
-  sender: string
+  sender: string,
+  otherMembers: []
 ) => {
-  const messageIdRef = push(ref(db, `chats/${chatId}/messages`));
+  const messageIdRef = push(dbDatabaseRef(db, `chats/${chatId}/messages`));
 
   const messageId = messageIdRef.key;
 
-  await set(ref(db, `chats/${chatId}/messages/${messageId}`), {
+  await set(dbDatabaseRef(db, `chats/${chatId}/messages/${messageId}`), {
+    messageId,
     message,
     sender,
     timestamp: Date.now(),
+    type: 'message',
+  });
+
+  // Send the message to other members as well
+  otherMembers.forEach(async (member) => {
+    await set(
+      dbDatabaseRef(
+        db,
+        `chats/${chatId}/messages/${messageId}/seenBy/${member}`
+      ),
+      false
+    );
   });
 
   return messageId;
+};
+
+export const sendFile = async (
+  chatId: string,
+  file: File,
+  sender: string,
+  otherMembers: []
+) => {
+  try {
+    const fileName = `${file.name}_${v4()}`;
+    const storageReference = storageRef(
+      imageDb,
+      `chats/${chatId}/files/${fileName}`
+    );
+    await uploadBytes(storageReference, file);
+
+    const downloadURL = await getDownloadURL(storageReference);
+
+    const messageIdRef = push(dbDatabaseRef(db, `chats/${chatId}/messages`));
+    const messageId = messageIdRef.key;
+
+    await set(dbDatabaseRef(db, `chats/${chatId}/messages/${messageId}`), {
+      messageId,
+      message: downloadURL,
+      sender,
+      timestamp: Date.now(),
+      status: 'delivered',
+      type: 'file',
+      fileName,
+    });
+
+    otherMembers.forEach(async (member) => {
+      await set(
+        dbDatabaseRef(
+          db,
+          `chats/${chatId}/messages/${messageId}/seenBy/${member}`
+        ),
+        false
+      );
+    });
+
+    return messageId;
+  } catch (error) {
+    console.error('Error sending file:', error);
+    throw error;
+  }
+};
+
+export const sendGiphyUrl = async (
+  chatId: string,
+  giphyUrl: string,
+  sender: string,
+  otherMembers: []
+) => {
+  try {
+    const messageIdRef = push(dbDatabaseRef(db, `chats/${chatId}/messages`));
+    const messageId = messageIdRef.key;
+
+    await set(dbDatabaseRef(db, `chats/${chatId}/messages/${messageId}`), {
+      messageId,
+      message: giphyUrl,
+      sender,
+      timestamp: Date.now(),
+      status: 'delivered',
+      type: 'file',
+    });
+
+    otherMembers.forEach(async (member) => {
+      await set(
+        dbDatabaseRef(
+          db,
+          `chats/${chatId}/messages/${messageId}/seenBy/${member}`
+        ),
+        false
+      );
+    });
+
+    return messageId;
+  } catch (error) {
+    console.error('Error sending Giphy URL:', error);
+    throw error;
+  }
 };
 
 // Retrieves chat messages for a specified chat ID
@@ -41,7 +144,7 @@ export const getChatMessages = async (
   chatId: string
 ): Promise<MessageType[]> => {
   try {
-    const dbRef = ref(db, `chat/${chatId}/messages`);
+    const dbRef = dbDatabaseRef(db, `chat/${chatId}/messages`);
     const snapshot = await get(dbRef);
 
     if (snapshot.exists()) {
@@ -63,7 +166,7 @@ export const getChatMessages = async (
 export const CreateChat = async (
   creator: string,
   chatName: string,
-  members,
+  members: any[],
   chatId: string
 ) => {
   const initialTypingStatus = members.reduce((acc, member) => {
@@ -71,7 +174,7 @@ export const CreateChat = async (
     return acc;
   }, {});
 
-  await set(ref(db, `chats/${chatId}`), {
+  await set(dbDatabaseRef(db, `chats/${chatId}`), {
     creator,
     chatName,
     chatId,
@@ -90,10 +193,11 @@ export const CreateChat = async (
   });
 
   members.forEach(async (member) => {
-    await set(ref(db, `users/${member.handle}/chats`), {
-      chats: {
-        [chatId]: true,
-      },
+    const userChatsRef = dbDatabaseRef(db, `users/${member.handle}/chats`);
+
+    // Use 'update' to add the new chat without overwriting existing chats
+    await update(userChatsRef, {
+      [chatId]: true,
     });
   });
 
@@ -111,7 +215,7 @@ export const CreateChat = async (
 
 // Retrieves chat data by ID
 export const getChatDataById = async (chatId: string) => {
-  const result = await get(ref(db, `chats/${chatId}`));
+  const result = await get(dbDatabaseRef(db, `chats/${chatId}`));
   if (!result.exists()) {
     throw new Error(`Chat with id ${chatId} does not exist!`);
   }
@@ -127,7 +231,7 @@ export const addVideoRoomID = async (chatId: string, videoRoomId: string) => {
       [`chats/${chatId}/videoRoomInfo/videoRoomId`]: videoRoomId,
     };
 
-    await update(ref(db), updateData);
+    await update(dbDatabaseRef(db), updateData);
 
     console.log('Video room created successfully!');
   }
@@ -140,7 +244,7 @@ export const addAudioRoomID = async (chatId: string, audioRoomId: string) => {
       [`chats/${chatId}/audioRoomInfo/audioRoomId`]: audioRoomId,
     };
 
-    await update(ref(db), updateData);
+    await update(dbDatabaseRef(db), updateData);
 
     console.log('Audio room created successfully!');
   }
@@ -153,9 +257,9 @@ export const onChatUpdate = (
   onMessagesUpdate: (messagesData: any) => void,
   onTypingStatusUpdate: (typingStatus: Record<string, boolean>) => void
 ): Unsubscribe => {
-  const chatRef = ref(db, `chats/${chatId}`);
-  const messagesRef = ref(db, `chats/${chatId}/messages`);
-  const typingStatusRef = ref(db, `chats/${chatId}/typingStatus`);
+  const chatRef = dbDatabaseRef(db, `chats/${chatId}`);
+  const messagesRef = dbDatabaseRef(db, `chats/${chatId}/messages`);
+  const typingStatusRef = dbDatabaseRef(db, `chats/${chatId}/typingStatus`);
 
   const handleChatUpdate = (snapshot: DataSnapshot) => {
     const chatData = snapshot.val();
@@ -192,14 +296,14 @@ export const GetChat = (
   onChatsUpdate: (chatData: any) => void,
   onMessagesUpdate: (messagesData: any) => void
 ): Unsubscribe => {
-  const chatRef = ref(db, `chats/${chatId}`);
+  const chatRef = dbDatabaseRef(db, `chats/${chatId}`);
 
   onValue(chatRef, (snapshot) => {
     const chatData = snapshot.val();
     onChatsUpdate(chatData);
   });
 
-  const messagesRef = ref(db, `chats/${chatId}/messages`);
+  const messagesRef = dbDatabaseRef(db, `chats/${chatId}/messages`);
 
   onValue(messagesRef, (snapshot) => {
     const messagesData = snapshot.val();
@@ -209,29 +313,9 @@ export const GetChat = (
   return () => {};
 };
 
-// export const getAllChats = async (): Promise<any[]> => {
-//   try {
-//     const chatRef = ref(db, 'chats');
-//     const chatSnapshot = await get(chatRef);
-
-//     if (chatSnapshot.exists()) {
-//       const chatData = chatSnapshot.val();
-//       const chatArray = Object.keys(chatData).map((chatId) => ({
-//         ...chatData[chatId],
-//       }));
-//       return chatArray;
-//     } else {
-//       throw new Error('Chats not found');
-//     }
-//   } catch (e) {
-//     console.error(e);
-//     throw e;
-//   }
-// };
-
 // Retrieves all chats and invokes a callback with the chat data
 export const getAllChats = (callback: (chatsArray) => void) => {
-  const chatsRef = ref(db, 'chats');
+  const chatsRef = dbDatabaseRef(db, 'chats');
 
   const unsubscribe = onValue(chatsRef, (snapshot) => {
     const chatsData = snapshot.val();
@@ -246,7 +330,7 @@ export const getAllChats = (callback: (chatsArray) => void) => {
 
 // Registers a callback for updates to all chats
 export const registerChatsUpdate = (callback: (chats: any) => void) => {
-  const chatsRef = ref(db, 'chats');
+  const chatsRef = dbDatabaseRef(db, 'chats');
 
   const handleUpdate = (snapshot: DataSnapshot) => {
     const chatsData = snapshot.val();
@@ -309,7 +393,7 @@ export const addChatAudioRoomParticipant = async (
 
     setUserStatus(participant, UserStatus.BUSY.toLocaleLowerCase());
 
-    await update(ref(db), updateParticipants);
+    await update(dbDatabaseRef(db), updateParticipants);
 
     console.log('Video room status updated successfully!');
   }
@@ -337,14 +421,14 @@ export const deleteChatAudioRoomParticipant = async (
 
     setUserStatus(participant, UserStatus.ONLINE.toLocaleLowerCase());
 
-    await update(ref(db), updateParticipants);
+    await update(dbDatabaseRef(db), updateParticipants);
 
     console.log('Audio room status updated successfully!');
   }
 };
 
 export const getChatVideoRoomParticipants = async (chatId: string) => {
-  const chatVideoRoomParticipantsRef = ref(
+  const chatVideoRoomParticipantsRef = dbDatabaseRef(
     db,
     `chats/${chatId}/videoRoomInfo/videoRoomParticipants`
   );
@@ -390,7 +474,7 @@ export const addChatVideoRoomParticipant = async (
 
     setUserStatus(participant, UserStatus.BUSY.toLocaleLowerCase());
 
-    await update(ref(db), updateParticipants);
+    await update(dbDatabaseRef(db), updateParticipants);
 
     console.log('Video room status updated successfully!');
   }
@@ -414,8 +498,158 @@ export const deleteChatVideoRoomParticipant = async (
 
     setUserStatus(participant, UserStatus.ONLINE.toLocaleLowerCase());
 
-    await update(ref(db), updateParticipants);
+    await update(dbDatabaseRef(db), updateParticipants);
 
     console.log('Video room status updated successfully!');
+  }
+};
+
+export const lastMessageSentByUser = (
+  messages: MessageType[],
+  userHandle: string
+) => {
+  const lastMessageSentByUser = messages
+    .filter((message) => message.sender === userHandle)
+    .reduce((lastMessage, message) =>
+      message.timestamp > lastMessage.timestamp ? message : lastMessage
+    );
+
+  return lastMessageSentByUser;
+};
+
+export const getLastMessage = (
+  chatId: string,
+  callback: (lastMessage: IMessageType | null) => void
+) => {
+  const messagesRef = dbDatabaseRef(db, `chats/${chatId}/messages`);
+
+  onValue(messagesRef, (snapshot) => {
+    const messages = snapshot.val();
+    if (messages) {
+      const messageArray = Object.values(messages);
+      const lastMessage = messageArray.reduce((prevMessage, currentMessage) =>
+        currentMessage.timestamp > prevMessage.timestamp
+          ? currentMessage
+          : prevMessage
+      );
+
+      callback(lastMessage);
+    } else {
+      callback(null);
+    }
+  });
+};
+
+export const updateMessageStatusToSeen = async (
+  chatId: string,
+  messageId: string,
+  userHandle: string
+) => {
+  try {
+    const messageRef = dbDatabaseRef(
+      db,
+      `chats/${chatId}/messages/${messageId}`
+    );
+    const snapshot = await get(messageRef);
+
+    if (snapshot.exists()) {
+      const messageData = snapshot.val();
+      const seenBy = messageData.seenBy || {};
+
+      // Set the user's handle to true in seenBy
+      seenBy[userHandle] = true;
+
+      // Update the message with the modified seenBy field
+      set(messageRef, { ...messageData, seenBy });
+
+      console.log(`Message status updated to 'seen' for message ${messageId}`);
+    } else {
+      console.log(`Message not found for id ${messageId}`);
+    }
+  } catch (error) {
+    console.error('Error updating message status:', error);
+    throw error;
+  }
+};
+
+export const findChatByMembers = async (members) => {
+  try {
+    const chatsRef = dbDatabaseRef(db, 'chats');
+    const chatsSnapshot = await get(chatsRef);
+
+    if (chatsSnapshot.exists()) {
+      const chats = chatsSnapshot.val();
+
+      const existingChatId = Object.keys(chats).find((chatId) => {
+        const chatMembers = chats[chatId].members;
+        console.log(chatMembers);
+
+        // Check if every member in the provided array is present in the chat
+        return members.every((member) => {
+          return chatMembers.every(
+            (chatMember) => chatMember.handle === member.handle
+          );
+        });
+      });
+
+      if (existingChatId) {
+        return {
+          chatId: existingChatId,
+          ...chats[existingChatId],
+        };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error finding chat by members:', error);
+    throw error;
+  }
+};
+
+export const getLastMessageSentByUser = (
+  messages: MessageType[],
+  userHandle: string
+) => {
+  const lastMessageSentByUser = messages
+    .filter((message) => message.sender === userHandle)
+    .reduce((lastMessage, message) =>
+      message.timestamp > lastMessage.timestamp ? message : lastMessage
+    );
+
+  return lastMessageSentByUser;
+};
+
+export const setAllMessagesToSeen = async (chatId, handle) => {
+  try {
+    const chatRef = ref(db, `chats/${chatId}/messages`);
+    const messageSnapshot = await get(chatRef);
+
+    if (messageSnapshot.exists()) {
+      const messages = messageSnapshot.val();
+      const updatedMessages = { ...messages };
+
+      Object.keys(updatedMessages).forEach((messageId) => {
+        const message = updatedMessages[messageId];
+        const { [handle]: currentHandleSeen, ...restSeenBy } =
+          message.seenBy || {};
+
+        if (message.sender !== handle && message.seenBy[handle] === false) {
+          message.seenBy = {
+            ...restSeenBy,
+            [handle]: true,
+          };
+
+          console.log(`Message ${messageId} marked as seen for ${handle}`);
+          console.log('Updated message:', message);
+        }
+      });
+
+      await set(chatRef, updatedMessages);
+    } else {
+      console.log(`No messages found in chat ${chatId}`);
+    }
+  } catch (error) {
+    console.error('Error updating messages:', error);
   }
 };
