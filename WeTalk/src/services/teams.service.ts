@@ -6,11 +6,12 @@ import {
   set,
   update,
   onValue,
-} from 'firebase/database';
-import { db } from '../config/firebase-config';
-import { ITeam } from '../common/types';
-import { createGeneralChanel } from './channel.service';
-import { v4 } from 'uuid';
+} from "firebase/database";
+import { db } from "../config/firebase-config";
+import { ITeam } from "../common/types";
+// import { createTeamNotification } from './notifications.service';
+import { createGeneralChanel, createGeneralChannel } from "./channel.service";
+import { v4 } from "uuid";
 
 export const fromTeamsDocument = (snapshot: DataSnapshot) => {
   const teamsDocument = snapshot.val();
@@ -27,21 +28,30 @@ export const fromTeamsDocument = (snapshot: DataSnapshot) => {
 export const createTeam = async (
   teamName: string,
   teamId: string,
-  owner: string,
-  members: string[]
+  owner: any,
+  members: any[]
 ) => {
   await set(ref(db, `teams/${teamName}`), {
     teamName,
     teamId,
     owner,
-    members: [owner,...members],
+    members: [owner, ...members],
     createdOn: Date.now(),
     channels: {},
   });
-  await addTeamToUser(owner, teamName);
-  members.forEach(async (member) => await addTeamToUser(member, teamName));
-  await createGeneralChanel(teamName, members, v4(),owner);
+  await addTeamToUser(owner.handle, teamName);
+  members.forEach(
+    async (member) => await addTeamToUser(member.handle, teamName)
+  );
+  // createTeamNotification(owner.handle, members, teamName);
 
+  const createGenChannel = await createGeneralChannel(
+    teamName,
+    members,
+    v4(),
+    owner
+  );
+  console.log(createGenChannel);
   await update(ref(db, `teams/${teamName}/channels`), {
     general: true,
   });
@@ -73,7 +83,7 @@ export const getTeamByTeamName = (
 };
 
 export const getAllTeams = (callback: (teamsArray: ITeam[]) => void) => {
-  const teamsRef = ref(db, 'teams');
+  const teamsRef = ref(db, "teams");
 
   const unsubscribe = onValue(teamsRef, (snapshot) => {
     const teamsData = snapshot.val();
@@ -86,9 +96,9 @@ export const getAllTeams = (callback: (teamsArray: ITeam[]) => void) => {
   return unsubscribe;
 };
 
-const removeTeamFromUsers = async (teamName: string, members: string[]) => {
+const removeTeamFromUsers = async (teamName: string, members: any) => {
   members.forEach(async (member) => {
-    const userTeamsRef = ref(db, `users/${member}/teams`);
+    const userTeamsRef = ref(db, `users/${member.handle}/teams`);
     const userTeamsSnapshot = await get(userTeamsRef);
 
     if (userTeamsSnapshot.exists()) {
@@ -104,7 +114,7 @@ export const deleteTeam = async (teamName: string, owner: string) => {
   const teamSnapshot = await get(ref(db, `teams/${teamName}`));
   const teamData = teamSnapshot.val();
 
-  if (teamData && teamData.owner === owner) {
+  if (teamData && teamData.owner.handle === owner) {
     await removeTeamFromUsers(teamName, teamData.members);
     await remove(ref(db, `teams/${teamName}`));
   } else {
@@ -127,7 +137,7 @@ export const removeTeamFromUser = async (
       await set(ref(db, `users/${memberToRemove}/teams`), updatedTeams);
     }
   } catch (error) {
-    console.error('Error removing team from user', error);
+    console.error("Error removing team from user", error);
   }
 };
 
@@ -151,17 +161,17 @@ export const removeMemberFromTeam = async (
           members: updateMembers,
         });
       } else {
-        throw new Error('Member not found in the team!');
+        throw new Error("Member not found in the team!");
       }
     } else {
-      throw new Error('Team not found!');
+      throw new Error("Team not found!");
     }
   } catch (error) {
-    console.error('Error removing member from team:', error);
+    console.error("Error removing member from team:", error);
   }
 };
 
-export const addMembersToTeam = async (teamName: string, members: string[]) => {
+export const addMembersToTeam = async (teamName: string, members: any) => {
   try {
     const teamRef = ref(db, `teams/${teamName}/members`);
     const teamSnapshot = await get(teamRef);
@@ -170,11 +180,13 @@ export const addMembersToTeam = async (teamName: string, members: string[]) => {
       const currentMembers = teamSnapshot.val();
       const updatedMembers = [...currentMembers, ...members];
 
-      members.forEach(async (member) => await addTeamToUser(member, teamName));
+      members.forEach(
+        async (member) => await addTeamToUser(member.handle, teamName)
+      );
       await set(teamRef, updatedMembers);
     }
   } catch (error) {
-    console.error('Error adding members to team:', error);
+    console.error("Error adding members to team:", error);
   }
 };
 
@@ -207,11 +219,18 @@ export const updateTeamName = async (
         }
       });
     } else {
-      throw new Error('Team not found!');
+      throw new Error("Team not found!");
     }
   } catch (error) {
-    console.error('Error updating team name:', error);
+    console.error("Error updating team name:", error);
   }
+};
+
+export const getUserTeams = async (handle: string) => {
+  const userTeamsRef = ref(db, `users/${handle}/teams`);
+
+  const userTeams = await get(userTeamsRef);
+  return userTeams.val();
 };
 
 export const getAllTeamMembers = async (teamName: string) => {
