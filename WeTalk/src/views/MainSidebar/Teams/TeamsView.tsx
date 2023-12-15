@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import AppContext from '../../../context/AuthContext';
 import { IAppContext, ITeam, IUserData } from '../../../common/types';
 import SearchBar from '../../../components/SearchBar/SearchBar';
-
+ 
 type ITeamsViewProps = {
   onCreateTeam: (teamName: string, members: string[]) => void;
   teams: ITeam[];
@@ -18,7 +18,7 @@ type ITeamsViewProps = {
   onSaveTeamName: (teamData: ITeam, newName: string) => void;
   users: IUserData[];
 };
-
+ 
 const TeamsView: React.FC<ITeamsViewProps> = ({
   onCreateTeam,
   teams,
@@ -29,7 +29,7 @@ const TeamsView: React.FC<ITeamsViewProps> = ({
   users,
 }) => {
   const { userData } = useContext(AppContext) as IAppContext;
-
+ 
   return (
     <div className="min-h-screen sm:min-h-screen md:min-h-screen lg:min-h-screen px-4 py-8 border-r overflow-y-auto bg-secondary w-full sm:w-1/3 md:w-1/3 lg:w-[3000px] xl:w-[3000px] 2xl:w-full dark:bg-gray-900 dark:border-gray-700">
       <SearchBar />
@@ -50,12 +50,14 @@ const TeamsView: React.FC<ITeamsViewProps> = ({
         </div>
         <hr className="mt-4" />
         {/* <p className="px-7 text-gray-500 text-sm lg:text-[16px]">My teams</p> */}
-        <div className="px-3">
+        <div>
           {teams &&
             teams.map(
               (team) =>
                 Array.isArray(team.members) &&
-                team.members.includes(userData?.handle ?? '') && (
+                team.members.some(
+                  (member) => member.handle === userData?.handle
+                ) && (
                   <SingleTeam
                     key={team.teamId}
                     teamName={team.teamName}
@@ -72,5 +74,5 @@ const TeamsView: React.FC<ITeamsViewProps> = ({
     </div>
   );
 };
-
+ 
 export default TeamsView;
