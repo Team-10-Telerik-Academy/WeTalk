@@ -21,7 +21,7 @@ const InputField: React.FC<InputFieldProps> = ({
   setInputValue,
   handleInputChange,
 }) => {
-  // console.log(members);
+//   console.log(members);
 
   // const handles = members.map((member) => member.handle);
   // console.log(handles);
