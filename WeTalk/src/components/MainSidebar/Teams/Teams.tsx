@@ -10,11 +10,31 @@ import {
 } from '../../../services/teams.service';
 import TeamsView from '../../../views/MainSidebar/Teams/TeamsView';
 import { v4 } from 'uuid';
-import { IAppState } from '../../../common/types';
+import { IAppState, ITeam, IUserData } from '../../../common/types';
+import { getAllUsers } from '../../../services/users.service';
+import { Outlet } from 'react-router-dom';
 
 const Teams = () => {
   const { userData } = useContext(AppContext) as IAppState;
   const [teams, setTeams] = useState<ITeam[]>([]);
+  const [users, setUsers] = useState<IUserData[]>([]);
+
+  useEffect(() => {
+    try {
+      const usersCallback = (usersData: IUserData[]) => {
+        setUsers(usersData);
+        console.log('teams data fetched');
+      };
+
+      const unsubscribe = getAllUsers(usersCallback);
+
+      return () => {
+        unsubscribe();
+      };
+    } catch (error) {
+      console.error('Error fetching users', error);
+    }
+  }, []);
 
   useEffect(() => {
     const teamsCallback = (teamsData: ITeam[]) => {
@@ -28,14 +48,19 @@ const Teams = () => {
     };
   }, []);
 
-  const handleCreateTeam = async (teamName: string, members: string[]) => {
+  const handleCreateTeam = async (teamName: string, members: any[]) => {
+    const owner = {
+      handle: userData?.handle,
+      firstName: userData?.firstName,
+      lastName: userData?.lastName,
+    };
     try {
       await createTeam(
         teamName,
         v4(),
-        userData?.handle || '',
+        owner,
         members
-          .filter((member) => member !== userData?.handle)
+          .filter((member) => member.handle !== userData?.handle)
           .map((member) => member)
       );
     } catch (error) {
@@ -70,10 +95,7 @@ const Teams = () => {
     }
   };
 
-  const handleAddMembersToTeam = async (
-    teamName: string,
-    members: string[]
-  ) => {
+  const handleAddMembersToTeam = async (teamName: string, members: any) => {
     try {
       await addMembersToTeam(teamName, members);
     } catch (error) {
@@ -98,7 +120,10 @@ const Teams = () => {
         onRemoveMember={handleDeleteTeamMember}
         onAddMembersToTeam={handleAddMembersToTeam}
         onSaveTeamName={handleSaveTeamName}
+        users={users}
       />
+      {/* <MainContent /> */}
+      <Outlet />
     </>
   );
 };

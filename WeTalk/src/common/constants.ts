@@ -16,3 +16,10 @@ export const MIN_TEAM_NAME_LENGTH = 3;
 export const MAX_TEAM_NAME_LENGTH = 40;
 
 export const MIN_PASSWORD_LENGTH = 6;
+
+export const MIN_MEETING_TITLE_LENGTH = 5;
+
+export const MAX_MEETING_TITLE_LENGTH = 35;
+export const GIPHY_API_KEY = 'spE9TOBwVBj5T4iku6qWnPLTEgotBS3C';
+
+export const GIPHY_API_URL = 'https://api.giphy.com/v1/gifs';

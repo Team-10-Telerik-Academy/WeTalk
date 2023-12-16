@@ -20,7 +20,7 @@ const SearchBarView = () => {
 
         <input
           type="text"
-          className="w-full py-1.5 pl-10 pr-4 text-gray-700 bg-secondary border rounded-md dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:ring-opacity-40 focus:outline-none focus:ring"
+          className="w-full py-1.5 pl-10 pr-4 text-gray-700 bg-secondary border rounded-md focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:ring-opacity-40 focus:outline-none focus:ring"
           placeholder="Search"
         />
       </div>

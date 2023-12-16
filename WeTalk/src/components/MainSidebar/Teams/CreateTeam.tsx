@@ -1,5 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
-import { getAllUsers } from '../../../services/users.service';
+import { useState, useContext } from 'react';
 import AppContext from '../../../context/AuthContext';
 import { faPlus, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,33 +13,20 @@ import {
 type ICreateTeamProps = {
   onCreateTeam: (teamName: string, members: string[]) => void;
   teams: ITeam[];
+  users: IUserData[];
 };
 
-const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
+const CreateTeam: React.FC<ICreateTeamProps> = ({
+  onCreateTeam,
+  teams,
+  users,
+}) => {
   const [teamName, setTeamName] = useState('');
   const [members, setMembers] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [users, setUsers] = useState<IUserData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { userData } = useContext(AppContext) as IAppContext;
-
-  useEffect(() => {
-    try {
-      const usersCallback = (usersData: IUserData[]) => {
-        setUsers(usersData);
-        console.log(usersData);
-      };
-
-      const unsubscribe = getAllUsers(usersCallback);
-
-      return () => {
-        unsubscribe();
-      };
-    } catch (error) {
-      console.error('Error fetching users', error);
-    }
-  }, []);
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -53,7 +39,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
     setSelectAll(false);
   };
 
-  const handleCreateTeam = async () => {
+  const handleCreateTeam = () => {
     if (!teamName) {
       toast.warning('Team Name is required!', {
         autoClose: 3000,
@@ -95,24 +81,29 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
     closeModal();
   };
 
-  const handleCheckboxChange = (handle: string) => {
+  const handleCheckboxChange = (handle, firstName, lastName) => {
     setMembers((prevMembers) =>
-      prevMembers.includes(handle)
-        ? prevMembers.filter((member) => member !== handle)
-        : [...prevMembers, handle]
+      prevMembers.some((member) => member.handle === handle)
+        ? prevMembers.filter((member) => member.handle !== handle)
+        : [...prevMembers, { handle, firstName, lastName }]
     );
   };
 
   const handleSelectAll = () => {
+    const newUsers = users.map((user) => ({
+      handle: user.handle,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    }));
     setSelectAll(!selectAll);
     setMembers((prevMembers) =>
       selectAll
         ? prevMembers.filter(
             (member) =>
-              !users.map((user) => user.handle).includes(member) &&
-              member !== userData?.handle
+              !newUsers.map((user) => user.handle).includes(member.handle) &&
+              member.handle !== userData?.handle
           )
-        : [...prevMembers, ...users.map((user) => user.handle)]
+        : [...prevMembers, ...newUsers.map((user) => user)]
     );
   };
 
@@ -132,7 +123,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
         {isModalOpen && (
           <div className="fixed inset-0 z-10 overflow-y-auto bg-black bg-opacity-50">
             <div className="flex items-center justify-center min-h-screen xl:py-10">
-              <div className="bg-white w-full md:w-1/2 lg:w-1/3 2xl:w-1/4 p-6 rounded shadow-lg">
+              <div className="bg-white w-full md:w-1/2 lg:w-1/3 2xl:w-1/4 p-6 rounded shadow-lg animate-jump-in">
                 <div className="flex flex-col items-center justify-center mb-6">
                   <h2 className="text-xl text-primary font-bold">
                     Create Team
@@ -153,7 +144,7 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
                 </label>
                 <label className="block mb-10 mt-4">
                   <p className="font-bold text-primary mb-2 text-sm  md:text-md">
-                    Members:
+                    Users:
                   </p>
                   <div className="space-y-2 border-2 p-2 rounded">
                     <div className="flex items-center">
@@ -177,8 +168,16 @@ const CreateTeam: React.FC<ICreateTeamProps> = ({ onCreateTeam, teams }) => {
                           <label className="flex items-center w-full text-primary">
                             <input
                               type="checkbox"
-                              checked={members.includes(user.handle)}
-                              onChange={() => handleCheckboxChange(user.handle)}
+                              checked={members.some(
+                                (member) => member.handle === user.handle
+                              )}
+                              onChange={() =>
+                                handleCheckboxChange(
+                                  user.handle,
+                                  user.firstName,
+                                  user.lastName
+                                )
+                              }
                               className="mr-2"
                             />
                             {user.firstName} {user.lastName} ({user.handle})

@@ -7,20 +7,16 @@ import { auth } from '../config/firebase-config';
 import { setUserStatus } from './users.service';
 import { UserStatus } from '../common/status-enum';
 
-export const registerUser = async (email: string, password: string) => {
-  return await createUserWithEmailAndPassword(auth, email, password);
+export const registerUser = (email: string, password: string) => {
+  return createUserWithEmailAndPassword(auth, email, password);
 };
 
-export const loginUser = async (
-  email: string,
-  password: string,
-  handle: string
-) => {
-  await setUserStatus(handle, UserStatus.ONLINE.toLowerCase());
-  return await signInWithEmailAndPassword(auth, email, password);
+export const loginUser = (email: string, password: string, handle: string) => {
+  setUserStatus(handle, UserStatus.ONLINE.toLowerCase());
+  return signInWithEmailAndPassword(auth, email, password);
 };
 
-export const logoutUser = async (handle: string) => {
-  await setUserStatus(handle, UserStatus.OFFLINE.toLowerCase());
-  return await signOut(auth);
+export const logoutUser = (handle: string) => {
+  setUserStatus(handle, UserStatus.OFFLINE.toLowerCase());
+  return signOut(auth);
 };

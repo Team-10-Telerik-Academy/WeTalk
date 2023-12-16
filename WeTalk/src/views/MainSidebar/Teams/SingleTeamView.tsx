@@ -9,17 +9,21 @@ import {
   faUserPlus,
   faCheck,
   faXmark,
+  faCalendarDays,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown } from 'flowbite-react';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AppContext from '../../../context/AuthContext';
 import { IAppContext, ITeam } from '../../../common/types';
 import MembersModal from '../../../components/MainSidebar/Teams/MembersModal';
 import AddMembersModal from '../../../components/MainSidebar/Teams/AddMembersModal';
-
-// import nhAvatar from "../../../assets/images/avatar-NH.jpg";
-// import Profile from "../../../components/Profile/Profile";
+import ScheduleTeamMeeting from '../../../components/MainSidebar/Teams/ScheduleTeamMeeting';
+import { findChannelByTeamName } from '../../../services/channel.service';
+import { getAllChannelsInTeam } from '../../../services/channel.service';
+import CreateChannel from '../../../components/CreateChannel/CreateChannel';
+import { Link } from 'react-router-dom';
+//import ScheduleTeamMeeting from '../../../components/MainSidebar/Teams/ScheduleTeamMeeting';
 
 type IUser = {
   handle: string;
@@ -32,7 +36,29 @@ type ISingleTeamViewProps = {
   onDeleteTeam: (teamName: string, owner: string) => void;
   onRemoveMember: (
     teamName: string,
-    owner: string,
+    owner: any,
+    memberToRemove: string
+  ) => void;
+  users: IUser[];
+  onAddMembersToTeam: (teamName: string, members: string[]) => void;
+  onSaveTeamName: (teamData: ITeam, newName: string) => void;
+};
+
+type IChannelType = {
+  channelId: string;
+  channelName: string;
+  createdOn: number;
+  members: string[];
+  teamName: string;
+  userHandle: string;
+};
+
+type ISingleTeamViewProps = {
+  teamData: ITeam;
+  onDeleteTeam: (teamName: string, owner: string) => void;
+  onRemoveMember: (
+    teamName: string,
+    owner: any,
     memberToRemove: string
   ) => void;
   users: IUser[];
@@ -56,6 +82,10 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   );
   const [isEditingTeamName, setIsEditingTeamName] = useState(false);
   const [newTeamName, setNewTeamName] = useState(teamData.teamName);
+  const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] =
+    useState(false);
+  const [isAddChannelOpen, setIsAddChannelOpen] = useState(false);
+  const [channels, setChannels] = useState<IChannelType[]>([]);
 
   const { userData } = useContext(AppContext) as IAppContext;
 
@@ -82,7 +112,7 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   };
 
   const handleDeleteTeam = async () => {
-    onDeleteTeam(teamData.teamName, teamData.owner);
+    onDeleteTeam(teamData.teamName, teamData.owner.handle);
   };
 
   const handleToggleChannels = () => {
@@ -90,7 +120,7 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
   };
 
   const handleRemoveMember = (selectedMember: string) => {
-    onRemoveMember(teamData.teamName, teamData.owner, selectedMember);
+    onRemoveMember(teamData.teamName, teamData.owner.handle, selectedMember);
   };
 
   const handleAddMembersToTeam = (selectedMember: string[]) => {
@@ -107,9 +137,38 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
     setIsEditingTeamName(!isEditingTeamName);
   };
 
+  const openScheduleMeetingModal = () => {
+    setIsScheduleMeetingModalOpen(true);
+  };
+
+  const closeScheduleMeetingModal = () => {
+    setIsScheduleMeetingModalOpen(false);
+  };
+
+  const handleAddChannel = () => {
+    setIsAddChannelOpen(true);
+  };
+
+  useEffect(() => {
+    const channelsCallback = (channelsData) => {
+      setChannels(channelsData);
+      //console.log(channelsData);
+      //console.log(channels);
+    };
+
+    const unsubscribe = getAllChannelsInTeam(
+      teamData.teamName,
+      channelsCallback
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [teamData.teamName, channels]);
+
   return (
     <>
-      <div className="flex items-center justify-center bg-gray-100 py-2 px-4 lg:p-4 mb-2 mt-4 rounded hover:bg-gray-200">
+      <div className="flex items-center justify-center bg-primary bg-opacity-5 py-2 px-4 lg:p-4 mb-2 mt-4 rounded hover:bg-gray-200">
         <div className="flex items-center justify-between w-full">
           <div className="inline-flex w-full items-center gap-2">
             <FontAwesomeIcon
@@ -179,15 +238,25 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
                   Members ({teamData.members.length})
                 </div>
               </Dropdown.Item>
-              {teamData.owner === userData?.handle && (
+
+              {teamData.owner.handle === userData?.handle && (
                 <>
-                  <Dropdown.Item>
+                  <Dropdown.Item onClick={handleAddChannel}>
                     <div className="flex gap-2 items-center hover:bg-gray-100 text-xs lg:text-sm">
                       <FontAwesomeIcon
                         icon={faPlus}
                         className="text-primary cursor-pointer text-xs lg:text-sm"
                       />
                       Add channel
+                    </div>
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={openScheduleMeetingModal}>
+                    <div className="flex gap-1 items-center hover:bg-gray-100 text-xs lg:text-sm">
+                      <FontAwesomeIcon
+                        icon={faCalendarDays}
+                        className="text-primary cursor-pointer text-xs lg:text-sm"
+                      />
+                      Schedule meeting
                     </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={handleEditTeamName}>
@@ -215,18 +284,44 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
         </div>
       </div>
 
+      {isAddChannelOpen && (
+        <CreateChannel
+          teamName={teamData.teamName}
+          isModalOpen={isAddChannelOpen}
+          setIsModalOpen={setIsAddChannelOpen}
+          owner={{
+            firstName: userData?.firstName,
+            lastName: userData?.lastName,
+            handle: userData?.handle,
+          }}
+          teamData={teamData}
+        />
+      )}
+
       {isChannelsVisible && (
-        <div className="">
-          <div className="px-10 pb-2 text-xs lg:text-[16px]">
-            <p className="text-gray-500  cursor-pointer hover:text-primary hover:underline">
-              #general
-            </p>
-          </div>
-          <div className="px-10 text-xs lg:text-[16px]">
-            <p className="text-gray-500  cursor-pointer hover:text-primary hover:underline">
-              #Announcements
-            </p>
-          </div>
+        <div className="px-10 pb-2 text-xs lg:text-[16px] w-48">
+          {channels
+            .filter((channel) => channel.teamName === teamData.teamName)
+            .map((channel) => {
+              const isUserInChannel = channel.members.some(
+                (member) => member.handle === userData.handle
+              );
+
+              return (
+                isUserInChannel && (
+                  <Link to={`${channel.channelId}`}>
+                    <div
+                      key={channel.channelId}
+                      className="flex items-center bg-gray-100 p-2 hover:bg-gray-200 text-xs md:text-sm"
+                    >
+                      <p className="text-gray-500 cursor-pointer hover:text-primary hover:underline">
+                        #{channel.channelName}
+                      </p>
+                    </div>
+                  </Link>
+                )
+              );
+            })}
         </div>
       )}
 
@@ -245,6 +340,13 @@ const SingleTeamView: React.FC<ISingleTeamViewProps> = ({
         isOpen={isAddMembersModalOpen}
         onClose={closeAddMembersModal}
         onAddMembersToTeam={handleAddMembersToTeam}
+      />
+
+      <ScheduleTeamMeeting
+        teamData={teamData}
+        users={users}
+        isOpen={isScheduleMeetingModalOpen}
+        onClose={closeScheduleMeetingModal}
       />
     </>
   );
